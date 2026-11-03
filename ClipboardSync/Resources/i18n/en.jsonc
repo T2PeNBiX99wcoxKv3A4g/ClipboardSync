@@ -87,6 +87,7 @@
   "Images are shared as PNG; files come later.": "Images are shared as PNG; files come later.",
   "Image size limit": "Image size limit",
   "Images larger than this are skipped.": "Images larger than this are skipped.",
+  "Sections": "Sections",
   "Restore defaults": "Restore defaults",
   "Discard changes": "Discard changes",
   "error.openLogsFailed": "The log folder could not be opened.",

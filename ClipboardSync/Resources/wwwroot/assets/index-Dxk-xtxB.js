@@ -787,16 +787,100 @@ Error generating stack: `+e.message+`
         outline: 2px solid var(--border-color-focus);
         outline-offset: -1px;
     }
-`,ja=[{id:`en`,label:`English`},{id:`ja`,label:`日本語`},{id:`zh-CN`,label:`简体中文`},{id:`zh-TW`,label:`繁體中文`}];function Ma({info:e}){let t=se(),[n,r]=(0,_.useState)(null),[i,a]=(0,_.useState)(null),[o,s]=(0,_.useState)(null),[c,l]=(0,_.useState)(!1),[u,d]=(0,_.useState)(null);(0,_.useEffect)(()=>{let e=!1;return ya().then(t=>{e||(r(t),a(t))},()=>void 0),pr().then(t=>{e||s(t)},()=>void 0),()=>{e=!0}},[]);let f=(e,t)=>r(n=>n&&{...n,[e]:t}),p=e=>{f(`language`,e),n&&i&&ba({...i,language:e}).then(e=>{a(e),r(t=>t&&{...t,language:e.language})},()=>{d({ok:!1,text:t(`The host did not answer.`)})})},m=n!==null&&i!==null&&JSON.stringify(n)!==JSON.stringify(i);return n?(0,E.jsxs)(Na,{children:[(0,E.jsxs)(Pa,{children:[(0,E.jsxs)(Fa,{children:[(0,E.jsx)(`h2`,{children:t(`General`)}),(0,E.jsx)(`p`,{children:t(`How ClipboardSync looks and starts.`)})]}),(0,E.jsxs)(Ia,{children:[(0,E.jsxs)(Ra,{children:[(0,E.jsxs)(za,{children:[(0,E.jsx)(`label`,{htmlFor:`device-name`,children:t(`Device name`)}),(0,E.jsx)(`p`,{children:t(`The name the other devices see.`)})]}),(0,E.jsx)(Ba,{id:`device-name`,maxLength:48,onChange:e=>f(`deviceName`,e.target.value),value:n.deviceName})]}),(0,E.jsxs)(Ra,{children:[(0,E.jsxs)(za,{children:[(0,E.jsx)(`label`,{htmlFor:`language`,children:t(`Language`)}),(0,E.jsx)(`p`,{children:t(`Applies to the interface and the tray menu.`)})]}),(0,E.jsx)(Ta,{label:t(`Language`),onChange:p,options:ja,value:n.language})]}),(0,E.jsxs)(Ra,{children:[(0,E.jsxs)(za,{children:[(0,E.jsx)(`label`,{children:t(`Start with the window hidden`)}),(0,E.jsx)(`p`,{children:t(`Keep ClipboardSync in the tray when it launches.`)})]}),(0,E.jsx)(xa,{checked:n.startHidden,label:t(`Start with the window hidden`),onChange:e=>f(`startHidden`,e)})]}),(0,E.jsxs)(Ra,{children:[(0,E.jsxs)(za,{children:[(0,E.jsx)(`label`,{children:t(`Launch at startup`)}),(0,E.jsx)(`p`,{children:o?.supported===!1?t(`This platform has no per-user startup entry.`):t(`Start ClipboardSync when you sign in.`)})]}),(0,E.jsx)(xa,{checked:o?.enabled??!1,disabled:!o?.supported,label:t(`Launch at startup`),onChange:e=>{s(t=>t&&{...t,enabled:e}),mr(e).then(s,()=>{d({ok:!1,text:t(`The host did not answer.`)})})}})]})]})]}),(0,E.jsxs)(Pa,{children:[(0,E.jsxs)(Fa,{children:[(0,E.jsx)(`h2`,{children:t(`Sync`)}),(0,E.jsx)(`p`,{children:t(`What this device shares with its paired devices.`)})]}),(0,E.jsxs)(Ia,{children:[(0,E.jsxs)(Ra,{children:[(0,E.jsxs)(za,{children:[(0,E.jsx)(`label`,{children:t(`Enable syncing`)}),(0,E.jsx)(`p`,{children:t(`Turn off to stay paired but stop sending and receiving.`)})]}),(0,E.jsx)(xa,{checked:n.syncEnabled,label:t(`Enable syncing`),onChange:e=>f(`syncEnabled`,e)})]}),(0,E.jsxs)(Ra,{children:[(0,E.jsxs)(za,{children:[(0,E.jsx)(`label`,{children:t(`Text and links`)}),(0,E.jsx)(`p`,{children:t(`Copying text or a URL sends it to the other devices.`)})]}),(0,E.jsx)(xa,{checked:n.syncText,disabled:!n.syncEnabled,label:t(`Text and links`),onChange:e=>f(`syncText`,e)})]}),(0,E.jsxs)(Ra,{children:[(0,E.jsxs)(za,{children:[(0,E.jsx)(`label`,{children:t(`Images`)}),(0,E.jsx)(`p`,{children:t(`Copying an image sends it to the other devices.`)})]}),(0,E.jsx)(xa,{checked:n.syncImages,disabled:!n.syncEnabled,label:t(`Images`),onChange:e=>f(`syncImages`,e)})]}),(0,E.jsxs)(Ra,{children:[(0,E.jsxs)(za,{children:[(0,E.jsx)(`label`,{htmlFor:`image-limit`,children:t(`Image size limit`)}),(0,E.jsx)(`p`,{children:t(`Images larger than this are skipped.`)})]}),(0,E.jsxs)(Ha,{children:[(0,E.jsx)(Va,{id:`image-limit`,max:32,min:1,onChange:e=>f(`maxImageMb`,Number(e.target.value)||1),type:`number`,value:n.maxImageMb}),(0,E.jsx)(Ua,{children:`MB`})]})]})]}),(0,E.jsx)(La,{children:t(`Images are shared as PNG; files come later.`)})]}),(0,E.jsxs)(Pa,{children:[(0,E.jsxs)(Fa,{children:[(0,E.jsx)(`h2`,{children:t(`History`)}),(0,E.jsx)(`p`,{children:t(`The local record of clipboard items.`)})]}),(0,E.jsx)(Ia,{children:(0,E.jsxs)(Ra,{children:[(0,E.jsxs)(za,{children:[(0,E.jsx)(`label`,{htmlFor:`history-limit`,children:t(`Items to keep`)}),(0,E.jsx)(`p`,{children:t(`Older items are removed once the limit is reached.`)})]}),(0,E.jsx)(Va,{id:`history-limit`,max:5e3,min:10,onChange:e=>f(`historyLimit`,Number(e.target.value)||10),type:`number`,value:n.historyLimit})]})})]}),(0,E.jsxs)(Pa,{children:[(0,E.jsxs)(Fa,{children:[(0,E.jsx)(`h2`,{children:t(`About`)}),(0,E.jsx)(`p`,{children:t(`The build running on this device.`)})]}),(0,E.jsxs)(Ia,{children:[(0,E.jsxs)(Ra,{children:[(0,E.jsxs)(za,{children:[(0,E.jsx)(`label`,{children:t(`Version`)}),(0,E.jsx)(`p`,{children:e?`${e.version} · ${e.platform}`:t(`browser preview`)})]}),(0,E.jsx)(Xr,{size:15})]}),(0,E.jsxs)(Ra,{children:[(0,E.jsxs)(za,{children:[(0,E.jsx)(`label`,{children:t(`Logs`)}),(0,E.jsx)(`p`,{children:e?.logDirectory||t(`Only available in the desktop app.`)})]}),(0,E.jsxs)(Wa,{onClick:()=>void hr().catch(()=>void 0),type:`button`,children:[(0,E.jsx)(Yr,{size:13}),t(`Open logs`)]})]})]})]}),(0,E.jsxs)(Ga,{children:[(0,E.jsxs)(Ka,{children:[u&&(0,E.jsxs)(qa,{$ok:u.ok,children:[u.ok&&(0,E.jsx)(Lr,{size:12}),u.text]}),!u&&t(m?`Unsaved changes`:`All changes saved`)]}),(0,E.jsxs)(Ja,{children:[(0,E.jsx)(Za,{disabled:c,onClick:()=>{n&&r({deviceName:n.deviceName,language:`en`,startHidden:!1,syncEnabled:!0,syncText:!0,syncImages:!0,syncFiles:!1,historyLimit:200,maxImageMb:10})},type:`button`,children:t(`Restore defaults`)}),m&&(0,E.jsx)(Qa,{disabled:c,onClick:()=>{i&&(r(i),d(null))},type:`button`,children:t(`Discard changes`)}),(0,E.jsx)($a,{disabled:!m||c,onClick:()=>{n&&!c&&(l(!0),ba(n).then(e=>{r(e),a(e),d({ok:!0,text:t(`Settings saved.`)})},()=>{d({ok:!1,text:t(`The host did not answer.`)})}).finally(()=>{l(!1),window.setTimeout(()=>d(null),4e3)}))},type:`button`,children:t(c?`Saving…`:`Save changes`)})]})]})]}):(0,E.jsx)(eo,{children:t(`Loading settings…`)})}var Na=L.div`
+`,ja=[{id:`general`,label:`General`},{id:`sync`,label:`Sync`},{id:`history`,label:`History`},{id:`about`,label:`About`}],Ma=[{id:`en`,label:`English`},{id:`ja`,label:`日本語`},{id:`zh-CN`,label:`简体中文`},{id:`zh-TW`,label:`繁體中文`}];function Na({info:e}){let t=se(),[n,r]=(0,_.useState)(null),[i,a]=(0,_.useState)(null),[o,s]=(0,_.useState)(null),[c,l]=(0,_.useState)(!1),[u,d]=(0,_.useState)(null),[f,p]=(0,_.useState)(`general`),m=(0,_.useRef)(null),h=(0,_.useRef)({general:null,sync:null,history:null,about:null}),g=n!==null;(0,_.useEffect)(()=>{if(!g)return;let e=m.current?.parentElement;if(!e)return;let t=()=>{let t=e.getBoundingClientRect().top;if(e.scrollHeight>e.clientHeight+8&&e.scrollTop+e.clientHeight>=e.scrollHeight-8){p(ja[ja.length-1].id);return}let n=t+120,r=`general`;for(let{id:e}of ja){let t=h.current[e];t&&t.getBoundingClientRect().top<=n&&(r=e)}p(r)};return t(),e.addEventListener(`scroll`,t,{passive:!0}),window.addEventListener(`resize`,t),()=>{e.removeEventListener(`scroll`,t),window.removeEventListener(`resize`,t)}},[g]),(0,_.useEffect)(()=>{let e=!1;return ya().then(t=>{e||(r(t),a(t))},()=>void 0),pr().then(t=>{e||s(t)},()=>void 0),()=>{e=!0}},[]);let v=(e,t)=>r(n=>n&&{...n,[e]:t}),y=e=>{v(`language`,e),n&&i&&ba({...i,language:e}).then(e=>{a(e),r(t=>t&&{...t,language:e.language})},()=>{d({ok:!1,text:t(`The host did not answer.`)})})},b=n!==null&&i!==null&&JSON.stringify(n)!==JSON.stringify(i),x=e=>{s(t=>t&&{...t,enabled:e}),mr(e).then(s,()=>{d({ok:!1,text:t(`The host did not answer.`)})})},S=()=>{n&&!c&&(l(!0),ba(n).then(e=>{r(e),a(e),d({ok:!0,text:t(`Settings saved.`)})},()=>{d({ok:!1,text:t(`The host did not answer.`)})}).finally(()=>{l(!1),window.setTimeout(()=>d(null),4e3)}))},C=()=>{n&&r({deviceName:n.deviceName,language:`en`,startHidden:!1,syncEnabled:!0,syncText:!0,syncImages:!0,syncFiles:!1,historyLimit:200,maxImageMb:10})},ee=()=>{i&&(r(i),d(null))},w=e=>{let t=h.current[e];t&&(p(e),t.scrollIntoView({behavior:`smooth`,block:`start`}))};return n?(0,E.jsxs)(Pa,{ref:m,children:[(0,E.jsxs)(Fa,{children:[(0,E.jsxs)(Ia,{id:`settings-general`,ref:e=>{h.current.general=e},children:[(0,E.jsxs)(Va,{children:[(0,E.jsx)(`h2`,{children:t(`General`)}),(0,E.jsx)(`p`,{children:t(`How ClipboardSync looks and starts.`)})]}),(0,E.jsxs)(Ha,{children:[(0,E.jsxs)(Wa,{children:[(0,E.jsxs)(Ga,{children:[(0,E.jsx)(`label`,{htmlFor:`device-name`,children:t(`Device name`)}),(0,E.jsx)(`p`,{children:t(`The name the other devices see.`)})]}),(0,E.jsx)(Ka,{id:`device-name`,maxLength:48,onChange:e=>v(`deviceName`,e.target.value),value:n.deviceName})]}),(0,E.jsxs)(Wa,{children:[(0,E.jsxs)(Ga,{children:[(0,E.jsx)(`label`,{htmlFor:`language`,children:t(`Language`)}),(0,E.jsx)(`p`,{children:t(`Applies to the interface and the tray menu.`)})]}),(0,E.jsx)(Ta,{label:t(`Language`),onChange:y,options:Ma,value:n.language})]}),(0,E.jsxs)(Wa,{children:[(0,E.jsxs)(Ga,{children:[(0,E.jsx)(`label`,{children:t(`Start with the window hidden`)}),(0,E.jsx)(`p`,{children:t(`Keep ClipboardSync in the tray when it launches.`)})]}),(0,E.jsx)(xa,{checked:n.startHidden,label:t(`Start with the window hidden`),onChange:e=>v(`startHidden`,e)})]}),(0,E.jsxs)(Wa,{children:[(0,E.jsxs)(Ga,{children:[(0,E.jsx)(`label`,{children:t(`Launch at startup`)}),(0,E.jsx)(`p`,{children:o?.supported===!1?t(`This platform has no per-user startup entry.`):t(`Start ClipboardSync when you sign in.`)})]}),(0,E.jsx)(xa,{checked:o?.enabled??!1,disabled:!o?.supported,label:t(`Launch at startup`),onChange:x})]})]})]}),(0,E.jsxs)(Ia,{id:`settings-sync`,ref:e=>{h.current.sync=e},children:[(0,E.jsxs)(Va,{children:[(0,E.jsx)(`h2`,{children:t(`Sync`)}),(0,E.jsx)(`p`,{children:t(`What this device shares with its paired devices.`)})]}),(0,E.jsxs)(Ha,{children:[(0,E.jsxs)(Wa,{children:[(0,E.jsxs)(Ga,{children:[(0,E.jsx)(`label`,{children:t(`Enable syncing`)}),(0,E.jsx)(`p`,{children:t(`Turn off to stay paired but stop sending and receiving.`)})]}),(0,E.jsx)(xa,{checked:n.syncEnabled,label:t(`Enable syncing`),onChange:e=>v(`syncEnabled`,e)})]}),(0,E.jsxs)(Wa,{children:[(0,E.jsxs)(Ga,{children:[(0,E.jsx)(`label`,{children:t(`Text and links`)}),(0,E.jsx)(`p`,{children:t(`Copying text or a URL sends it to the other devices.`)})]}),(0,E.jsx)(xa,{checked:n.syncText,disabled:!n.syncEnabled,label:t(`Text and links`),onChange:e=>v(`syncText`,e)})]}),(0,E.jsxs)(Wa,{children:[(0,E.jsxs)(Ga,{children:[(0,E.jsx)(`label`,{children:t(`Images`)}),(0,E.jsx)(`p`,{children:t(`Copying an image sends it to the other devices.`)})]}),(0,E.jsx)(xa,{checked:n.syncImages,disabled:!n.syncEnabled,label:t(`Images`),onChange:e=>v(`syncImages`,e)})]}),(0,E.jsxs)(Wa,{children:[(0,E.jsxs)(Ga,{children:[(0,E.jsx)(`label`,{htmlFor:`image-limit`,children:t(`Image size limit`)}),(0,E.jsx)(`p`,{children:t(`Images larger than this are skipped.`)})]}),(0,E.jsxs)(Ja,{children:[(0,E.jsx)(qa,{id:`image-limit`,max:32,min:1,onChange:e=>v(`maxImageMb`,Number(e.target.value)||1),type:`number`,value:n.maxImageMb}),(0,E.jsx)(Ya,{children:`MB`})]})]})]}),(0,E.jsx)(Ua,{children:t(`Images are shared as PNG; files come later.`)})]}),(0,E.jsxs)(Ia,{id:`settings-history`,ref:e=>{h.current.history=e},children:[(0,E.jsxs)(Va,{children:[(0,E.jsx)(`h2`,{children:t(`History`)}),(0,E.jsx)(`p`,{children:t(`The local record of clipboard items.`)})]}),(0,E.jsx)(Ha,{children:(0,E.jsxs)(Wa,{children:[(0,E.jsxs)(Ga,{children:[(0,E.jsx)(`label`,{htmlFor:`history-limit`,children:t(`Items to keep`)}),(0,E.jsx)(`p`,{children:t(`Older items are removed once the limit is reached.`)})]}),(0,E.jsx)(qa,{id:`history-limit`,max:5e3,min:10,onChange:e=>v(`historyLimit`,Number(e.target.value)||10),type:`number`,value:n.historyLimit})]})})]}),(0,E.jsxs)(Ia,{id:`settings-about`,ref:e=>{h.current.about=e},children:[(0,E.jsxs)(Va,{children:[(0,E.jsx)(`h2`,{children:t(`About`)}),(0,E.jsx)(`p`,{children:t(`The build running on this device.`)})]}),(0,E.jsxs)(Ha,{children:[(0,E.jsxs)(Wa,{children:[(0,E.jsxs)(Ga,{children:[(0,E.jsx)(`label`,{children:t(`Version`)}),(0,E.jsx)(`p`,{children:e?`${e.version} · ${e.platform}`:t(`browser preview`)})]}),(0,E.jsx)(Xr,{size:15})]}),(0,E.jsxs)(Wa,{children:[(0,E.jsxs)(Ga,{children:[(0,E.jsx)(`label`,{children:t(`Logs`)}),(0,E.jsx)(`p`,{children:e?.logDirectory||t(`Only available in the desktop app.`)})]}),(0,E.jsxs)(Xa,{onClick:()=>void hr().catch(()=>void 0),type:`button`,children:[(0,E.jsx)(Yr,{size:13}),t(`Open logs`)]})]})]})]}),(0,E.jsxs)(Za,{children:[(0,E.jsxs)(Qa,{children:[u&&(0,E.jsxs)($a,{$ok:u.ok,children:[u.ok&&(0,E.jsx)(Lr,{size:12}),u.text]}),!u&&t(b?`Unsaved changes`:`All changes saved`)]}),(0,E.jsxs)(eo,{children:[(0,E.jsx)(ro,{disabled:c,onClick:C,type:`button`,children:t(`Restore defaults`)}),b&&(0,E.jsx)(io,{disabled:c,onClick:ee,type:`button`,children:t(`Discard changes`)}),(0,E.jsx)(ao,{disabled:!b||c,onClick:S,type:`button`,children:t(c?`Saving…`:`Save changes`)})]})]})]}),(0,E.jsxs)(La,{"aria-label":t(`Sections`),children:[(0,E.jsx)(Ra,{children:t(`Sections`)}),(0,E.jsx)(za,{children:ja.map(({id:e,label:n})=>(0,E.jsx)(Ba,{$active:f===e,onClick:()=>w(e),type:`button`,children:(0,E.jsx)(`span`,{children:t(n)})},e))})]})]}):(0,E.jsx)(oo,{children:t(`Loading settings…`)})}var Pa=L.div`
     display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    padding-bottom: 8px;
+`,Fa=L.div`
+    display: flex;
+    flex: 1;
     flex-direction: column;
     gap: 16px;
-    padding-bottom: 8px;
-`,Pa=L.section`
+    min-width: 0;
+`,Ia=L.section`
     display: flex;
     flex-direction: column;
     gap: 8px;
-`,Fa=L.div`
+    scroll-margin-top: 12px;
+`,La=L.nav`
+    position: sticky;
+    top: 4px;
+    flex-shrink: 0;
+    width: 132px;
+    padding: 4px 0 8px;
+`,Ra=L.span`
+    display: block;
+    margin-bottom: 8px;
+    padding-left: 14px;
+    font-size: 8.5px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+`,za=L.div`
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 12px;
+        bottom: 12px;
+        left: 5px;
+        width: 1px;
+        background: var(--border-color);
+    }
+`,Ba=L.button`
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 6px 6px 6px 16px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: ${({$active:e})=>e?`rgba(255, 138, 61, 0.1)`:`transparent`};
+    color: ${({$active:e})=>e?`var(--accent-primary)`:`var(--text-muted)`};
+    font: inherit;
+    font-size: 10.5px;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 120ms ease, background 120ms ease;
+
+    &::before {
+        content: "";
+        position: absolute;
+        left: 2px;
+        top: 50%;
+        width: 7px;
+        height: 7px;
+        border: 1px solid var(--border-color-hover);
+        border-radius: 50%;
+        background: var(--bg-secondary);
+        transform: translateY(-50%);
+        transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+    }
+
+    ${({$active:e})=>e&&or`
+        &::before {
+            border-color: var(--accent-primary);
+            background: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(255, 138, 61, 0.16);
+        }
+    `}
+
+    &:hover {
+        background: var(--bg-card-hover);
+        color: var(--text-primary);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--border-color-focus);
+        outline-offset: 1px;
+    }
+`,Va=L.div`
     h2 {
         font-size: 13px;
         font-weight: 600;
@@ -807,14 +891,14 @@ Error generating stack: `+e.message+`
         font-size: 10px;
         color: var(--text-muted);
     }
-`,Ia=L.div`
+`,Ha=L.div`
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     background: var(--bg-card);
-`,La=L.p`
+`,Ua=L.p`
     font-size: 9.5px;
     color: var(--text-muted);
-`,Ra=L.div`
+`,Wa=L.div`
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -825,7 +909,7 @@ Error generating stack: `+e.message+`
     &:last-child {
         border-bottom: 0;
     }
-`,za=L.div`
+`,Ga=L.div`
     display: flex;
     flex-direction: column;
     gap: 1px;
@@ -843,7 +927,7 @@ Error generating stack: `+e.message+`
         font-size: 9.5px;
         color: var(--text-muted);
     }
-`,Ba=L.input`
+`,Ka=L.input`
     width: 220px;
     padding: 6px 9px;
     border: 1px solid var(--border-color);
@@ -856,18 +940,18 @@ Error generating stack: `+e.message+`
     &:focus {
         border-color: var(--border-color-focus);
     }
-`,Va=L(Ba)`
+`,qa=L(Ka)`
     width: 92px;
     font-family: var(--font-mono);
-`,Ha=L.div`
+`,Ja=L.div`
     display: flex;
     align-items: center;
     gap: 6px;
-`,Ua=L.span`
+`,Ya=L.span`
     font-family: var(--font-mono);
     font-size: 9.5px;
     color: var(--text-muted);
-`,Wa=L.button`
+`,Xa=L.button`
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -885,7 +969,7 @@ Error generating stack: `+e.message+`
         border-color: var(--border-color-hover);
         color: var(--text-primary);
     }
-`,Ga=L.div`
+`,Za=L.div`
     position: sticky;
     bottom: -8px;
     display: flex;
@@ -894,22 +978,22 @@ Error generating stack: `+e.message+`
     gap: 16px;
     padding: 10px 0 8px;
     background: linear-gradient(to top, var(--bg-primary) 70%, transparent);
-`,Ka=L.div`
+`,Qa=L.div`
     display: flex;
     align-items: center;
     font-family: var(--font-mono);
     font-size: 9.5px;
     color: var(--text-muted);
-`,qa=L.span`
+`,$a=L.span`
     display: inline-flex;
     align-items: center;
     gap: 5px;
     color: ${({$ok:e})=>e?`var(--success)`:`var(--danger)`};
-`,Ja=L.div`
+`,eo=L.div`
     display: flex;
     align-items: center;
     gap: 8px;
-`,Ya=dr`
+`,to=dr`
     0% {
         opacity: 0;
         transform: translateX(12px) scale(0.9);
@@ -925,14 +1009,14 @@ Error generating stack: `+e.message+`
         transform: translateX(0) scale(1);
         filter: blur(0);
     }
-`,Xa=dr`
+`,no=dr`
     from {
         box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
     }
     to {
         box-shadow: 0 0 0 9px rgba(255, 107, 107, 0);
     }
-`,Za=L.button`
+`,ro=L.button`
     padding: 6px 11px;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
@@ -953,20 +1037,20 @@ Error generating stack: `+e.message+`
         opacity: 0.35;
         cursor: default;
     }
-`,Qa=L(Za)`
+`,io=L(ro)`
     border-color: rgba(255, 107, 107, 0.35);
     color: var(--danger);
     transform-origin: right center;
     will-change: transform, opacity;
     animation:
-        ${Ya} 260ms cubic-bezier(0.34, 1.56, 0.64, 1),
-        ${Xa} 650ms ease-out 80ms;
+        ${to} 260ms cubic-bezier(0.34, 1.56, 0.64, 1),
+        ${no} 650ms ease-out 80ms;
 
     &:hover:not(:disabled) {
         border-color: rgba(255, 107, 107, 0.6);
         color: var(--danger);
     }
-`,$a=L.button`
+`,ao=L.button`
     padding: 7px 14px;
     border: 1px solid transparent;
     border-radius: var(--radius-sm);
@@ -986,14 +1070,14 @@ Error generating stack: `+e.message+`
         opacity: 0.35;
         cursor: default;
     }
-`,eo=L.div`
+`,oo=L.div`
     display: grid;
     flex: 1;
     place-items: center;
     font-family: var(--font-mono);
     font-size: 10px;
     color: var(--text-muted);
-`,to=dr`
+`,so=dr`
     from {
         opacity: 0;
         transform: translateY(8px) scale(0.995);
@@ -1002,7 +1086,7 @@ Error generating stack: `+e.message+`
         opacity: 1;
         transform: translateY(0) scale(1);
     }
-`,no={devices:{title:`Devices`,subtitle:`Every device on the mesh, with the clipboard history it holds.`},settings:{title:`Settings`,subtitle:`How ClipboardSync looks, starts, and shares.`}};function ro(){let e=se(),t=pe(),[n,r]=(0,_.useState)(`devices`),[i,a]=(0,_.useState)(null),[o,s]=(0,_.useState)(null);(0,_.useEffect)(()=>{fr().then(a,()=>a(null))},[]),(0,_.useEffect)(()=>{let e=window.setTimeout(()=>T.send({type:`app.ready`}),200);return()=>window.clearTimeout(e)},[]),(0,_.useEffect)(()=>T.on(e=>{if(e.type!==`app.navigate`)return;let t=e.data?.page;t&&r(t)}),[]);let c=e=>{e.kind===`image`?xr(e.id).catch(()=>void 0):navigator.clipboard?.writeText(e.content).catch(()=>void 0),s(e.id),window.setTimeout(()=>s(t=>t===e.id?null:t),1600)},{title:l,subtitle:u}=no[n];return(0,E.jsxs)(io,{$rounded:t,children:[(0,E.jsx)(ii,{}),(0,E.jsxs)(ao,{children:[(0,E.jsx)($r,{onNavigate:r,page:n}),(0,E.jsxs)(oo,{children:[(0,E.jsx)(so,{children:(0,E.jsxs)(co,{children:[(0,E.jsx)(`h1`,{children:e(l)}),(0,E.jsx)(`p`,{children:e(u)})]},n)}),(0,E.jsx)(lo,{children:n===`devices`?(0,E.jsx)(Ni,{copiedId:o,onCopy:c}):(0,E.jsx)(Ma,{info:i})},n),(0,E.jsx)(uo,{children:(0,E.jsx)(fo,{children:i?`v${i.version} · ${i.platform}`:e(`browser preview`)})})]})]}),(0,E.jsx)(he,{})]})}var io=L.div`
+`,co={devices:{title:`Devices`,subtitle:`Every device on the mesh, with the clipboard history it holds.`},settings:{title:`Settings`,subtitle:`How ClipboardSync looks, starts, and shares.`}};function lo(){let e=se(),t=pe(),[n,r]=(0,_.useState)(`devices`),[i,a]=(0,_.useState)(null),[o,s]=(0,_.useState)(null);(0,_.useEffect)(()=>{fr().then(a,()=>a(null))},[]),(0,_.useEffect)(()=>{let e=window.setTimeout(()=>T.send({type:`app.ready`}),200);return()=>window.clearTimeout(e)},[]),(0,_.useEffect)(()=>T.on(e=>{if(e.type!==`app.navigate`)return;let t=e.data?.page;t&&r(t)}),[]);let c=e=>{e.kind===`image`?xr(e.id).catch(()=>void 0):navigator.clipboard?.writeText(e.content).catch(()=>void 0),s(e.id),window.setTimeout(()=>s(t=>t===e.id?null:t),1600)},{title:l,subtitle:u}=co[n];return(0,E.jsxs)(uo,{$rounded:t,children:[(0,E.jsx)(ii,{}),(0,E.jsxs)(fo,{children:[(0,E.jsx)($r,{onNavigate:r,page:n}),(0,E.jsxs)(po,{children:[(0,E.jsx)(mo,{children:(0,E.jsxs)(ho,{children:[(0,E.jsx)(`h1`,{children:e(l)}),(0,E.jsx)(`p`,{children:e(u)})]},n)}),(0,E.jsx)(go,{children:n===`devices`?(0,E.jsx)(Ni,{copiedId:o,onCopy:c}):(0,E.jsx)(Na,{info:i})},n),(0,E.jsx)(_o,{children:(0,E.jsx)(vo,{children:i?`v${i.version} · ${i.platform}`:e(`browser preview`)})})]})]}),(0,E.jsx)(he,{})]})}var uo=L.div`
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -1012,30 +1096,30 @@ Error generating stack: `+e.message+`
     /* An undecorated window gets no frame from the compositor, so the corners are drawn here. */
     border-radius: ${({$rounded:e})=>e?`10px`:`0`};
     box-shadow: ${({$rounded:e})=>e?`inset 0 0 0 1px var(--border-color)`:`none`};
-`,ao=L.div`
+`,fo=L.div`
     display: flex;
     flex: 1;
     min-height: 0;
     background: radial-gradient(1100px 620px at 18% -10%, rgba(255, 138, 61, 0.1), transparent 60%),
     radial-gradient(900px 500px at 110% 15%, rgba(255, 107, 107, 0.08), transparent 55%),
     var(--bg-primary);
-`,oo=L.main`
+`,po=L.main`
     display: flex;
     flex-direction: column;
     flex: 1;
     min-width: 0;
-`,so=L.header`
+`,mo=L.header`
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 20px;
     padding: 22px 26px 16px;
     border-bottom: 1px solid var(--border-color);
-`,co=L.div`
+`,ho=L.div`
     display: flex;
     flex-direction: column;
     gap: 3px;
-    animation: ${to} 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: ${so} 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 
     h1 {
         font-size: 20px;
@@ -1047,15 +1131,15 @@ Error generating stack: `+e.message+`
         font-size: 12px;
         color: var(--text-secondary);
     }
-`,lo=L.div`
+`,go=L.div`
     display: flex;
     flex: 1;
     flex-direction: column;
     min-height: 0;
     padding: 18px 26px 22px;
     overflow: auto;
-    animation: ${to} 0.18s cubic-bezier(0.22, 1, 0.36, 1);
-`,uo=L.footer`
+    animation: ${so} 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+`,_o=L.footer`
     display: flex;
     justify-content: flex-end;
     gap: 16px;
@@ -1064,8 +1148,8 @@ Error generating stack: `+e.message+`
     font-family: var(--font-mono);
     font-size: 10px;
     color: var(--text-muted);
-`,fo=L.span`
+`,vo=L.span`
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-`,po=document.getElementById(`root`);po&&(0,v.createRoot)(po).render((0,E.jsx)(_.StrictMode,{children:(0,E.jsx)(le,{children:(0,E.jsx)(ro,{})})}));
+`,yo=document.getElementById(`root`);yo&&(0,v.createRoot)(yo).render((0,E.jsx)(_.StrictMode,{children:(0,E.jsx)(le,{children:(0,E.jsx)(lo,{})})}));

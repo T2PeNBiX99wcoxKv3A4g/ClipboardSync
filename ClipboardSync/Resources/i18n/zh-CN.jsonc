@@ -87,6 +87,7 @@
   "Images are shared as PNG; files come later.": "图片会以 PNG 共享；文件稍后支持。",
   "Image size limit": "图片大小上限",
   "Images larger than this are skipped.": "超过此大小的图片会被跳过。",
+  "Sections": "分类",
   "Restore defaults": "恢复默认值",
   "Discard changes": "放弃更改",
   "error.openLogsFailed": "无法打开日志文件夹。",

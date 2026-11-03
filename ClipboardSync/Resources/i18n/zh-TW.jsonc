@@ -87,6 +87,7 @@
   "Images are shared as PNG; files come later.": "圖片會以 PNG 分享；檔案稍後支援。",
   "Image size limit": "圖片大小上限",
   "Images larger than this are skipped.": "超過此大小的圖片會被略過。",
+  "Sections": "分類",
   "Restore defaults": "返回默認值",
   "Discard changes": "廢棄更改",
   "error.openLogsFailed": "無法開啟記錄檔資料夾。",

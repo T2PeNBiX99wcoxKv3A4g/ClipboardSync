@@ -1,5 +1,5 @@
-import {useEffect, useState} from "react";
-import styled, {keyframes} from "styled-components";
+import {useEffect, useRef, useState} from "react";
+import styled, {css, keyframes} from "styled-components";
 import {useTranslation} from "@photino-net-utils/bridge";
 import {type AppInfo, openLogsFolder, setStartup, startupStatus} from "../api/system";
 import {getSettings, type Settings, saveSettings} from "../api/settings";
@@ -10,6 +10,15 @@ import {CheckIcon, FolderIcon, InfoIcon} from "../components/Icons";
 interface SettingsPageProps {
     info: AppInfo | null;
 }
+
+type SectionId = "general" | "sync" | "history" | "about";
+
+const sections: { id: SectionId; label: string }[] = [
+    {id: "general", label: "General"},
+    {id: "sync", label: "Sync"},
+    {id: "history", label: "History"},
+    {id: "about", label: "About"},
+];
 
 const languages = [
     {id: "en", label: "English"},
@@ -25,6 +34,54 @@ export function SettingsPage({info}: SettingsPageProps) {
     const [startup, setStartupState] = useState<{ supported: boolean; enabled: boolean } | null>(null);
     const [saving, setSaving] = useState(false);
     const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
+    const [activeSection, setActiveSection] = useState<SectionId>("general");
+    const pageRef = useRef<HTMLDivElement>(null);
+    const sectionRefs = useRef<Record<SectionId, HTMLElement | null>>({
+        general: null,
+        sync: null,
+        history: null,
+        about: null,
+    });
+    const sectionNavReady = settings !== null;
+
+    useEffect(() => {
+        if (!sectionNavReady) return;
+
+        const scroller = pageRef.current?.parentElement;
+        if (!scroller) return;
+
+        const updateActive = () => {
+            const scrollerTop = scroller.getBoundingClientRect().top;
+            const canScroll = scroller.scrollHeight > scroller.clientHeight + 8;
+            const atBottom = canScroll &&
+                scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 8;
+
+            if (atBottom) {
+                setActiveSection(sections[sections.length - 1].id);
+                return;
+            }
+
+            const threshold = scrollerTop + 120;
+            let current: SectionId = "general";
+
+            for (const {id} of sections) {
+                const element = sectionRefs.current[id];
+                if (element && element.getBoundingClientRect().top <= threshold)
+                    current = id;
+            }
+
+            setActiveSection(current);
+        };
+
+        updateActive();
+        scroller.addEventListener("scroll", updateActive, {passive: true});
+        window.addEventListener("resize", updateActive);
+
+        return () => {
+            scroller.removeEventListener("scroll", updateActive);
+            window.removeEventListener("resize", updateActive);
+        };
+    }, [sectionNavReady]);
 
     useEffect(() => {
         let cancelled = false;
@@ -110,13 +167,22 @@ export function SettingsPage({info}: SettingsPageProps) {
         setNotice(null);
     };
 
+    const jumpTo = (id: SectionId) => {
+        const element = sectionRefs.current[id];
+        if (!element) return;
+
+        setActiveSection(id);
+        element.scrollIntoView({behavior: "smooth", block: "start"});
+    };
+
     if (!settings) {
         return <Loading>{t("Loading settings…")}</Loading>;
     }
 
     return (
-        <Page>
-            <Section>
+        <Page ref={pageRef}>
+            <Main>
+                <Section id="settings-general" ref={(node) => { sectionRefs.current.general = node; }}>
                 <SectionHead>
                     <h2>{t("General")}</h2>
                     <p>{t("How ClipboardSync looks and starts.")}</p>
@@ -179,7 +245,7 @@ export function SettingsPage({info}: SettingsPageProps) {
                 </Card>
             </Section>
 
-            <Section>
+            <Section id="settings-sync" ref={(node) => { sectionRefs.current.sync = node; }}>
                 <SectionHead>
                     <h2>{t("Sync")}</h2>
                     <p>{t("What this device shares with its paired devices.")}</p>
@@ -241,7 +307,7 @@ export function SettingsPage({info}: SettingsPageProps) {
                 <Note>{t("Images are shared as PNG; files come later.")}</Note>
             </Section>
 
-            <Section>
+            <Section id="settings-history" ref={(node) => { sectionRefs.current.history = node; }}>
                 <SectionHead>
                     <h2>{t("History")}</h2>
                     <p>{t("The local record of clipboard items.")}</p>
@@ -264,7 +330,7 @@ export function SettingsPage({info}: SettingsPageProps) {
                 </Card>
             </Section>
 
-            <Section>
+            <Section id="settings-about" ref={(node) => { sectionRefs.current.about = node; }}>
                 <SectionHead>
                     <h2>{t("About")}</h2>
                     <p>{t("The build running on this device.")}</p>
@@ -314,21 +380,132 @@ export function SettingsPage({info}: SettingsPageProps) {
                     </SaveButton>
                 </Actions>
             </SaveBar>
+            </Main>
+
+            <Toc aria-label={t("Sections")}>
+                <TocLabel>{t("Sections")}</TocLabel>
+                <TocList>
+                    {sections.map(({id, label}) => (
+                        <TocItem
+                            $active={activeSection === id}
+                            key={id}
+                            onClick={() => jumpTo(id)}
+                            type="button"
+                        >
+                            <span>{t(label)}</span>
+                        </TocItem>
+                    ))}
+                </TocList>
+            </Toc>
         </Page>
     );
 }
 
 const Page = styled.div`
     display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    padding-bottom: 8px;
+`;
+
+const Main = styled.div`
+    display: flex;
+    flex: 1;
     flex-direction: column;
     gap: 16px;
-    padding-bottom: 8px;
+    min-width: 0;
 `;
 
 const Section = styled.section`
     display: flex;
     flex-direction: column;
     gap: 8px;
+    scroll-margin-top: 12px;
+`;
+
+const Toc = styled.nav`
+    position: sticky;
+    top: 4px;
+    flex-shrink: 0;
+    width: 132px;
+    padding: 4px 0 8px;
+`;
+
+const TocLabel = styled.span`
+    display: block;
+    margin-bottom: 8px;
+    padding-left: 14px;
+    font-size: 8.5px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+`;
+
+const TocList = styled.div`
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 12px;
+        bottom: 12px;
+        left: 5px;
+        width: 1px;
+        background: var(--border-color);
+    }
+`;
+
+const TocItem = styled.button<{ $active: boolean }>`
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 6px 6px 6px 16px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: ${({$active}) => $active ? "rgba(255, 138, 61, 0.1)" : "transparent"};
+    color: ${({$active}) => $active ? "var(--accent-primary)" : "var(--text-muted)"};
+    font: inherit;
+    font-size: 10.5px;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 120ms ease, background 120ms ease;
+
+    &::before {
+        content: "";
+        position: absolute;
+        left: 2px;
+        top: 50%;
+        width: 7px;
+        height: 7px;
+        border: 1px solid var(--border-color-hover);
+        border-radius: 50%;
+        background: var(--bg-secondary);
+        transform: translateY(-50%);
+        transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+    }
+
+    ${({$active}) => $active && css`
+        &::before {
+            border-color: var(--accent-primary);
+            background: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(255, 138, 61, 0.16);
+        }
+    `}
+
+    &:hover {
+        background: var(--bg-card-hover);
+        color: var(--text-primary);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--border-color-focus);
+        outline-offset: 1px;
+    }
 `;
 
 const SectionHead = styled.div`
