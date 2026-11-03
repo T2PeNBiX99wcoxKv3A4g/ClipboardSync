@@ -42,7 +42,7 @@ internal static class Program
 
             // The Wayland app id must match the desktop entry's file name, or the compositor will not
             // associate our windows with our icon.
-            LinuxGtk.SetProgramName(Constants.Name);
+            LinuxGtk.SetProgramName("clipboardsync");
         }
 
         try
@@ -107,7 +107,7 @@ internal static class Program
             ClipboardStore.Instance.InitializeAsync().GetAwaiter().GetResult();
             _ = SyncService.Instance;
 
-            using var tray = CreateTray(manager.IconPath);
+            using var tray = CreateTray(TrayIconName(manager.IconPath));
 
             manager.MainWindowCreated +=
                 [SuppressMessage("ReSharper", "AccessToDisposedClosure")]
@@ -149,9 +149,10 @@ internal static class Program
     private static ITrayIcon CreateTray(string? iconPath)
     {
         var manager = WindowManager.Instance;
+        var appId = OperatingSystem.IsLinux() ? "clipboardsync" : Constants.Name;
 
         return TrayIconFactory.CreateStandard(
-            Constants.Name,
+            appId,
             Constants.WindowTitle,
             iconPath,
             Localization.Get("tray.open"),
@@ -160,5 +161,52 @@ internal static class Program
             () => manager.ShowMainWindow(),
             () => manager.ShowMainWindow("settings"),
             manager.Exit);
+    }
+
+    /// <summary>
+    ///     AppIndicator expects a theme icon name, not an absolute file path. Install the extracted
+    ///     icon into the user's hicolor theme and return the name, refreshing the cache so a changed
+    ///     icon is picked up after an update.
+    /// </summary>
+    private static string? TrayIconName(string? iconPath)
+    {
+        if (!OperatingSystem.IsLinux() || iconPath is null)
+            return iconPath;
+
+        try
+        {
+            var root = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "icons", "hicolor");
+            var directory = Path.Combine(root, "256x256", "apps");
+            Directory.CreateDirectory(directory);
+
+            var target = Path.Combine(directory, "clipboardsync.png");
+            var bytes = File.ReadAllBytes(iconPath);
+
+            if (!File.Exists(target) || !File.ReadAllBytes(target).SequenceEqual(bytes))
+                File.WriteAllBytes(target, bytes);
+
+            var index = Path.Combine(root, "index.theme");
+            if (!File.Exists(index) && File.Exists("/usr/share/icons/hicolor/index.theme"))
+                File.Copy("/usr/share/icons/hicolor/index.theme", index, true);
+
+            using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "gtk-update-icon-cache",
+                ArgumentList = { "-f", "-t", root },
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            });
+
+            process?.WaitForExit(2000);
+            return "clipboardsync";
+        }
+        catch (Exception ex)
+        {
+            Constants.Logger.Warning(ex, "Could not install the tray icon into the icon theme");
+            return iconPath;
+        }
     }
 }
