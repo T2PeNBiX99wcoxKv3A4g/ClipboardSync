@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.3.3..v0.4.0) - 2026-11-03
+
+### ⛰️  Features
+
+- *(history)* Clear the board across paired devices - ([1a0cf47](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/1a0cf47286500c34e35ae70901e48faab2f88ce8))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([9019536](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/9019536f3cf7655bc40281d6b70d11cca5d3ece2))
+
+
 ## [0.3.3](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.3.2..v0.3.3) - 2026-11-03
 
 ### 🚜 Refactor
