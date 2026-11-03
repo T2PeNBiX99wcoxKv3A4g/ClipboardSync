@@ -172,6 +172,8 @@ problem. They roll daily and the last seven are kept.
   but the blob store on disk is ordinary plaintext files in the local data folder.
 - **Settings → Sync → Blob storage folder** changes where blobs live. Leave it empty for the app data
   folder; changing it moves the existing blobs.
+- **Settings → History → Clear history** clears the board on every paired device. The system clipboard
+  is left unchanged.
 - The mesh depends on each device being able to reach the others on TCP 45456. UDP 45457 is only the
   discovery hint; the manual address field covers networks where broadcast is blocked.
 - Closing the window sends the app to the tray. Turn on **Start with the window hidden** if you want

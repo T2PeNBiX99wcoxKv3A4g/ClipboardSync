@@ -61,6 +61,7 @@ namespace ClipboardSync.Messaging;
 [JsonSerializable(typeof(FileItemRequest))]
 [JsonSerializable(typeof(DiscoveryMessage))]
 [JsonSerializable(typeof(ClipboardItemMessage))]
+[JsonSerializable(typeof(HistoryClearMessage))]
 [JsonSerializable(typeof(FileBlobRequestMessage))]
 [JsonSerializable(typeof(FileBlobChunkMessage))]
 [JsonSerializable(typeof(FileBlobErrorMessage))]

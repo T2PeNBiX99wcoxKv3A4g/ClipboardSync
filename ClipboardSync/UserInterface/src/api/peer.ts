@@ -144,6 +144,12 @@ export async function removeDevice(deviceId: string): Promise<void> {
     await Native.request("device.remove", {deviceId});
 }
 
+/** Clears the local board on this device and asks paired devices to clear theirs too. */
+export async function clearHistory(): Promise<void> {
+    if (!Native.available) return;
+    await Native.request("history.clear");
+}
+
 function onEvent<T>(type: string, handler: (payload: T) => void): () => void {
     if (!Native.available) return () => undefined;
 

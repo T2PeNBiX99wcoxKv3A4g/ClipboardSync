@@ -3,6 +3,7 @@ import styled, {css, keyframes} from "styled-components";
 import {useTranslation} from "@photino-net-utils/bridge";
 import {type AppInfo, checkForUpdates, getUpdateStatus, openLogsFolder, openReleasePage, setStartup, startupStatus, type UpdateCheck} from "../api/system";
 import {getSettings, type Settings, saveSettings} from "../api/settings";
+import {clearHistory} from "../api/peer";
 import {Toggle} from "../components/Toggle";
 import {Dropdown} from "../components/Dropdown";
 import {CheckIcon, FolderIcon, InfoIcon} from "../components/Icons";
@@ -37,6 +38,8 @@ export function SettingsPage({info}: SettingsPageProps) {
     const [updateState, setUpdateState] = useState<UpdateCheck | null>(null);
     const [updateBusy, setUpdateBusy] = useState(false);
     const [updateError, setUpdateError] = useState(false);
+    const [confirmClear, setConfirmClear] = useState(false);
+    const [clearing, setClearing] = useState(false);
     const [activeSection, setActiveSection] = useState<SectionId>("general");
     const pageRef = useRef<HTMLDivElement>(null);
     const sectionRefs = useRef<Record<SectionId, HTMLElement | null>>({
@@ -193,6 +196,19 @@ export function SettingsPage({info}: SettingsPageProps) {
             setUpdateError(true);
         }).finally(() => {
             setUpdateBusy(false);
+        });
+    };
+
+    const clear = () => {
+        setClearing(true);
+        void clearHistory().then(() => {
+            setConfirmClear(false);
+            setNotice({ok: true, text: t("History cleared.")});
+        }, (error) => {
+            setNotice({ok: false, text: error instanceof Error ? error.message : t("The host did not answer.")});
+        }).finally(() => {
+            setClearing(false);
+            window.setTimeout(() => setNotice(null), 4000);
         });
     };
 
@@ -377,6 +393,33 @@ export function SettingsPage({info}: SettingsPageProps) {
                 <Card>
                     <Field>
                         <FieldText>
+                            <label>{t("Clear history")}</label>
+                            <p>{t("This only clears history; the system clipboard is not changed.")}</p>
+                        </FieldText>
+                        {!confirmClear ? (
+                            <GhostButton disabled={clearing} onClick={() => setConfirmClear(true)} type="button">
+                                {t("Clear history")}
+                            </GhostButton>
+                        ) : (
+                            <Actions>
+                                <GhostButton disabled={clearing} onClick={() => setConfirmClear(false)} type="button">
+                                    {t("Cancel")}
+                                </GhostButton>
+                                <DangerButton disabled={clearing} onClick={clear} type="button">
+                                    {clearing ? t("Clearing…") : t("Clear")}
+                                </DangerButton>
+                            </Actions>
+                        )}
+                    </Field>
+                    {confirmClear && (
+                        <ClearConfirm>
+                            <ClearText>
+                                <strong>{t("Clear history on all paired devices?")}</strong>
+                            </ClearText>
+                        </ClearConfirm>
+                    )}
+                    <Field>
+                        <FieldText>
                             <label htmlFor="history-limit">{t("Items to keep")}</label>
                             <p>{t("Older items are removed once the limit is reached.")}</p>
                         </FieldText>
@@ -491,7 +534,7 @@ const Page = styled.div`
     display: flex;
     align-items: flex-start;
     gap: 24px;
-    padding-bottom: 8px;
+    padding-bottom: 72px;
 `;
 
 const Main = styled.div`
@@ -713,6 +756,54 @@ const GhostButton = styled.button`
     &:hover {
         border-color: var(--border-color-hover);
         color: var(--text-primary);
+    }
+`;
+
+const ClearConfirm = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 107, 107, 0.24);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 107, 107, 0.06);
+`;
+
+const ClearText = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    strong {
+        font-size: 10.5px;
+        color: var(--text-primary);
+    }
+
+    span {
+        font-size: 9.5px;
+        color: var(--text-muted);
+    }
+`;
+
+const DangerButton = styled.button`
+    padding: 5px 9px;
+    border: 1px solid rgba(255, 107, 107, 0.45);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 107, 107, 0.12);
+    color: #ff9b9b;
+    font: inherit;
+    font-size: 9.5px;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+        background: rgba(255, 107, 107, 0.2);
+        color: var(--text-primary);
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: default;
     }
 `;
 

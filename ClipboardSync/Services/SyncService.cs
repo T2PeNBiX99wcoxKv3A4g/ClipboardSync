@@ -63,6 +63,12 @@ internal sealed class SyncService : Singleton<SyncService>
                     if (message is not null)
                         await ReceiveItemAsync(session, message, token);
                     break;
+
+                case PeerProtocol.HistoryClear:
+                    var clear = JsonSerializer.Deserialize(payload, AppJsonContext.Default.HistoryClearMessage);
+                    if (clear is not null && await _store.ClearIfNewerAsync(clear.At))
+                        PublishBoard();
+                    break;
             }
         }
     }
@@ -319,7 +325,7 @@ internal sealed class SyncService : Singleton<SyncService>
 
             var message = new ClipboardItemMessage(PeerProtocol.ClipboardItem, record.Id, record.OriginDeviceId,
                 record.OriginDeviceName, record.Kind, record.Content, record.Meta, record.At, data,
-                record.Files?.ToArray(), record.Roots?.ToArray(), record.TotalBytes);
+                record.Files?.ToArray(), record.Roots?.ToArray(), record.TotalBytes, _store.ClearAt);
 
             if (record.Kind == "file" && record.DeliveredTo.Count == 0)
                 _store.SetProgress(record.Id, record.TotalBytes > 0 ? 1 : 0);
@@ -328,7 +334,7 @@ internal sealed class SyncService : Singleton<SyncService>
 
             var ack = record.Kind == "file"
                 ? await ServeFileRequestsAsync(session, record, cts.Token)
-                : await session.ReceiveJsonAsync(AppJsonContext.Default.ClipboardAckMessage, cts.Token);
+                : await ReceiveAckAsync(session, cts.Token);
 
             if (ack is { Ok: true })
             {
@@ -351,6 +357,34 @@ internal sealed class SyncService : Singleton<SyncService>
         }
     }
 
+    private Task SendClearAsync(SecureSession session, CancellationToken token) =>
+        session.SendJsonAsync(new HistoryClearMessage(PeerProtocol.HistoryClear, _store.ClearAt),
+            AppJsonContext.Default.HistoryClearMessage, token);
+
+    private async Task<ClipboardAckMessage?> ReceiveAckAsync(SecureSession session, CancellationToken token)
+    {
+        while (true)
+        {
+            var frame = await session.ReceiveAsync(token)
+                        ?? throw new IOException("The receiver closed the session.");
+
+            switch (FrameProtocol.ReadType(frame))
+            {
+                case PeerProtocol.ClipboardAck:
+                    return JsonSerializer.Deserialize(frame, AppJsonContext.Default.ClipboardAckMessage);
+
+                case PeerProtocol.HistoryClear:
+                    var clear = JsonSerializer.Deserialize(frame, AppJsonContext.Default.HistoryClearMessage);
+                    if (clear is not null && await _store.ClearIfNewerAsync(clear.At))
+                        PublishBoard();
+                    break;
+
+                default:
+                    throw new IOException("Unexpected frame while waiting for an acknowledgement.");
+            }
+        }
+    }
+
     private async Task<ClipboardAckMessage?> ServeFileRequestsAsync(SecureSession session, ClipboardRecord record,
         CancellationToken token)
     {
@@ -366,6 +400,12 @@ internal sealed class SyncService : Singleton<SyncService>
             {
                 case PeerProtocol.ClipboardAck:
                     return JsonSerializer.Deserialize(frame, AppJsonContext.Default.ClipboardAckMessage);
+
+                case PeerProtocol.HistoryClear:
+                    var clear = JsonSerializer.Deserialize(frame, AppJsonContext.Default.HistoryClearMessage);
+                    if (clear is not null && await _store.ClearIfNewerAsync(clear.At))
+                        PublishBoard();
+                    break;
 
                 case PeerProtocol.FileBlobRequest:
                     var request = JsonSerializer.Deserialize(frame, AppJsonContext.Default.FileBlobRequestMessage);
@@ -448,6 +488,16 @@ internal sealed class SyncService : Singleton<SyncService>
         if (!_settings.Current.SyncEnabled || message.Id.Length == 0)
         {
             await AcknowledgeAsync(session, message.Id, false, "Syncing is disabled on this device.", token);
+            return;
+        }
+
+        if (message.ClearAt > _store.ClearAt && await _store.ClearIfNewerAsync(message.ClearAt))
+            PublishBoard();
+
+        if (message.At <= _store.ClearAt)
+        {
+            await SendClearAsync(session, token);
+            await AcknowledgeAsync(session, message.Id, true, null, token);
             return;
         }
 
@@ -868,6 +918,7 @@ internal sealed class SyncService : Singleton<SyncService>
         "image.copy" => await CopyImageAsync(context),
         "file.copy" => await CopyFilesAsync(context),
         "device.remove" => await RemoveDeviceAsync(context),
+        "history.clear" => await ClearHistoryAsync(context),
         "discovery.start" => await StartDiscoveryAsync(context, true),
         "discovery.stop" => await StartDiscoveryAsync(context, false),
         _ => null
@@ -961,6 +1012,36 @@ internal sealed class SyncService : Singleton<SyncService>
         }
 
         return context.Reply("device.remove.result", new OkPayload());
+    }
+
+    private async Task<NativeResponse?> ClearHistoryAsync(NativeContext context)
+    {
+        var at = await _store.ClearAsync();
+        PublishBoard();
+        await BroadcastClearAsync(at);
+        return context.Reply("history.clear.result", new OkPayload());
+    }
+
+    private async Task BroadcastClearAsync(long at)
+    {
+        var peers = _peers.All;
+        if (peers.Count == 0)
+            return;
+
+        await Task.WhenAll(peers.Select(async peer =>
+        {
+            try
+            {
+                using var cts = new CancellationTokenSource(PeerProtocol.ConnectionTimeout);
+                using var session = await PeerClient.ConnectAsync(peer, cts.Token);
+                await session.SendJsonAsync(new HistoryClearMessage(PeerProtocol.HistoryClear, at),
+                    AppJsonContext.Default.HistoryClearMessage, cts.Token);
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "Could not send the clear to {Device}", peer.Name);
+            }
+        }));
     }
 
     private void PublishBoard() => _ = PublishBoardAsync();

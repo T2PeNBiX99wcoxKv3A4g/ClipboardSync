@@ -38,6 +38,10 @@ internal sealed class ClipboardStore : Singleton<ClipboardStore>
             FailedFor TEXT NOT NULL DEFAULT '[]'
         );
         CREATE INDEX IF NOT EXISTS IX_Items_At ON Items (At DESC);
+        CREATE TABLE IF NOT EXISTS Meta (
+            Key TEXT NOT NULL CONSTRAINT PK_Meta PRIMARY KEY,
+            Value TEXT NOT NULL
+        );
         """;
 
     private const string SelectColumns =
@@ -49,6 +53,9 @@ internal sealed class ClipboardStore : Singleton<ClipboardStore>
     private readonly string _connectionString;
     private readonly ConcurrentDictionary<string, long> _progress = new(StringComparer.Ordinal);
     private readonly SemaphoreSlim _writeGate = new(1, 1);
+
+    /// <summary>Items at or before this time were cleared and must not come back.</summary>
+    public long ClearAt { get; private set; }
 
     public ClipboardStore()
     {
@@ -82,6 +89,7 @@ internal sealed class ClipboardStore : Singleton<ClipboardStore>
         }
 
         await MigrateLegacyAsync(connection);
+        ClearAt = await ReadClearAtAsync(connection);
         await CleanupAsync(connection);
     }
 
@@ -128,12 +136,106 @@ internal sealed class ClipboardStore : Singleton<ClipboardStore>
         }
     }
 
-    /// <summary>Adds an item once. Returns false when the id is already known.</summary>
-    public async Task<bool> AddAsync(ClipboardRecord record)
+    /// <summary>Clears every item and its local files, and remembers when it happened.</summary>
+    public async Task<long> ClearAsync()
     {
         await _writeGate.WaitAsync();
         try
         {
+            return await ClearLockedAsync(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+        }
+        finally
+        {
+            _writeGate.Release();
+        }
+    }
+
+    /// <summary>Applies a clear from a peer only when it is newer than the local one.</summary>
+    public async Task<bool> ClearIfNewerAsync(long at)
+    {
+        await _writeGate.WaitAsync();
+        try
+        {
+            if (at <= ClearAt)
+                return false;
+
+            await ClearLockedAsync(at);
+            return true;
+        }
+        finally
+        {
+            _writeGate.Release();
+        }
+    }
+
+    private async Task<long> ClearLockedAsync(long at)
+    {
+        await using var connection = await OpenAsync();
+        using var transaction = connection.BeginTransaction();
+
+        var removed = new List<(string Id, string? DataFile)>();
+        await using (var select = connection.CreateCommand())
+        {
+            select.Transaction = transaction;
+            select.CommandText = "SELECT Id, DataFile FROM Items";
+
+            await using var reader = await select.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+                removed.Add((reader.GetString(0), reader.IsDBNull(1) ? null : reader.GetString(1)));
+        }
+
+        await using (var delete = connection.CreateCommand())
+        {
+            delete.Transaction = transaction;
+            delete.CommandText = "DELETE FROM Items";
+            await delete.ExecuteNonQueryAsync();
+        }
+
+        await using (var meta = connection.CreateCommand())
+        {
+            meta.Transaction = transaction;
+            meta.CommandText =
+                "INSERT INTO Meta (Key, Value) VALUES ('history.clearedAt', $value) " +
+                "ON CONFLICT(Key) DO UPDATE SET Value = excluded.Value";
+            meta.Parameters.AddWithValue("$value", at.ToString());
+            await meta.ExecuteNonQueryAsync();
+        }
+
+        transaction.Commit();
+        ClearAt = at;
+        _progress.Clear();
+
+        foreach (var (id, dataFile) in removed)
+        {
+            await DeleteBinaryAsync(dataFile);
+            await ClipboardFiles.DeleteViewAsync(id);
+        }
+
+        await BlobStore.GarbageCollectAsync([]);
+        return at;
+    }
+
+    private static async Task<long> ReadClearAtAsync(SqliteConnection connection)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT Value FROM Meta WHERE Key = 'history.clearedAt'";
+
+        var value = await command.ExecuteScalarAsync();
+        return value is string text && long.TryParse(text, out var at) ? at : 0;
+    }
+
+    /// <summary>Adds an item once. Returns false when the id is already known or the item predates a clear.</summary>
+    public async Task<bool> AddAsync(ClipboardRecord record)
+    {
+        if (record.At <= ClearAt)
+            return false;
+
+        await _writeGate.WaitAsync();
+        try
+        {
+            if (record.At <= ClearAt)
+                return false;
+
             await using var connection = await OpenAsync();
             using var transaction = connection.BeginTransaction();
 

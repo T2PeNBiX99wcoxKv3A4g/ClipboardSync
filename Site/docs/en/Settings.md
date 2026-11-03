@@ -25,6 +25,7 @@ The Settings page is split into four sections. The section list on the right fol
 ## History
 
 - **Items to keep** — the local history limit, 200 by default. Older items are removed once the limit is reached.
+- **Clear history** — clears the board on every paired device. The system clipboard is not changed.
 
 ## About
 

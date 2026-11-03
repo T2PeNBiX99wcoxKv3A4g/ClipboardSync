@@ -33,6 +33,7 @@ internal static class PeerProtocol
     public const string Discover = "discover";
     public const string Announce = "announce";
     public const string ClipboardItem = "clipboard.item";
+    public const string HistoryClear = "history.clear";
     public const string FileBlobRequest = "file.blob.request";
     public const string FileBlobChunk = "file.blob.chunk";
     public const string FileBlobError = "file.blob.error";
@@ -114,7 +115,11 @@ internal sealed record ClipboardItemMessage(
     string? Data,
     ClipboardFileEntry[]? Files = null,
     string[]? Roots = null,
-    long TotalBytes = 0);
+    long TotalBytes = 0,
+    long ClearAt = 0);
+
+/// <summary>A device cleared its history; peers older than this timestamp clear theirs too.</summary>
+internal sealed record HistoryClearMessage(string Type, long At);
 
 /// <summary>One range request for a blob that belongs to a file item.</summary>
 internal sealed record FileBlobRequestMessage(string Type, string Id, string Hash, long Offset, int Length);
