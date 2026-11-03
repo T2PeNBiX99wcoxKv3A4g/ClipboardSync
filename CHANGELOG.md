@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.1](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.4.0..v0.4.1) - 2026-11-03
+
+### 🐛 Bug Fixes
+
+- *(history)* Rebroadcast clear state to reconnecting peers - ([aec1ee6](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/aec1ee6d50b5fd254893464e6828312c6cacc529))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([b7c3990](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/b7c3990f7f568abc8a635c297b8a8fd10adf27c3))
+
+
 ## [0.4.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.3.3..v0.4.0) - 2026-11-03
 
 ### ⛰️  Features
