@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore:
+      - "dev/**"
+      - "dependabot/**"
+      - "maven"
+    paths-ignore:
+      - "README.md"
+      - "README.*.md"
+      - "Site/**"
+      - ".gitignore"
+      - "LICENSE*"
+      - ".github/workflows/dependabot-auto-merge.yml"
+      - ".github/workflows/site.yml"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    uses: T2PeNBiX99wcoxKv3A4g/Release-Workflows/.github/workflows/csharp_release.yml@main
+    with:
+      project_path: './ClipboardSync/ClipboardSync.csproj'
+      filename: 'ClipboardSync'
+      runtimes: '["win-x64", "linux-x64"]'
+      version_file_path: './ClipboardSync/ClipboardSync.csproj'
+      msi_script: 'installer/windows/build-msi.ps1'
+      rpm_script: 'installer/linux/build-rpm.sh'
+      deb_script: 'installer/linux/build-deb.sh'
+      arch_script: 'installer/linux/build-arch.sh'
+    secrets: inherit

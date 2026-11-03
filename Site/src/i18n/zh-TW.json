@@ -61,19 +61,19 @@
     "platforms": [
       {
         "name": "Windows",
-        "note": "x64，自包含"
+        "note": "x64 安裝程式 (.msi)"
       },
       {
         "name": "Fedora",
-        "note": "x86_64，自包含"
+        "note": "x86_64 (.rpm)"
       },
       {
         "name": "Debian / Ubuntu",
-        "note": "amd64，自包含"
+        "note": "amd64 (.deb)"
       },
       {
         "name": "Arch Linux",
-        "note": "x86_64，自包含"
+        "note": "x86_64 (.pkg.tar.zst)"
       }
     ]
   },

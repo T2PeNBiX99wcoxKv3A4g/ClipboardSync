@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=ClipboardSync
+GenericName=Clipboard Sharing
+Comment=Share the clipboard between your own devices
+Exec=/opt/ClipboardSync/ClipboardSync
+Icon=clipboardsync
+Terminal=false
+StartupWMClass=clipboardsync
+Categories=Utility;

@@ -61,19 +61,19 @@
     "platforms": [
       {
         "name": "Windows",
-        "note": "x64、自己完結"
+        "note": "x64 インストーラー (.msi)"
       },
       {
         "name": "Fedora",
-        "note": "x86_64、自己完結"
+        "note": "x86_64 (.rpm)"
       },
       {
         "name": "Debian / Ubuntu",
-        "note": "amd64、自己完結"
+        "note": "amd64 (.deb)"
       },
       {
         "name": "Arch Linux",
-        "note": "x86_64、自己完結"
+        "note": "x86_64 (.pkg.tar.zst)"
       }
     ]
   },

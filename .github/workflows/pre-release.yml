@@ -1,0 +1,29 @@
+name: Pre Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "dev/**"
+    paths-ignore:
+      - "README.md"
+      - "README.*.md"
+      - "Site/**"
+      - "LICENSE*"
+      - ".github/workflows/site.yml"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    uses: T2PeNBiX99wcoxKv3A4g/Release-Workflows/.github/workflows/csharp_release.yml@main
+    with:
+      project_path: './ClipboardSync/ClipboardSync.csproj'
+      filename: 'ClipboardSync'
+      runtimes: '["win-x64", "linux-x64"]'
+      version_file_path: './ClipboardSync/ClipboardSync.csproj'
+      prerelease: true
+    secrets: inherit

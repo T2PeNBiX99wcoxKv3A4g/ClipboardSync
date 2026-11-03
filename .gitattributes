@@ -1,0 +1,5 @@
+# Shell scripts, RPM specs and desktop entries run on Linux, so they keep LF line endings in the
+# repository and in every checkout. Git would otherwise store whatever the committing machine uses.
+*.sh       text eol=lf
+*.spec     text eol=lf
+*.desktop  text eol=lf

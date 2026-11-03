@@ -57,6 +57,15 @@ ClipboardSync 只需把自己的裝置配對一次，之後就在你自己的網
 
 已發佈的建置是 **自包含** 的：內建 .NET 執行階段，不需要另外安裝。作業系統仍需提供以下內容。
 
+同時發佈四種套件格式：
+
+| 檔案                                             | 作用                                                                                                                                                    |
+|--------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `ClipboardSync-<version>-win-x64.msi`            | 目前使用者的 Windows 安裝程式：安裝到 `%LOCALAPPDATA%\Programs\ClipboardSync`，新增開始功能表和桌面捷徑，不會要求系統管理員權限。                      |
+| `clipboardsync-<version>-1.fcXX.x86_64.rpm`      | Fedora 套件：`sudo dnf install ./clipboardsync-<version>-*.rpm`。安裝到 `/opt/ClipboardSync`，並提供 `clipboardsync` 命令、桌面項目和圖示。             |
+| `clipboardsync_<version>_amd64.deb`              | Debian/Ubuntu 套件：`sudo apt install ./clipboardsync_<version>_amd64.deb`。配置與 RPM 相同。                                                            |
+| `clipboardsync-<version>-1-x86_64.pkg.tar.zst`   | Arch Linux 套件：`sudo pacman -U clipboardsync-<version>-1-x86_64.pkg.tar.zst`。配置與 RPM 相同。                                                        |
+
 ### Windows
 
 1. Microsoft Edge **WebView2 執行階段**。Windows 10 和 11 通常已經內建；如果沒有，請使用
@@ -137,6 +146,22 @@ cd ../.. && dotnet publish ClipboardSync/ClipboardSync.csproj -c Release -r win-
 
 Linux 請使用 `-r linux-x64`。輸出位於 `ClipboardSync/bin/Release/net10.0/<rid>/publish/`，
 是單一自包含執行檔。
+
+### 封裝
+
+安裝腳本以已發佈的建置為輸入，輸出到 `release/`：
+
+```bash
+# Windows — 首次使用時會在本機安裝 WiX
+./installer/windows/build-msi.ps1 -Version 0.1.0 -SourceDir publish/win-x64 -OutputDir release
+
+# Linux — 在對應發行版上執行，或使用腳本開頭所示的容器
+VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-deb.sh
+VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-rpm.sh
+VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-arch.sh
+```
+
+發佈工作流程會在發佈步驟後執行這四個腳本。
 
 ## 資料儲存位置
 

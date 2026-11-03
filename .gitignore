@@ -9,6 +9,9 @@ riderModule.iml
 **/obj/
 Build/
 publish/
+release/
+# The WiX tool is installed on demand by installer/windows/build-msi.ps1.
+installer/windows/.wix/
 **/build/
 **/dist/
 

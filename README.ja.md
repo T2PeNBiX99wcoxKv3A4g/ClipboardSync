@@ -64,6 +64,15 @@ ClipboardSync は自分の端末を一度ペアリングすれば、あとは自
 公開ビルドは **自己完結型** で、.NET ランタイムを同梱しているため、ほかに何もインストールする
 必要はありません。OS が用意する必要があるものは以下です。
 
+4 種類のパッケージを公開しています:
+
+| ファイル                                       | 内容                                                                                                                                                              |
+|------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `ClipboardSync-<version>-win-x64.msi`          | ユーザーごとの Windows インストーラー。`%LOCALAPPDATA%\Programs\ClipboardSync` にインストールし、スタートメニューとデスクトップにショートカットを作成します。管理者権限は要求しません。 |
+| `clipboardsync-<version>-1.fcXX.x86_64.rpm`    | Fedora パッケージ: `sudo dnf install ./clipboardsync-<version>-*.rpm`。`/opt/ClipboardSync` にインストールし、`clipboardsync` コマンド、デスクトップエントリ、アイコンを追加します。 |
+| `clipboardsync_<version>_amd64.deb`            | Debian/Ubuntu パッケージ: `sudo apt install ./clipboardsync_<version>_amd64.deb`。構成は RPM と同じです。                                                          |
+| `clipboardsync-<version>-1-x86_64.pkg.tar.zst` | Arch Linux パッケージ: `sudo pacman -U clipboardsync-<version>-1-x86_64.pkg.tar.zst`。構成は RPM と同じです。                                                      |
+
 ### Windows
 
 1. Microsoft Edge **WebView2 ランタイム**。Windows 10 と 11 には通常入っています。ない場合は
@@ -149,6 +158,22 @@ cd ../.. && dotnet publish ClipboardSync/ClipboardSync.csproj -c Release -r win-
 
 Linux では `-r linux-x64` を使います。`ClipboardSync/bin/Release/net10.0/<rid>/publish/` に
 自己完結型の単一実行ファイルができます。
+
+### パッケージ
+
+インストーラースクリプトは公開済みのビルドを入力にし、`release/` に出力します:
+
+```bash
+# Windows — WiX は初回にローカルへインストールされます
+./installer/windows/build-msi.ps1 -Version 0.1.0 -SourceDir publish/win-x64 -OutputDir release
+
+# Linux — 各ディストリビューション上、またはスクリプト冒頭のコンテナ内で実行します
+VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-deb.sh
+VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-rpm.sh
+VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-arch.sh
+```
+
+リリースワークフローは公開後にこの 4 つを実行します。
 
 ## 保存場所
 

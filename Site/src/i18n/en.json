@@ -61,19 +61,19 @@
     "platforms": [
       {
         "name": "Windows",
-        "note": "x64, self-contained"
+        "note": "x64 installer (.msi)"
       },
       {
         "name": "Fedora",
-        "note": "x86_64, self-contained"
+        "note": "x86_64 (.rpm)"
       },
       {
         "name": "Debian / Ubuntu",
-        "note": "amd64, self-contained"
+        "note": "amd64 (.deb)"
       },
       {
         "name": "Arch Linux",
-        "note": "x86_64, self-contained"
+        "note": "x86_64 (.pkg.tar.zst)"
       }
     ]
   },

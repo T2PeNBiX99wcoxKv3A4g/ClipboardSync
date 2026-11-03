@@ -65,6 +65,15 @@ keeps them on the same board, on your own network, with the clipboard contents e
 The published builds are **self-contained** — they bundle the .NET runtime, so nothing needs to be
 installed for them. What the operating system still has to provide is listed below.
 
+Four package formats are published beside the plain archives:
+
+| File                                             | What it does                                                                                                                                                                          |
+|--------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `ClipboardSync-<version>-win-x64.msi`            | Per-user Windows installer: installs into `%LOCALAPPDATA%\Programs\ClipboardSync`, adds Start menu and desktop shortcuts, and never asks for administrator rights.                      |
+| `clipboardsync-<version>-1.fcXX.x86_64.rpm`      | Fedora package: `sudo dnf install ./clipboardsync-<version>-*.rpm`. Installs to `/opt/ClipboardSync` with a `clipboardsync` command, a desktop entry and the icon.                     |
+| `clipboardsync_<version>_amd64.deb`              | Debian/Ubuntu package: `sudo apt install ./clipboardsync_<version>_amd64.deb`. Same layout as the RPM.                                                                                |
+| `clipboardsync-<version>-1-x86_64.pkg.tar.zst`   | Arch Linux package: `sudo pacman -U clipboardsync-<version>-1-x86_64.pkg.tar.zst`. Same layout as the RPM.                                                                            |
+
 ### Windows
 
 1. The Microsoft Edge **WebView2 Runtime**. Windows 10 and 11 normally already have it; otherwise
@@ -147,6 +156,22 @@ cd ../.. && dotnet publish ClipboardSync/ClipboardSync.csproj -c Release -r win-
 
 Use `-r linux-x64` for Linux. That produces a single self-contained executable under
 `ClipboardSync/bin/Release/net10.0/<rid>/publish/`.
+
+### Packages
+
+The installer scripts take a published build and write to `release/`:
+
+```bash
+# Windows — WiX is installed locally on first use
+./installer/windows/build-msi.ps1 -Version 0.1.0 -SourceDir publish/win-x64 -OutputDir release
+
+# Linux — run each script on its own distribution, or in the container shown in the script header
+VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-deb.sh
+VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-rpm.sh
+VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-arch.sh
+```
+
+The release workflow runs all four after the publish step.
 
 ## Where things are stored
 

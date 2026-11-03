@@ -55,6 +55,15 @@ ClipboardSync 只需把自己的设备配对一次，之后就在你自己的网
 
 已发布的构建是 **自包含** 的：内置 .NET 运行时，不需要另外安装。操作系统仍需提供以下内容。
 
+同时发布四种软件包格式：
+
+| 文件                                             | 作用                                                                                                                                                    |
+|--------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `ClipboardSync-<version>-win-x64.msi`            | 当前用户的 Windows 安装程序：安装到 `%LOCALAPPDATA%\Programs\ClipboardSync`，添加开始菜单和桌面快捷方式，不会请求管理员权限。                          |
+| `clipboardsync-<version>-1.fcXX.x86_64.rpm`      | Fedora 软件包：`sudo dnf install ./clipboardsync-<version>-*.rpm`。安装到 `/opt/ClipboardSync`，并提供 `clipboardsync` 命令、桌面项和图标。             |
+| `clipboardsync_<version>_amd64.deb`              | Debian/Ubuntu 软件包：`sudo apt install ./clipboardsync_<version>_amd64.deb`。布局与 RPM 相同。                                                          |
+| `clipboardsync-<version>-1-x86_64.pkg.tar.zst`   | Arch Linux 软件包：`sudo pacman -U clipboardsync-<version>-1-x86_64.pkg.tar.zst`。布局与 RPM 相同。                                                      |
+
 ### Windows
 
 1. Microsoft Edge **WebView2 运行时**。Windows 10 和 11 通常已经内置；如果没有，请使用
@@ -134,6 +143,22 @@ cd ../.. && dotnet publish ClipboardSync/ClipboardSync.csproj -c Release -r win-
 
 Linux 请使用 `-r linux-x64`。输出位于 `ClipboardSync/bin/Release/net10.0/<rid>/publish/`，
 是单个自包含可执行文件。
+
+### 打包
+
+安装脚本以已发布的构建为输入，输出到 `release/`：
+
+```bash
+# Windows — 首次使用时会在本地安装 WiX
+./installer/windows/build-msi.ps1 -Version 0.1.0 -SourceDir publish/win-x64 -OutputDir release
+
+# Linux — 在对应发行版上运行，或使用脚本开头所示的容器
+VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-deb.sh
+VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-rpm.sh
+VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-arch.sh
+```
+
+发布工作流会在发布步骤后运行这四个脚本。
 
 ## 数据保存位置
 

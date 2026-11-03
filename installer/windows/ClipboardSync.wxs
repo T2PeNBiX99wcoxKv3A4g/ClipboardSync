@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Per-user installer: ClipboardSync keeps its settings and its device key under %APPDATA% and its
+    history under %LOCALAPPDATA%, so it never needs elevation and never writes to a location another
+    user shares.
+
+    The published build is a single executable, so the package is one component plus the shortcuts.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Package Name="ClipboardSync"
+             Manufacturer="yukiyosanako"
+             Version="$(var.Version)"
+             UpgradeCode="5bb74c35-caca-479e-be42-6ccec9b956fc"
+             Scope="perUser"
+             Compressed="yes"
+             InstallerVersion="500">
+
+        <SummaryInformation Description="ClipboardSync clipboard sharing" Manufacturer="yukiyosanako" />
+
+        <!--
+            Force the per-user context even when the MSI is started from an elevated shell: the app
+            lives in %LOCALAPPDATA% and keeps its settings under %APPDATA%, so a per-machine copy
+            would be shared by every user and none of them could use it properly.
+        -->
+        <Property Id="ALLUSERS" Value="2" />
+        <Property Id="MSIINSTALLPERUSER" Value="1" />
+
+        <!-- A reinstall of the same version replaces the files instead of failing. -->
+        <MajorUpgrade AllowSameVersionUpgrades="yes"
+                      DowngradeErrorMessage="A newer version of ClipboardSync is already installed." />
+
+        <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+        <Icon Id="AppIcon.ico" SourceFile="$(var.IconPath)" />
+        <Property Id="ARPPRODUCTICON" Value="AppIcon.ico" />
+        <Property Id="ARPHELPLINK" Value="https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync" />
+        <Property Id="ARPNOMODIFY" Value="1" />
+
+        <Feature Id="Main" Title="ClipboardSync" Level="1">
+            <ComponentGroupRef Id="ApplicationFiles" />
+        </Feature>
+    </Package>
+
+    <Fragment>
+        <!-- Same place per-user installers normally use, so no elevation is involved. -->
+        <StandardDirectory Id="LocalAppDataFolder">
+            <Directory Id="ProgramsFolder" Name="Programs">
+                <Directory Id="INSTALLFOLDER" Name="ClipboardSync" />
+            </Directory>
+        </StandardDirectory>
+
+        <StandardDirectory Id="ProgramMenuFolder" />
+
+        <StandardDirectory Id="DesktopFolder" />
+    </Fragment>
+
+    <Fragment>
+        <ComponentGroup Id="ApplicationFiles">
+            <Component Id="Application" Directory="INSTALLFOLDER" Guid="*">
+                <File Id="ClipboardSyncExe" Source="$(var.SourceDir)\ClipboardSync.exe" KeyPath="yes">
+                    <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="ClipboardSync"
+                              Description="ClipboardSync clipboard sharing" />
+                    <Shortcut Id="DesktopShortcut" Directory="DesktopFolder" Name="ClipboardSync"
+                              Description="ClipboardSync clipboard sharing" />
+                </File>
+                <RemoveFolder Id="RemoveInstallFolder" On="uninstall" />
+            </Component>
+        </ComponentGroup>
+    </Fragment>
+</Wix>
