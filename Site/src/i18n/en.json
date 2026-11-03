@@ -8,7 +8,7 @@
   "home": {
     "tagline": "Copy once, paste on every device you own.",
     "noteTitle": "What is not here yet",
-    "noteText": "Files are not synced yet: copying a file in the file manager is ignored for now. Text, links and images work. Devices must also be able to reach each other on TCP 45456, so a network that blocks peer traffic needs an address that works.",
+    "noteText": "Files are not synced yet: copying a file in the file manager is ignored for now. Text, links and images work. Devices must be able to reach each other on TCP 45456; UDP 45457 is only discovery, so a network that blocks broadcast needs the other device's address.",
     "download": "Download",
     "documentation": "Documentation",
     "whatTitle": "What it does",
