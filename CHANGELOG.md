@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.1](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.3.0..v0.3.1) - 2026-11-03
+
+### 📚 Documentation
+
+- Remove release and packaging sections from localized READMEs - ([2bafaef](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/2bafaef2e4552188df59c56a94b5cfcb357f8c65))
+
+### ⚙️ Miscellaneous Tasks
+
+- Move npm-check-updates dependency to UserInterface package.json - ([551b30b](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/551b30b42f27272068953d6033c36054816d6a09))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([dbbc054](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/dbbc0543b1785dd29c52a7c5eb494f6e0404506b))
+
+
 ## [0.3.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.2.0..v0.3.0) - 2026-11-03
 
 ### ⛰️  Features
