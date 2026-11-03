@@ -59,6 +59,7 @@ keeps them on the same board, on your own network, with the clipboard contents e
 - **Photino.NET** — the desktop shell. It shows the interface in the operating system's own web
   view, which is why the web view is a runtime dependency: WebView2 on Windows, WebKitGTK on Linux.
 - **BouncyCastle** — Ed25519, X25519 and ChaCha20-Poly1305.
+- **SQLite** — the clipboard history, delivery state and file manifests.
 
 ## Running
 
@@ -151,7 +152,7 @@ Debug builds load the interface from the dev server. `dotnet run --project Clipb
 | Settings        | `%APPDATA%\ClipboardSync\settings.json`            | `~/.config/ClipboardSync/settings.json`            |
 | Paired devices  | `%APPDATA%\ClipboardSync\peers.json`               | `~/.config/ClipboardSync/peers.json`               |
 | Device identity | `%APPDATA%\ClipboardSync\device.key`               | `~/.config/ClipboardSync/device.key`               |
-| History         | `%LOCALAPPDATA%\ClipboardSync\history.json`        | `~/.local/share/ClipboardSync/history.json`        |
+| History         | `%LOCALAPPDATA%\ClipboardSync\history.db`          | `~/.local/share/ClipboardSync/history.db`          |
 | Image cache     | `%LOCALAPPDATA%\ClipboardSync\clipboard`           | `~/.local/share/ClipboardSync/clipboard`           |
 | File blobs      | `%LOCALAPPDATA%\ClipboardSync\clipboard\blobs`     | `~/.local/share/ClipboardSync/clipboard/blobs`     |
 | File views      | `%LOCALAPPDATA%\ClipboardSync\clipboard\items`     | `~/.local/share/ClipboardSync/clipboard/items`     |

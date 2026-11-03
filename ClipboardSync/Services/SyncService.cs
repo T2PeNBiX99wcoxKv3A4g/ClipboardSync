@@ -68,23 +68,22 @@ internal sealed class SyncService : Singleton<SyncService>
     }
 
     /// <summary>Called by the pairing flow after a peer is pinned; sends the board as a catch-up.</summary>
-    public void OnPeerPaired(PairedDevice peer)
+    public void OnPeerPaired(PairedDevice peer) => _ = Task.Run(() => OnPeerPairedAsync(peer));
+
+    private async Task OnPeerPairedAsync(PairedDevice peer)
     {
         _presence.MarkOnline(peer.Id);
 
         // A re-pair must not trust delivery state from an earlier session with the same id; the peer
         // may have a fresh history. Clearing it makes the catch-up below send every record again.
-        _store.ForgetPeer(peer.Id);
+        await _store.ForgetPeerAsync(peer.Id);
         PublishBoard();
 
-        _ = Task.Run(async () =>
+        foreach (var record in (await _store.SnapshotAsync()).Take(_settings.Current.HistoryLimit))
         {
-            foreach (var record in _store.Snapshot().Take(_settings.Current.HistoryLimit))
-            {
-                _store.MarkPending(record.Id, peer.Id);
-                await DeliverAsync(record, peer);
-            }
-        });
+            await _store.MarkPendingAsync(record.Id, peer.Id);
+            await DeliverAsync(record, peer);
+        }
     }
 
     public void OnDiscoveryChanged() => PublishDevices();
@@ -135,7 +134,12 @@ internal sealed class SyncService : Singleton<SyncService>
             return;
         }
 
-        var latest = _store.Snapshot().FirstOrDefault(item => item.OriginDeviceId == _identity.Id);
+        _ = Task.Run(() => CaptureTextAsync(text));
+    }
+
+    private async Task CaptureTextAsync(string text)
+    {
+        var latest = (await _store.SnapshotAsync()).FirstOrDefault(item => item.OriginDeviceId == _identity.Id);
         if (latest?.Content == text)
             return;
 
@@ -148,12 +152,12 @@ internal sealed class SyncService : Singleton<SyncService>
             At = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
         };
 
-        if (!_store.Add(record))
+        if (!await _store.AddAsync(record))
             return;
 
         Log.Information("Captured a clipboard item ({Length} chars)", text.Length);
         PublishBoard();
-        _ = BroadcastAsync(record);
+        await BroadcastAsync(record);
     }
 
     private void OnImageCopied(byte[] png)
@@ -165,9 +169,14 @@ internal sealed class SyncService : Singleton<SyncService>
             return;
 
         _lastImageAt = Environment.TickCount64;
+        _ = Task.Run(() => CaptureImageAsync(png));
+    }
+
+    private async Task CaptureImageAsync(byte[] png)
+    {
         var hash = Convert.ToHexString(SHA256.HashData(png));
 
-        var latest = _store.Snapshot()
+        var latest = (await _store.SnapshotAsync())
             .FirstOrDefault(item => item.OriginDeviceId == _identity.Id && item.Kind == "image");
         if (latest?.Hash == hash)
             return;
@@ -177,7 +186,7 @@ internal sealed class SyncService : Singleton<SyncService>
 
         try
         {
-            dataFile = ClipboardStore.SaveBinary(id, png, ".png");
+            dataFile = await ClipboardStore.SaveBinaryAsync(id, png, ".png");
         }
         catch (Exception ex)
         {
@@ -198,12 +207,12 @@ internal sealed class SyncService : Singleton<SyncService>
             At = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
         };
 
-        if (!_store.Add(record))
+        if (!await _store.AddAsync(record))
             return;
 
         Log.Information("Captured a clipboard image ({Size})", FormatSize(png.Length));
         PublishBoard();
-        _ = BroadcastAsync(record);
+        await BroadcastAsync(record);
     }
 
     private void OnFilesCopied(string[] paths)
@@ -228,7 +237,7 @@ internal sealed class SyncService : Singleton<SyncService>
         {
             Log.Warning("A copied file selection is larger than {Limit} or has too many entries",
                 ClipboardFiles.FormatSize(ClipboardLimits.MaxFileBytes));
-            _store.CollectGarbage();
+            await _store.CollectGarbageAsync();
             return;
         }
         catch (Exception ex)
@@ -265,7 +274,7 @@ internal sealed class SyncService : Singleton<SyncService>
             At = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
         };
 
-        if (!_store.Add(record))
+        if (!await _store.AddAsync(record))
             return;
 
         Log.Information("Captured a clipboard file selection ({Count} files, {Size})", count,
@@ -278,7 +287,7 @@ internal sealed class SyncService : Singleton<SyncService>
     {
         var peers = _peers.All;
         foreach (var peer in peers)
-            _store.MarkPending(record.Id, peer.Id);
+            await _store.MarkPendingAsync(record.Id, peer.Id);
 
         PublishHistory();
         await Task.WhenAll(peers.Select(peer => DeliverAsync(record, peer)));
@@ -298,10 +307,10 @@ internal sealed class SyncService : Singleton<SyncService>
             string? data = null;
             if (record.Kind == "image")
             {
-                var bytes = ClipboardStore.ReadBinary(record.DataFile);
+                var bytes = await ClipboardStore.ReadBinaryAsync(record.DataFile);
                 if (bytes is null)
                 {
-                    _store.MarkFailed(record.Id, peer.Id);
+                    await _store.MarkFailedAsync(record.Id, peer.Id);
                     return;
                 }
 
@@ -324,16 +333,16 @@ internal sealed class SyncService : Singleton<SyncService>
             if (ack is { Ok: true })
             {
                 _store.SetProgress(record.Id, record.TotalBytes);
-                _store.MarkDelivered(record.Id, peer.Id);
+                await _store.MarkDeliveredAsync(record.Id, peer.Id);
             }
             else
-                _store.MarkFailed(record.Id, peer.Id);
+                await _store.MarkFailedAsync(record.Id, peer.Id);
         }
         catch (Exception ex)
         {
             Log.Debug(ex, "Could not deliver an item to {Device}", peer.Name);
             _presence.MarkOffline(peer.Id);
-            _store.MarkFailed(record.Id, peer.Id);
+            await _store.MarkFailedAsync(record.Id, peer.Id);
         }
         finally
         {
@@ -504,13 +513,13 @@ internal sealed class SyncService : Singleton<SyncService>
             string dataFile;
             try
             {
-                if (_store.Find(message.Id) is not null)
+                if (await _store.FindAsync(message.Id) is not null)
                 {
                     await AcknowledgeAsync(session, message.Id, true, null, token);
                     return;
                 }
 
-                dataFile = ClipboardStore.SaveBinary(message.Id, png, ".png");
+                dataFile = await ClipboardStore.SaveBinaryAsync(message.Id, png, ".png");
             }
             catch (Exception ex)
             {
@@ -538,13 +547,13 @@ internal sealed class SyncService : Singleton<SyncService>
             return;
         }
 
-        if (_store.Add(record))
+        if (await _store.AddAsync(record))
         {
             Log.Information("Received a clipboard item from {Device}", record.OriginDeviceName);
 
             if (record.Kind == "image")
             {
-                var png = ClipboardStore.ReadBinary(record.DataFile);
+                var png = await ClipboardStore.ReadBinaryAsync(record.DataFile);
                 if (png is not null)
                     ApplyRemoteImage(png);
             }
@@ -591,7 +600,7 @@ internal sealed class SyncService : Singleton<SyncService>
         if (roots.Any(root => !seen.Contains(root) || ClipboardFiles.Resolve(Constants.DataDirectory, root) is null))
             throw new PeerSecurityException("The file item has an unsafe root.");
 
-        if (_store.Find(message.Id) is not null)
+        if (await _store.FindAsync(message.Id) is not null)
         {
             await AcknowledgeAsync(session, message.Id, true, null, token);
             return;
@@ -618,7 +627,7 @@ internal sealed class SyncService : Singleton<SyncService>
             At = at
         };
 
-        if (!_store.Add(placeholder))
+        if (!await _store.AddAsync(placeholder))
         {
             await AcknowledgeAsync(session, message.Id, true, null, token);
             return;
@@ -712,11 +721,11 @@ internal sealed class SyncService : Singleton<SyncService>
                     throw new PeerSecurityException("A file arrived corrupted.");
             }
 
-            var record = _store.Find(message.Id)
+            var record = await _store.FindAsync(message.Id)
                          ?? throw new PeerSecurityException("The file item disappeared while receiving.");
 
             ClipboardFiles.Materialize(record);
-            _store.CompleteFile(message.Id);
+            await _store.CompleteFileAsync(message.Id);
             ApplyRemoteFiles(record);
             PublishBoard();
             _ = RelayAsync(record, session.PeerDeviceId);
@@ -724,7 +733,7 @@ internal sealed class SyncService : Singleton<SyncService>
         }
         catch
         {
-            _store.Remove(message.Id);
+            await _store.RemoveAsync(message.Id);
             PublishBoard();
             throw;
         }
@@ -820,7 +829,7 @@ internal sealed class SyncService : Singleton<SyncService>
         if (peers.Count == 0)
             return;
 
-        foreach (var record in _store.Snapshot().Take(200))
+        foreach (var record in (await _store.SnapshotAsync()).Take(200))
         {
             var targets = peers
                 .Where(peer => peer.Id != record.OriginDeviceId && !record.DeliveredTo.Contains(peer.Id))
@@ -830,7 +839,7 @@ internal sealed class SyncService : Singleton<SyncService>
                 continue;
 
             foreach (var peer in targets)
-                _store.MarkPending(record.Id, peer.Id);
+                await _store.MarkPendingAsync(record.Id, peer.Id);
 
             await Task.WhenAll(targets.Select(peer => DeliverAsync(record, peer)));
         }
@@ -846,25 +855,25 @@ internal sealed class SyncService : Singleton<SyncService>
             return;
 
         foreach (var peer in peers)
-            _store.MarkPending(record.Id, peer.Id);
+            await _store.MarkPendingAsync(record.Id, peer.Id);
 
         await Task.WhenAll(peers.Select(peer => DeliverAsync(record, peer)));
     }
 
-    private Task<NativeResponse?> HandleMessageAsync(NativeContext context) => context.Request.Type switch
+    private async Task<NativeResponse?> HandleMessageAsync(NativeContext context) => context.Request.Type switch
     {
-        "devices.get" => Task.FromResult<NativeResponse?>(context.Reply("devices.get.result", BuildDevices())),
-        "history.get" => Task.FromResult<NativeResponse?>(context.Reply("history.get.result", BuildHistory())),
-        "image.get" => Task.FromResult<NativeResponse?>(GetImage(context)),
-        "image.copy" => Task.FromResult<NativeResponse?>(CopyImage(context)),
-        "file.copy" => Task.FromResult<NativeResponse?>(CopyFiles(context)),
-        "device.remove" => Task.FromResult<NativeResponse?>(RemoveDevice(context)),
-        "discovery.start" => StartDiscovery(context, true),
-        "discovery.stop" => StartDiscovery(context, false),
-        _ => Task.FromResult<NativeResponse?>(null)
+        "devices.get" => await DevicesAsync(context),
+        "history.get" => await HistoryAsync(context),
+        "image.get" => await GetImageAsync(context),
+        "image.copy" => await CopyImageAsync(context),
+        "file.copy" => await CopyFilesAsync(context),
+        "device.remove" => await RemoveDeviceAsync(context),
+        "discovery.start" => await StartDiscoveryAsync(context, true),
+        "discovery.stop" => await StartDiscoveryAsync(context, false),
+        _ => null
     };
 
-    private static Task<NativeResponse?> StartDiscovery(NativeContext context, bool start)
+    private static Task<NativeResponse?> StartDiscoveryAsync(NativeContext context, bool start)
     {
         if (start)
             DiscoveryService.Instance.BeginSearch();
@@ -874,10 +883,10 @@ internal sealed class SyncService : Singleton<SyncService>
         return Task.FromResult<NativeResponse?>(context.Reply("discovery.result", new OkPayload()));
     }
 
-    private NativeResponse GetImage(NativeContext context)
+    private async Task<NativeResponse?> GetImageAsync(NativeContext context)
     {
-        var record = FindImage(context);
-        var bytes = record is null ? null : ClipboardStore.ReadBinary(record.DataFile);
+        var record = await FindImageAsync(context);
+        var bytes = record is null ? null : await ClipboardStore.ReadBinaryAsync(record.DataFile);
 
         if (bytes is null)
             return context.Fail("image.get.result", "The image is not available.");
@@ -886,10 +895,10 @@ internal sealed class SyncService : Singleton<SyncService>
             new ImagePayload($"data:image/png;base64,{Convert.ToBase64String(bytes)}"));
     }
 
-    private NativeResponse CopyImage(NativeContext context)
+    private async Task<NativeResponse?> CopyImageAsync(NativeContext context)
     {
-        var record = FindImage(context);
-        var bytes = record is null ? null : ClipboardStore.ReadBinary(record.DataFile);
+        var record = await FindImageAsync(context);
+        var bytes = record is null ? null : await ClipboardStore.ReadBinaryAsync(record.DataFile);
 
         if (bytes is null)
             return context.Fail("image.copy.result", "The image is not available.");
@@ -899,19 +908,19 @@ internal sealed class SyncService : Singleton<SyncService>
             : context.Fail("image.copy.result", "The clipboard is busy.");
     }
 
-    private ClipboardRecord? FindImage(NativeContext context)
+    private async Task<ClipboardRecord?> FindImageAsync(NativeContext context)
     {
         var id = context.Payload<ImageRequest>()?.ItemId;
         if (id is not { Length: > 0 })
             return null;
 
-        return _store.Find(id) is { Kind: "image" } record ? record : null;
+        return await _store.FindAsync(id) is { Kind: "image" } record ? record : null;
     }
 
-    private NativeResponse CopyFiles(NativeContext context)
+    private async Task<NativeResponse?> CopyFilesAsync(NativeContext context)
     {
         var id = context.Payload<FileItemRequest>()?.ItemId;
-        var record = id is { Length: > 0 } ? _store.Find(id) : null;
+        var record = id is { Length: > 0 } ? await _store.FindAsync(id) : null;
 
         if (record is not { Kind: "file", Roots: { Count: > 0 } roots, Files: { Count: > 0 } })
             return context.Fail("file.copy.result", "The files are not available.");
@@ -941,30 +950,41 @@ internal sealed class SyncService : Singleton<SyncService>
             : context.Fail("file.copy.result", "The clipboard is busy.");
     }
 
-    private NativeResponse RemoveDevice(NativeContext context)
+    private async Task<NativeResponse?> RemoveDeviceAsync(NativeContext context)
     {
         var id = context.Payload<DeviceRemoveRequest>()?.DeviceId;
         if (id is { Length: > 0 })
         {
             _peers.Remove(id);
-            _store.ForgetPeer(id);
+            await _store.ForgetPeerAsync(id);
             PublishBoard();
         }
 
         return context.Reply("device.remove.result", new OkPayload());
     }
 
-    private void PublishBoard()
+    private void PublishBoard() => _ = PublishBoardAsync();
+
+    private async Task PublishBoardAsync()
     {
-        PublishHistory();
-        PublishDevices();
+        await Task.WhenAll(PublishHistoryAsync(), PublishDevicesAsync());
     }
 
-    private void PublishDevices() =>
-        WindowManager.Instance.NotifyMainWindow("devices.changed", BuildDevices());
+    private void PublishDevices() => _ = PublishDevicesAsync();
 
-    private void PublishHistory() =>
-        WindowManager.Instance.NotifyMainWindow("history.changed", BuildHistory());
+    private void PublishHistory() => _ = PublishHistoryAsync();
+
+    private async Task PublishDevicesAsync()
+    {
+        var payload = await BuildDevicesAsync();
+        WindowManager.Instance.NotifyMainWindow("devices.changed", payload);
+    }
+
+    private async Task PublishHistoryAsync()
+    {
+        var payload = await BuildHistoryAsync();
+        WindowManager.Instance.NotifyMainWindow("history.changed", payload);
+    }
 
     private void PublishProgress()
     {
@@ -976,9 +996,9 @@ internal sealed class SyncService : Singleton<SyncService>
         PublishHistory();
     }
 
-    private DevicesPayload BuildDevices()
+    private async Task<DevicesPayload> BuildDevicesAsync()
     {
-        var items = _store.Snapshot();
+        var items = await _store.SnapshotAsync();
         var self = new DevicePayload(_identity.Id, _settings.Current.DeviceName, true, true,
             items.Count(item => item.OriginDeviceId == _identity.Id));
 
@@ -996,12 +1016,18 @@ internal sealed class SyncService : Singleton<SyncService>
         return new(self, peers, discovered);
     }
 
-    private HistoryPayload BuildHistory()
+    private async Task<HistoryPayload> BuildHistoryAsync()
     {
         var peers = _peers.All.Count;
-        var items = _store.Snapshot().Select(record => ToPayload(record, peers)).ToArray();
+        var items = (await _store.SnapshotAsync()).Select(record => ToPayload(record, peers)).ToArray();
         return new(items);
     }
+
+    private async Task<NativeResponse?> DevicesAsync(NativeContext context) =>
+        context.Reply("devices.get.result", await BuildDevicesAsync());
+
+    private async Task<NativeResponse?> HistoryAsync(NativeContext context) =>
+        context.Reply("history.get.result", await BuildHistoryAsync());
 
     private ClipboardItemPayload ToPayload(ClipboardRecord record, int peers)
     {

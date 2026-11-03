@@ -102,6 +102,8 @@ internal static class Program
             // Touching these starts the clipboard watcher, peer listener and discovery. They queue
             // their first events until the interface reports in.
             _ = PairingService.Instance;
+            _ = ClipboardStore.Instance;
+            ClipboardStore.Instance.InitializeAsync().GetAwaiter().GetResult();
             _ = SyncService.Instance;
 
             using var tray = CreateTray(manager.IconPath);

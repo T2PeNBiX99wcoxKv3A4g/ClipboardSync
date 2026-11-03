@@ -51,6 +51,7 @@ ClipboardSync 只需把自己的设备配对一次，之后就在你自己的网
 - **Photino.NET** — 桌面外壳。它用操作系统自带的 Web 视图显示界面，因此 Web 视图是运行时依赖：
   Windows 使用 WebView2，Linux 使用 WebKitGTK。
 - **BouncyCastle** — Ed25519、X25519 和 ChaCha20-Poly1305。
+- **SQLite** — 剪贴板历史、传输状态和文件 manifest。
 
 ## 运行
 
@@ -139,7 +140,7 @@ dotnet run --project ClipboardSync
 | 设置       | `%APPDATA%\ClipboardSync\settings.json`            | `~/.config/ClipboardSync/settings.json`            |
 | 已配对设备 | `%APPDATA%\ClipboardSync\peers.json`               | `~/.config/ClipboardSync/peers.json`               |
 | 设备身份   | `%APPDATA%\ClipboardSync\device.key`               | `~/.config/ClipboardSync/device.key`               |
-| 历史       | `%LOCALAPPDATA%\ClipboardSync\history.json`        | `~/.local/share/ClipboardSync/history.json`        |
+| 历史       | `%LOCALAPPDATA%\ClipboardSync\history.db`          | `~/.local/share/ClipboardSync/history.db`          |
 | 图片缓存   | `%LOCALAPPDATA%\ClipboardSync\clipboard`           | `~/.local/share/ClipboardSync/clipboard`           |
 | 文件 blob  | `%LOCALAPPDATA%\ClipboardSync\clipboard\blobs`     | `~/.local/share/ClipboardSync/clipboard/blobs`     |
 | 文件视图   | `%LOCALAPPDATA%\ClipboardSync\clipboard\items`     | `~/.local/share/ClipboardSync/clipboard/items`     |

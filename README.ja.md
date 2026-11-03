@@ -59,6 +59,7 @@ ClipboardSync は自分の端末を一度ペアリングすれば、あとは自
 - **Photino.NET** — デスクトップシェル。OS 自身の Web ビューでインターフェースを表示するため、
   Web ビューが実行時の依存になります: Windows は WebView2、Linux は WebKitGTK。
 - **BouncyCastle** — Ed25519、X25519、ChaCha20-Poly1305。
+- **SQLite** — クリップボード履歴、配信状態、ファイル manifest。
 
 ## 実行
 
@@ -154,7 +155,7 @@ dotnet run --project ClipboardSync
 | 設定               | `%APPDATA%\ClipboardSync\settings.json`            | `~/.config/ClipboardSync/settings.json`            |
 | ペアリング済み端末 | `%APPDATA%\ClipboardSync\peers.json`               | `~/.config/ClipboardSync/peers.json`               |
 | 端末の識別情報     | `%APPDATA%\ClipboardSync\device.key`               | `~/.config/ClipboardSync/device.key`               |
-| 履歴               | `%LOCALAPPDATA%\ClipboardSync\history.json`        | `~/.local/share/ClipboardSync/history.json`        |
+| 履歴               | `%LOCALAPPDATA%\ClipboardSync\history.db`          | `~/.local/share/ClipboardSync/history.db`          |
 | 画像キャッシュ     | `%LOCALAPPDATA%\ClipboardSync\clipboard`           | `~/.local/share/ClipboardSync/clipboard`           |
 | ファイル blob      | `%LOCALAPPDATA%\ClipboardSync\clipboard\blobs`     | `~/.local/share/ClipboardSync/clipboard/blobs`     |
 | ファイル表示       | `%LOCALAPPDATA%\ClipboardSync\clipboard\items`     | `~/.local/share/ClipboardSync/clipboard/items`     |

@@ -1,245 +1,614 @@
+using System.Collections.Concurrent;
 using System.Text.Json;
 using ClipboardSync.Messaging;
 using ClipboardSync.Models;
 using ClipboardSync.Security;
+using Microsoft.Data.Sqlite;
 using PhotinoNetUtils.Extensions;
 using PhotinoNetUtils.Utils;
 
 namespace ClipboardSync.Services;
 
 /// <summary>
-///     The local copy of the replicated clipboard board. Every item, whoever copied it, lives here;
-///     the UI groups by origin device. The file is intentionally in the local data folder: history can
-///     grow and should not roam with the settings.
+///     The replicated clipboard board in SQLite. Reads open their own connection and never take the
+///     write gate, so the interface and background work can read while a write is in progress. Only
+///     the write methods are serialized. Delivery state and file manifests are stored as JSON columns;
+///     the rows themselves remain easy to inspect with any SQLite client.
 /// </summary>
 internal sealed class ClipboardStore : Singleton<ClipboardStore>
 {
-    private static readonly string FilePath = Path.Combine(Constants.DataDirectory, "history.json");
+    private const string CreateSchema =
+        """
+        CREATE TABLE IF NOT EXISTS Items (
+            Id TEXT NOT NULL CONSTRAINT PK_Items PRIMARY KEY,
+            OriginDeviceId TEXT NOT NULL,
+            OriginDeviceName TEXT NOT NULL,
+            Kind TEXT NOT NULL,
+            Content TEXT NOT NULL,
+            Meta TEXT NULL,
+            DataFile TEXT NULL,
+            Hash TEXT NULL,
+            At INTEGER NOT NULL,
+            TotalBytes INTEGER NOT NULL DEFAULT 0,
+            Progress INTEGER NOT NULL DEFAULT 0,
+            Files TEXT NULL,
+            Roots TEXT NULL,
+            PendingFor TEXT NOT NULL DEFAULT '[]',
+            DeliveredTo TEXT NOT NULL DEFAULT '[]',
+            FailedFor TEXT NOT NULL DEFAULT '[]'
+        );
+        CREATE INDEX IF NOT EXISTS IX_Items_At ON Items (At DESC);
+        """;
 
-    private readonly Lock _gate = new();
-    private readonly List<ClipboardRecord> _items = [];
+    private const string SelectColumns =
+        "Id, OriginDeviceId, OriginDeviceName, Kind, Content, Meta, DataFile, Hash, At, TotalBytes, Progress, Files, Roots, PendingFor, DeliveredTo, FailedFor";
+
+    private static readonly string DatabasePath = Path.Combine(Constants.DataDirectory, "history.db");
+    private static readonly string LegacyPath = Path.Combine(Constants.DataDirectory, "history.json");
+
+    private readonly string _connectionString;
+    private readonly ConcurrentDictionary<string, long> _progress = new(StringComparer.Ordinal);
+    private readonly SemaphoreSlim _writeGate = new(1, 1);
 
     public ClipboardStore()
     {
-        Load();
-
-        lock (_gate)
+        Directory.CreateDirectory(Constants.DataDirectory);
+        _connectionString = new SqliteConnectionStringBuilder
         {
-            CleanupIncomplete();
-            CleanupViews();
-            BlobStore.GarbageCollect(HashesUnlocked());
+            DataSource = DatabasePath,
+            Mode = SqliteOpenMode.ReadWriteCreate,
+            Pooling = true
+        }.ToString();
+    }
+
+    /// <summary>
+    ///     Creates the schema, imports an older history.json once, and removes interrupted incoming
+    ///     items. The entry point waits for this because the rest of the app expects a ready store.
+    /// </summary>
+    public async Task InitializeAsync()
+    {
+        await using var connection = await OpenAsync();
+
+        await using (var pragma = connection.CreateCommand())
+        {
+            pragma.CommandText = "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;";
+            await pragma.ExecuteNonQueryAsync();
+        }
+
+        await using (var schema = connection.CreateCommand())
+        {
+            schema.CommandText = CreateSchema;
+            await schema.ExecuteNonQueryAsync();
+        }
+
+        await MigrateLegacyAsync(connection);
+        await CleanupAsync(connection);
+    }
+
+    /// <summary>Newest first. No write gate: SQLite readers see the last committed snapshot.</summary>
+    public async Task<IReadOnlyList<ClipboardRecord>> SnapshotAsync()
+    {
+        try
+        {
+            await using var connection = await OpenAsync();
+            await using var command = connection.CreateCommand();
+            command.CommandText = $"SELECT {SelectColumns} FROM Items ORDER BY At DESC";
+
+            var items = new List<ClipboardRecord>();
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+                items.Add(OverlayProgress(ReadRecord(reader)));
+
+            return items;
+        }
+        catch (Exception ex)
+        {
+            Constants.Logger.Warning(ex, "Failed to read the clipboard history");
+            return [];
         }
     }
 
-    /// <summary>Drops blobs no item refers to, for example after a refused capture.</summary>
-    public void CollectGarbage()
+    public async Task<ClipboardRecord?> FindAsync(string id)
     {
-        lock (_gate)
-            BlobStore.GarbageCollect(HashesUnlocked());
-    }
+        try
+        {
+            await using var connection = await OpenAsync();
+            await using var command = connection.CreateCommand();
+            command.CommandText = $"SELECT {SelectColumns} FROM Items WHERE Id = $id";
+            command.Parameters.AddWithValue("$id", id);
 
-    /// <summary>Newest first.</summary>
-    public IReadOnlyList<ClipboardRecord> Snapshot()
-    {
-        lock (_gate)
-            return [.. _items.OrderByDescending(item => item.At)];
-    }
-
-    public ClipboardRecord? Find(string id)
-    {
-        lock (_gate)
-            return _items.FirstOrDefault(item => string.Equals(item.Id, id, StringComparison.Ordinal));
+            await using var reader = await command.ExecuteReaderAsync();
+            return await reader.ReadAsync() ? OverlayProgress(ReadRecord(reader)) : null;
+        }
+        catch (Exception ex)
+        {
+            Constants.Logger.Warning(ex, "Failed to read a clipboard item");
+            return null;
+        }
     }
 
     /// <summary>Adds an item once. Returns false when the id is already known.</summary>
-    public bool Add(ClipboardRecord record)
+    public async Task<bool> AddAsync(ClipboardRecord record)
     {
-        lock (_gate)
+        await _writeGate.WaitAsync();
+        try
         {
-            if (_items.Any(item => string.Equals(item.Id, record.Id, StringComparison.Ordinal)))
-                return false;
+            await using var connection = await OpenAsync();
+            using var transaction = connection.BeginTransaction();
 
-            _items.Add(record);
-            Trim();
-            Save();
-            return true;
+            await using var command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText =
+                """
+                INSERT OR IGNORE INTO Items
+                    (Id, OriginDeviceId, OriginDeviceName, Kind, Content, Meta, DataFile, Hash, At,
+                     TotalBytes, Progress, Files, Roots, PendingFor, DeliveredTo, FailedFor)
+                VALUES
+                    ($id, $originId, $originName, $kind, $content, $meta, $dataFile, $hash, $at,
+                     $totalBytes, $progress, $files, $roots, $pending, $delivered, $failed);
+                """;
+
+            AddRecordParameters(command, record);
+            var added = await command.ExecuteNonQueryAsync() > 0;
+
+            if (added)
+                await TrimAsync(connection, transaction);
+
+            transaction.Commit();
+            return added;
+        }
+        finally
+        {
+            _writeGate.Release();
         }
     }
 
-    public void MarkPending(string id, string peerId)
+    public Task MarkPendingAsync(string id, string peerId) => UpdateDeliveryAsync(id, peerId, DeliveryState.Pending);
+
+    public Task MarkDeliveredAsync(string id, string peerId) => UpdateDeliveryAsync(id, peerId, DeliveryState.Delivered);
+
+    public Task MarkFailedAsync(string id, string peerId) => UpdateDeliveryAsync(id, peerId, DeliveryState.Failed);
+
+    /// <summary>Transient progress for the interface; it is not written on every chunk.</summary>
+    public void SetProgress(string id, long progress) => _progress[id] = progress;
+
+    /// <summary>Marks a received file item complete.</summary>
+    public async Task CompleteFileAsync(string id)
     {
-        lock (_gate)
+        await _writeGate.WaitAsync();
+        try
         {
-            var record = FindUnlocked(id);
-            if (record is null) return;
-
-            record.FailedFor.RemoveAll(peer => peer == peerId);
-            if (!record.DeliveredTo.Contains(peerId) && !record.PendingFor.Contains(peerId))
-                record.PendingFor.Add(peerId);
-
-            Save();
+            await using var connection = await OpenAsync();
+            await using var command = connection.CreateCommand();
+            command.CommandText = "UPDATE Items SET Progress = TotalBytes WHERE Id = $id";
+            command.Parameters.AddWithValue("$id", id);
+            await command.ExecuteNonQueryAsync();
+            _progress.TryRemove(id, out _);
         }
-    }
-
-    public void MarkDelivered(string id, string peerId)
-    {
-        lock (_gate)
+        finally
         {
-            var record = FindUnlocked(id);
-            if (record is null) return;
-
-            record.PendingFor.RemoveAll(peer => peer == peerId);
-            record.FailedFor.RemoveAll(peer => peer == peerId);
-            if (!record.DeliveredTo.Contains(peerId))
-                record.DeliveredTo.Add(peerId);
-
-            Save();
-        }
-    }
-
-    public void MarkFailed(string id, string peerId)
-    {
-        lock (_gate)
-        {
-            var record = FindUnlocked(id);
-            if (record is null) return;
-
-            record.PendingFor.RemoveAll(peer => peer == peerId);
-            if (!record.FailedFor.Contains(peerId))
-                record.FailedFor.Add(peerId);
-
-            Save();
-        }
-    }
-
-    /// <summary>Updates the transient progress counter without rewriting the history file per chunk.</summary>
-    public void SetProgress(string id, long progress)
-    {
-        lock (_gate)
-        {
-            var record = FindUnlocked(id);
-            if (record is null) return;
-
-            record.Progress = progress;
-        }
-    }
-
-    /// <summary>Marks a received file item complete; its bytes live in the blob store.</summary>
-    public void CompleteFile(string id)
-    {
-        lock (_gate)
-        {
-            var record = FindUnlocked(id);
-            if (record is null) return;
-
-            record.Progress = record.TotalBytes;
-            Save();
-        }
-    }
-
-    /// <summary>Removes a failed incoming item before it ever reached the board.</summary>
-    public void Remove(string id)
-    {
-        lock (_gate)
-        {
-            var record = FindUnlocked(id);
-            if (record is null) return;
-
-            DeleteBinary(record.DataFile);
-            ClipboardFiles.DeleteView(record.Id);
-            _items.Remove(record);
-            Save();
-            BlobStore.GarbageCollect(HashesUnlocked());
+            _writeGate.Release();
         }
     }
 
     /// <summary>Forgets a device's delivery state when it is unpaired.</summary>
-    public void ForgetPeer(string peerId)
+    public async Task ForgetPeerAsync(string peerId)
     {
-        lock (_gate)
+        await _writeGate.WaitAsync();
+        try
         {
-            var changed = false;
-            foreach (var record in _items)
+            await using var connection = await OpenAsync();
+            using var transaction = connection.BeginTransaction();
+            await using var select = connection.CreateCommand();
+            select.Transaction = transaction;
+            select.CommandText = $"SELECT {SelectColumns} FROM Items";
+
+            var changed = new List<ClipboardRecord>();
+            await using (var reader = await select.ExecuteReaderAsync())
+                while (await reader.ReadAsync())
+                    changed.Add(ReadRecord(reader));
+
+            foreach (var record in changed)
             {
-                changed |= record.PendingFor.RemoveAll(peer => peer == peerId) > 0;
-                changed |= record.DeliveredTo.RemoveAll(peer => peer == peerId) > 0;
-                changed |= record.FailedFor.RemoveAll(peer => peer == peerId) > 0;
+                var touched = record.PendingFor.RemoveAll(peer => peer == peerId) > 0;
+                touched |= record.DeliveredTo.RemoveAll(peer => peer == peerId) > 0;
+                touched |= record.FailedFor.RemoveAll(peer => peer == peerId) > 0;
+
+                if (touched)
+                    await UpdateAsync(connection, transaction, record);
             }
 
-            if (changed)
-                Save();
+            transaction.Commit();
+        }
+        finally
+        {
+            _writeGate.Release();
         }
     }
 
-    private ClipboardRecord? FindUnlocked(string id) =>
-        _items.FirstOrDefault(item => string.Equals(item.Id, id, StringComparison.Ordinal));
+    /// <summary>Removes an item and its local files.</summary>
+    public async Task RemoveAsync(string id)
+    {
+        await _writeGate.WaitAsync();
+        try
+        {
+            await using var connection = await OpenAsync();
+            using var transaction = connection.BeginTransaction();
+            var record = await ReadOneAsync(connection, transaction, id);
 
-    private IEnumerable<string> HashesUnlocked() =>
-        _items.SelectMany(item => item.Files ?? [])
-            .Where(entry => !entry.Directory && entry.Hash.Length == 64)
-            .Select(entry => entry.Hash);
+            if (record is null)
+            {
+                transaction.Commit();
+                return;
+            }
 
-    /// <summary>Drops remote file items that were still arriving when the app stopped.</summary>
-    private void CleanupIncomplete()
+            await using (var command = connection.CreateCommand())
+            {
+                command.Transaction = transaction;
+                command.CommandText = "DELETE FROM Items WHERE Id = $id";
+                command.Parameters.AddWithValue("$id", id);
+                await command.ExecuteNonQueryAsync();
+            }
+
+            transaction.Commit();
+            DeleteRecordFiles(record);
+            _progress.TryRemove(id, out _);
+            BlobStore.GarbageCollect(await ReadHashesAsync());
+        }
+        finally
+        {
+            _writeGate.Release();
+        }
+    }
+
+    /// <summary>Drops blobs no item refers to, for example after a refused capture.</summary>
+    public async Task CollectGarbageAsync() => BlobStore.GarbageCollect(await ReadHashesAsync());
+
+    private async Task UpdateDeliveryAsync(string id, string peerId, DeliveryState state)
+    {
+        await _writeGate.WaitAsync();
+        try
+        {
+            await using var connection = await OpenAsync();
+            using var transaction = connection.BeginTransaction();
+            var record = await ReadOneAsync(connection, transaction, id);
+
+            if (record is null)
+            {
+                transaction.Commit();
+                return;
+            }
+
+            switch (state)
+            {
+                case DeliveryState.Pending:
+                    record.FailedFor.RemoveAll(peer => peer == peerId);
+                    if (!record.DeliveredTo.Contains(peerId) && !record.PendingFor.Contains(peerId))
+                        record.PendingFor.Add(peerId);
+                    break;
+
+                case DeliveryState.Delivered:
+                    record.PendingFor.RemoveAll(peer => peer == peerId);
+                    record.FailedFor.RemoveAll(peer => peer == peerId);
+                    if (!record.DeliveredTo.Contains(peerId))
+                        record.DeliveredTo.Add(peerId);
+                    break;
+
+                case DeliveryState.Failed:
+                    record.PendingFor.RemoveAll(peer => peer == peerId);
+                    if (!record.FailedFor.Contains(peerId))
+                        record.FailedFor.Add(peerId);
+                    break;
+            }
+
+            await UpdateAsync(connection, transaction, record);
+            transaction.Commit();
+        }
+        finally
+        {
+            _writeGate.Release();
+        }
+    }
+
+    private async Task TrimAsync(SqliteConnection connection, SqliteTransaction transaction)
+    {
+        var limit = Math.Clamp(SettingsService.Instance.Current.HistoryLimit, 10, 5000);
+        var removed = new List<(string Id, string? DataFile)>();
+
+        await using (var select = connection.CreateCommand())
+        {
+            select.Transaction = transaction;
+            select.CommandText = "SELECT Id, DataFile FROM Items ORDER BY At DESC LIMIT -1 OFFSET $limit";
+            select.Parameters.AddWithValue("$limit", limit);
+
+            await using var reader = await select.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+                removed.Add((reader.GetString(0), reader.IsDBNull(1) ? null : reader.GetString(1)));
+        }
+
+        foreach (var (id, dataFile) in removed)
+        {
+            await using var delete = connection.CreateCommand();
+            delete.Transaction = transaction;
+            delete.CommandText = "DELETE FROM Items WHERE Id = $id";
+            delete.Parameters.AddWithValue("$id", id);
+            await delete.ExecuteNonQueryAsync();
+
+            DeleteBinary(dataFile);
+            ClipboardFiles.DeleteView(id);
+            _progress.TryRemove(id, out _);
+        }
+
+        if (removed.Count > 0)
+            BlobStore.GarbageCollect(await ReadHashesAsync(connection, transaction));
+    }
+
+    private async Task MigrateLegacyAsync(SqliteConnection connection)
+    {
+        if (!File.Exists(LegacyPath))
+            return;
+
+        try
+        {
+            await using (var count = connection.CreateCommand())
+            {
+                count.CommandText = "SELECT COUNT(*) FROM Items";
+                if (Convert.ToInt64(await count.ExecuteScalarAsync()) > 0)
+                {
+                    File.Move(LegacyPath, LegacyPath + ".migrated", true);
+                    return;
+                }
+            }
+
+            var json = await File.ReadAllTextAsync(LegacyPath);
+            var stored = JsonSerializer.Deserialize(json, AppJsonContext.Default.ClipboardRecordArray) ?? [];
+
+            await _writeGate.WaitAsync();
+            try
+            {
+                using var transaction = connection.BeginTransaction();
+
+                foreach (var record in stored)
+                {
+                    await using var insert = connection.CreateCommand();
+                    insert.Transaction = transaction;
+                    insert.CommandText =
+                        """
+                        INSERT OR IGNORE INTO Items
+                            (Id, OriginDeviceId, OriginDeviceName, Kind, Content, Meta, DataFile, Hash, At,
+                             TotalBytes, Progress, Files, Roots, PendingFor, DeliveredTo, FailedFor)
+                        VALUES
+                            ($id, $originId, $originName, $kind, $content, $meta, $dataFile, $hash, $at,
+                             $totalBytes, $progress, $files, $roots, $pending, $delivered, $failed);
+                        """;
+                    AddRecordParameters(insert, record);
+                    await insert.ExecuteNonQueryAsync();
+                }
+
+                transaction.Commit();
+            }
+            finally
+            {
+                _writeGate.Release();
+            }
+
+            File.Move(LegacyPath, LegacyPath + ".migrated", true);
+            Constants.Logger.Information("Migrated {Count} clipboard items from history.json", stored.Length);
+        }
+        catch (Exception ex)
+        {
+            Constants.Logger.Warning(ex, "Failed to migrate history.json");
+        }
+    }
+
+    private async Task CleanupAsync(SqliteConnection connection)
     {
         var localId = DeviceIdentity.Instance.Id;
-        var incomplete = _items
+        var items = new List<ClipboardRecord>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = $"SELECT {SelectColumns} FROM Items";
+            await using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+                items.Add(ReadRecord(reader));
+        }
+
+        var incomplete = items
             .Where(item => item.Kind == "file" &&
                            item.OriginDeviceId != localId &&
                            item.Progress < item.TotalBytes)
             .ToArray();
 
-        if (incomplete.Length == 0)
-            return;
-
-        foreach (var item in incomplete)
+        if (incomplete.Length > 0)
         {
-            ClipboardFiles.DeleteView(item.Id);
-            _items.Remove(item);
+            await _writeGate.WaitAsync();
+            try
+            {
+                using var transaction = connection.BeginTransaction();
+
+                foreach (var item in incomplete)
+                {
+                    await using var delete = connection.CreateCommand();
+                    delete.Transaction = transaction;
+                    delete.CommandText = "DELETE FROM Items WHERE Id = $id";
+                    delete.Parameters.AddWithValue("$id", item.Id);
+                    await delete.ExecuteNonQueryAsync();
+
+                    DeleteRecordFiles(item);
+                    items.Remove(item);
+                }
+
+                transaction.Commit();
+            }
+            finally
+            {
+                _writeGate.Release();
+            }
         }
 
-        Save();
+        var ids = items.Select(item => item.Id).ToHashSet(StringComparer.Ordinal);
+        var views = Path.Combine(Constants.DataDirectory, "clipboard", "items");
+
+        if (Directory.Exists(views))
+            try
+            {
+                foreach (var directory in Directory.EnumerateDirectories(views))
+                    if (!ids.Contains(Path.GetFileName(directory)))
+                        ClipboardFiles.DeleteView(Path.GetFileName(directory));
+            }
+            catch (Exception ex)
+            {
+                Constants.Logger.Debug(ex, "Failed to clean up clipboard views");
+            }
+
+        BlobStore.GarbageCollect(items.SelectMany(item => item.Files ?? [])
+            .Where(entry => !entry.Directory && entry.Hash.Length == 64)
+            .Select(entry => entry.Hash));
     }
 
-    /// <summary>Removes view folders whose item no longer exists.</summary>
-    private void CleanupViews()
+    private async Task<IEnumerable<string>> ReadHashesAsync()
     {
-        var root = Path.Combine(Constants.DataDirectory, "clipboard", "items");
-        if (!Directory.Exists(root))
-            return;
-
-        var ids = _items.Select(item => item.Id).ToHashSet(StringComparer.Ordinal);
-
-        try
-        {
-            foreach (var directory in Directory.EnumerateDirectories(root))
-                if (!ids.Contains(Path.GetFileName(directory)))
-                    ClipboardFiles.DeleteView(Path.GetFileName(directory));
-        }
-        catch (Exception ex)
-        {
-            Constants.Logger.Debug(ex, "Failed to clean up clipboard views");
-        }
+        await using var connection = await OpenAsync();
+        return await ReadHashesAsync(connection, null);
     }
 
-    /// <summary>Writes an image payload under the data folder and returns its relative path.</summary>
-    public static string SaveBinary(string id, byte[] data, string extension)
+    private static async Task<IEnumerable<string>> ReadHashesAsync(SqliteConnection connection,
+        SqliteTransaction? transaction)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = "SELECT Files FROM Items WHERE Files IS NOT NULL";
+
+        var hashes = new List<string>();
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            var files = JsonSerializer.Deserialize(reader.GetString(0), AppJsonContext.Default.ClipboardFileEntryArray);
+            if (files is null)
+                continue;
+
+            hashes.AddRange(files.Where(entry => !entry.Directory && entry.Hash.Length == 64)
+                .Select(entry => entry.Hash));
+        }
+
+        return hashes;
+    }
+
+    private static async Task<ClipboardRecord?> ReadOneAsync(SqliteConnection connection,
+        SqliteTransaction transaction, string id)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = $"SELECT {SelectColumns} FROM Items WHERE Id = $id";
+        command.Parameters.AddWithValue("$id", id);
+
+        await using var reader = await command.ExecuteReaderAsync();
+        return await reader.ReadAsync() ? ReadRecord(reader) : null;
+    }
+
+    private static ClipboardRecord ReadRecord(SqliteDataReader reader) => new()
+    {
+        Id = reader.GetString(0),
+        OriginDeviceId = reader.GetString(1),
+        OriginDeviceName = reader.GetString(2),
+        Kind = reader.GetString(3),
+        Content = reader.GetString(4),
+        Meta = reader.IsDBNull(5) ? null : reader.GetString(5),
+        DataFile = reader.IsDBNull(6) ? null : reader.GetString(6),
+        Hash = reader.IsDBNull(7) ? null : reader.GetString(7),
+        At = reader.GetInt64(8),
+        TotalBytes = reader.GetInt64(9),
+        Progress = reader.GetInt64(10),
+        Files = ParseFiles(reader.IsDBNull(11) ? null : reader.GetString(11)),
+        Roots = ParseStrings(reader.IsDBNull(12) ? null : reader.GetString(12)),
+        PendingFor = ParseStrings(reader.IsDBNull(13) ? null : reader.GetString(13)) ?? [],
+        DeliveredTo = ParseStrings(reader.IsDBNull(14) ? null : reader.GetString(14)) ?? [],
+        FailedFor = ParseStrings(reader.IsDBNull(15) ? null : reader.GetString(15)) ?? []
+    };
+
+    private ClipboardRecord OverlayProgress(ClipboardRecord record)
+    {
+        if (_progress.TryGetValue(record.Id, out var progress))
+            record.Progress = progress;
+
+        return record;
+    }
+
+    private static async Task UpdateAsync(SqliteConnection connection, SqliteTransaction transaction,
+        ClipboardRecord record)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            """
+            UPDATE Items SET
+                OriginDeviceId = $originId, OriginDeviceName = $originName, Kind = $kind,
+                Content = $content, Meta = $meta, DataFile = $dataFile, Hash = $hash, At = $at,
+                TotalBytes = $totalBytes, Progress = $progress, Files = $files, Roots = $roots,
+                PendingFor = $pending, DeliveredTo = $delivered, FailedFor = $failed
+            WHERE Id = $id;
+            """;
+        AddRecordParameters(command, record);
+        await command.ExecuteNonQueryAsync();
+    }
+
+    private static void AddRecordParameters(SqliteCommand command, ClipboardRecord record)
+    {
+        command.Parameters.AddWithValue("$id", record.Id);
+        command.Parameters.AddWithValue("$originId", record.OriginDeviceId);
+        command.Parameters.AddWithValue("$originName", record.OriginDeviceName);
+        command.Parameters.AddWithValue("$kind", record.Kind);
+        command.Parameters.AddWithValue("$content", record.Content);
+        command.Parameters.AddWithValue("$meta", (object?)record.Meta ?? DBNull.Value);
+        command.Parameters.AddWithValue("$dataFile", (object?)record.DataFile ?? DBNull.Value);
+        command.Parameters.AddWithValue("$hash", (object?)record.Hash ?? DBNull.Value);
+        command.Parameters.AddWithValue("$at", record.At);
+        command.Parameters.AddWithValue("$totalBytes", record.TotalBytes);
+        command.Parameters.AddWithValue("$progress", record.Progress);
+        command.Parameters.AddWithValue("$files", JsonFiles(record.Files) ?? (object)DBNull.Value);
+        command.Parameters.AddWithValue("$roots", JsonStrings(record.Roots) ?? (object)DBNull.Value);
+        command.Parameters.AddWithValue("$pending", JsonStrings(record.PendingFor) ?? "[]");
+        command.Parameters.AddWithValue("$delivered", JsonStrings(record.DeliveredTo) ?? "[]");
+        command.Parameters.AddWithValue("$failed", JsonStrings(record.FailedFor) ?? "[]");
+    }
+
+    private static string? JsonFiles(List<ClipboardFileEntry>? files) =>
+        files is null ? null : JsonSerializer.Serialize(files.ToArray(), AppJsonContext.Default.ClipboardFileEntryArray);
+
+    private static string? JsonStrings(List<string>? values) =>
+        values is null ? null : JsonSerializer.Serialize(values, AppJsonContext.Default.ListString);
+
+    private static List<ClipboardFileEntry>? ParseFiles(string? json) =>
+        json is null ? null : JsonSerializer.Deserialize(json, AppJsonContext.Default.ClipboardFileEntryArray)?.ToList();
+
+    private static List<string>? ParseStrings(string? json) =>
+        json is null ? null : JsonSerializer.Deserialize(json, AppJsonContext.Default.ListString);
+
+    public static async Task<string> SaveBinaryAsync(string id, byte[] data, string extension)
     {
         var directory = Path.Combine(Constants.DataDirectory, "clipboard");
         Directory.CreateDirectory(directory);
 
         var name = id + extension;
-        File.WriteAllBytes(Path.Combine(directory, name), data);
+        await File.WriteAllBytesAsync(Path.Combine(directory, name), data);
         return Path.Combine("clipboard", name);
     }
 
-    public static byte[]? ReadBinary(string? relativePath)
+    public static async Task<byte[]?> ReadBinaryAsync(string? relativePath)
     {
         if (string.IsNullOrEmpty(relativePath))
             return null;
 
         var path = Path.Combine(Constants.DataDirectory, relativePath);
-        return File.Exists(path) ? File.ReadAllBytes(path) : null;
+        return File.Exists(path) ? await File.ReadAllBytesAsync(path) : null;
+    }
+
+    private static void DeleteRecordFiles(ClipboardRecord record)
+    {
+        DeleteBinary(record.DataFile);
+        ClipboardFiles.DeleteView(record.Id);
     }
 
     private static void DeleteBinary(string? relativePath)
@@ -257,47 +626,22 @@ internal sealed class ClipboardStore : Singleton<ClipboardStore>
         }).OnFailure(ex => Constants.Logger.Debug(ex, "Failed to delete {Path}", relativePath));
     }
 
-    private void Trim()
+    private async Task<SqliteConnection> OpenAsync()
     {
-        var limit = Math.Clamp(SettingsService.Instance.Current.HistoryLimit, 10, 5000);
-        if (_items.Count <= limit)
-            return;
+        var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
 
-        foreach (var old in _items.OrderByDescending(item => item.At).Skip(limit).ToArray())
-        {
-            DeleteBinary(old.DataFile);
-            ClipboardFiles.DeleteView(old.Id);
-            _items.Remove(old);
-        }
+        await using var command = connection.CreateCommand();
+        command.CommandText = "PRAGMA busy_timeout=5000;";
+        await command.ExecuteNonQueryAsync();
 
-        Save();
-        BlobStore.GarbageCollect(HashesUnlocked());
+        return connection;
     }
 
-    private void Load()
+    private enum DeliveryState
     {
-        if (!File.Exists(FilePath))
-            return;
-
-        var stored = Try.Run(() => JsonSerializer.Deserialize(File.ReadAllText(FilePath),
-                AppJsonContext.Default.ClipboardRecordArray))
-            .OnFailure(ex => Log.Warning(ex, "Failed to read {File}", FilePath))
-            .GetOrNull();
-
-        if (stored is null)
-            return;
-
-        lock (_gate)
-        {
-            _items.Clear();
-            _items.AddRange(stored.Where(item => item.Id.Length > 0 && item.Content.Length > 0));
-            Trim();
-        }
+        Pending,
+        Delivered,
+        Failed
     }
-
-    /// <summary>Callers hold <see cref="_gate" />.</summary>
-    private void Save() =>
-        Try.Run(() => File.WriteAllText(FilePath,
-                JsonSerializer.Serialize(_items.ToArray(), AppJsonContext.Default.ClipboardRecordArray)))
-            .OnFailure(ex => Log.Warning(ex, "Failed to write {File}", FilePath));
 }
