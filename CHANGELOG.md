@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.6.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.5.0..v0.6.0) - 2026-11-03
+
+### ⛰️  Features
+
+- *(ui)* Surface available updates in the footer and settings - ([4b4e884](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/4b4e8842f9954987db43ee1c85ba1cee33633d6d))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([83a3f64](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/83a3f643b31b8b9ca504d140892afbf39074524e))
+
+
 ## [0.5.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.4.3..v0.5.0) - 2026-11-03
 
 ### ⛰️  Features
