@@ -46,14 +46,12 @@ ClipboardSync は自分の端末を一度ペアリングすれば、あとは自
   ピアの数。
 - **ボードの自動補完** — 定期的な照合が、確認されていない項目を送り直します。もう一度ペアリング
   すると現在のボードをまとめて送り、オフラインだった端末は戻ったときに不足分を埋めます。
-- **トレイと自動起動** — 閉じるとトレイに残り、非表示で起動でき、サインイン時に自動起動し、二重起動
-  を防ぎます。
 
 ## 使用技術
 
 - **.NET 10 上の C#** — クリップボードの監視と書き込み、ピア検出、TCP セッション、ペアリング、
   暗号化、履歴、トレイ、設定。
-- **React 19 + TypeScript**、**Vite** でバンドルし **styled-components** でスタイル —
+- **React 19 + TypeScript**、 **Vite** でバンドルし **styled-components** でスタイル —
   インターフェース。C# 側と JSON メッセージを交換するだけで、自身では処理を行いません。
 - **Photino.NET** — デスクトップシェル。OS 自身の Web ビューでインターフェースを表示するため、
   Web ビューが実行時の依存になります: Windows は WebView2、Linux は WebKitGTK。
@@ -66,12 +64,12 @@ ClipboardSync は自分の端末を一度ペアリングすれば、あとは自
 
 4 種類のパッケージを公開しています:
 
-| ファイル                                       | 内容                                                                                                                                                              |
-|------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ファイル                                       | 内容                                                                                                                                                                                    |
+|------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `ClipboardSync-<version>-win-x64.msi`          | ユーザーごとの Windows インストーラー。`%LOCALAPPDATA%\Programs\ClipboardSync` にインストールし、スタートメニューとデスクトップにショートカットを作成します。管理者権限は要求しません。 |
-| `clipboardsync-<version>-1.fcXX.x86_64.rpm`    | Fedora パッケージ: `sudo dnf install ./clipboardsync-<version>-*.rpm`。`/opt/ClipboardSync` にインストールし、`clipboardsync` コマンド、デスクトップエントリ、アイコンを追加します。 |
-| `clipboardsync_<version>_amd64.deb`            | Debian/Ubuntu パッケージ: `sudo apt install ./clipboardsync_<version>_amd64.deb`。構成は RPM と同じです。                                                          |
-| `clipboardsync-<version>-1-x86_64.pkg.tar.zst` | Arch Linux パッケージ: `sudo pacman -U clipboardsync-<version>-1-x86_64.pkg.tar.zst`。構成は RPM と同じです。                                                      |
+| `clipboardsync-<version>-1.fcXX.x86_64.rpm`    | Fedora パッケージ: `sudo dnf install ./clipboardsync-<version>-*.rpm`。`/opt/ClipboardSync` にインストールし、`clipboardsync` コマンド、デスクトップエントリ、アイコンを追加します。    |
+| `clipboardsync_<version>_amd64.deb`            | Debian/Ubuntu パッケージ: `sudo apt install ./clipboardsync_<version>_amd64.deb`。構成は RPM と同じです。                                                                               |
+| `clipboardsync-<version>-1-x86_64.pkg.tar.zst` | Arch Linux パッケージ: `sudo pacman -U clipboardsync-<version>-1-x86_64.pkg.tar.zst`。構成は RPM と同じです。                                                                           |
 
 ### Windows
 
@@ -177,14 +175,14 @@ VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/li
 
 ## 保存場所
 
-|                   | Windows                                            | Linux                                              |
-|-------------------|----------------------------------------------------|----------------------------------------------------|
-| 設定              | `%APPDATA%\ClipboardSync\settings.json`            | `~/.config/ClipboardSync/settings.json`            |
+|                    | Windows                                            | Linux                                              |
+|--------------------|----------------------------------------------------|----------------------------------------------------|
+| 設定               | `%APPDATA%\ClipboardSync\settings.json`            | `~/.config/ClipboardSync/settings.json`            |
 | ペアリング済み端末 | `%APPDATA%\ClipboardSync\peers.json`               | `~/.config/ClipboardSync/peers.json`               |
-| 端末の識別情報    | `%APPDATA%\ClipboardSync\device.key`               | `~/.config/ClipboardSync/device.key`               |
-| 履歴              | `%LOCALAPPDATA%\ClipboardSync\history.json`        | `~/.local/share/ClipboardSync/history.json`        |
-| 画像キャッシュ    | `%LOCALAPPDATA%\ClipboardSync\clipboard`           | `~/.local/share/ClipboardSync/clipboard`           |
-| ログ              | `%APPDATA%\ClipboardSync\logs\clipboardsync-*.log` | `~/.config/ClipboardSync/logs/clipboardsync-*.log` |
+| 端末の識別情報     | `%APPDATA%\ClipboardSync\device.key`               | `~/.config/ClipboardSync/device.key`               |
+| 履歴               | `%LOCALAPPDATA%\ClipboardSync\history.json`        | `~/.local/share/ClipboardSync/history.json`        |
+| 画像キャッシュ     | `%LOCALAPPDATA%\ClipboardSync\clipboard`           | `~/.local/share/ClipboardSync/clipboard`           |
+| ログ               | `%APPDATA%\ClipboardSync\logs\clipboardsync-*.log` | `~/.config/ClipboardSync/logs/clipboardsync-*.log` |
 
 識別鍵はペアリング時に相手が記録するものです。設定フォルダは自分のアカウントだけが読めるように
 してください。履歴は **設定 → 履歴 → 保持する項目数** で上限が決まります。
@@ -198,8 +196,8 @@ VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/li
   いるのはテキスト、URL、PNG 画像です。設定した上限より大きい画像はスキップされます。
 - メッシュは、各端末が TCP 45456 でほかの端末に到達できることが前提です。UDP 45457 は検出の
   ヒントにすぎません。ブロードキャストが使えないネットワークでは手動アドレス欄を使ってください。
-- ウィンドウを閉じるとアプリはトレイに移動します。トレイに入った状態で起動したい場合は
-  **ウィンドウを隠して起動** をオンにしてください。トレイがない環境では常にウィンドウが表示されます。
+- ウィンドウを閉じるとアプリはトレイに移動します。トレイに入った状態で起動したい場合は **ウィンドウを隠して起動**
+  をオンにしてください。トレイがない環境では常にウィンドウが表示されます。
 - Linux はコンポジターのネイティブタイトルバーを使います。Windows はフレームを残し、その内側に
   インターフェースのタイトルバーを描きます。これにより、装飾なしウィンドウを強制したときに KWin が
   残す二重のタイトルバーを避けられます。

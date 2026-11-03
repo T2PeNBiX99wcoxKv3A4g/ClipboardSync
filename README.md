@@ -47,8 +47,6 @@ keeps them on the same board, on your own network, with the clipboard contents e
 - **Convergence** — a periodic reconciliation resends anything a peer has not acknowledged, and
   pairing again sends the current board as a catch-up. A device that was offline fills in the gaps
   when it returns.
-- **Tray and autostart** — close to the tray, start hidden, launch at sign-in, and keep a single
-  instance.
 
 ## Built with
 
@@ -67,12 +65,12 @@ installed for them. What the operating system still has to provide is listed bel
 
 Four package formats are published beside the plain archives:
 
-| File                                             | What it does                                                                                                                                                                          |
-|--------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `ClipboardSync-<version>-win-x64.msi`            | Per-user Windows installer: installs into `%LOCALAPPDATA%\Programs\ClipboardSync`, adds Start menu and desktop shortcuts, and never asks for administrator rights.                      |
-| `clipboardsync-<version>-1.fcXX.x86_64.rpm`      | Fedora package: `sudo dnf install ./clipboardsync-<version>-*.rpm`. Installs to `/opt/ClipboardSync` with a `clipboardsync` command, a desktop entry and the icon.                     |
-| `clipboardsync_<version>_amd64.deb`              | Debian/Ubuntu package: `sudo apt install ./clipboardsync_<version>_amd64.deb`. Same layout as the RPM.                                                                                |
-| `clipboardsync-<version>-1-x86_64.pkg.tar.zst`   | Arch Linux package: `sudo pacman -U clipboardsync-<version>-1-x86_64.pkg.tar.zst`. Same layout as the RPM.                                                                            |
+| File                                           | What it does                                                                                                                                                       |
+|------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `ClipboardSync-<version>-win-x64.msi`          | Per-user Windows installer: installs into `%LOCALAPPDATA%\Programs\ClipboardSync`, adds Start menu and desktop shortcuts, and never asks for administrator rights. |
+| `clipboardsync-<version>-1.fcXX.x86_64.rpm`    | Fedora package: `sudo dnf install ./clipboardsync-<version>-*.rpm`. Installs to `/opt/ClipboardSync` with a `clipboardsync` command, a desktop entry and the icon. |
+| `clipboardsync_<version>_amd64.deb`            | Debian/Ubuntu package: `sudo apt install ./clipboardsync_<version>_amd64.deb`. Same layout as the RPM.                                                             |
+| `clipboardsync-<version>-1-x86_64.pkg.tar.zst` | Arch Linux package: `sudo pacman -U clipboardsync-<version>-1-x86_64.pkg.tar.zst`. Same layout as the RPM.                                                         |
 
 ### Windows
 

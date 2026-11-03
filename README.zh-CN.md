@@ -40,7 +40,6 @@ ClipboardSync 只需把自己的设备配对一次，之后就在你自己的网
 - **每个项目的传输状态** — 已同步、发送中、接收中、等待中或失败，并显示有多少对端持有该项目。
 - **最终一致** — 定期核对会重发尚未被确认的项目；再次配对会把当前面板补发过去；曾经离线的设备
   在恢复后会自动补齐。
-- **托盘与自动启动** — 关闭后留在托盘、可隐藏启动、登录时自动启动，并避免重复打开。
 
 ## 技术栈
 
@@ -57,12 +56,12 @@ ClipboardSync 只需把自己的设备配对一次，之后就在你自己的网
 
 同时发布四种软件包格式：
 
-| 文件                                             | 作用                                                                                                                                                    |
-|--------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `ClipboardSync-<version>-win-x64.msi`            | 当前用户的 Windows 安装程序：安装到 `%LOCALAPPDATA%\Programs\ClipboardSync`，添加开始菜单和桌面快捷方式，不会请求管理员权限。                          |
-| `clipboardsync-<version>-1.fcXX.x86_64.rpm`      | Fedora 软件包：`sudo dnf install ./clipboardsync-<version>-*.rpm`。安装到 `/opt/ClipboardSync`，并提供 `clipboardsync` 命令、桌面项和图标。             |
-| `clipboardsync_<version>_amd64.deb`              | Debian/Ubuntu 软件包：`sudo apt install ./clipboardsync_<version>_amd64.deb`。布局与 RPM 相同。                                                          |
-| `clipboardsync-<version>-1-x86_64.pkg.tar.zst`   | Arch Linux 软件包：`sudo pacman -U clipboardsync-<version>-1-x86_64.pkg.tar.zst`。布局与 RPM 相同。                                                      |
+| 文件                                           | 作用                                                                                                                                        |
+|------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| `ClipboardSync-<version>-win-x64.msi`          | 当前用户的 Windows 安装程序：安装到 `%LOCALAPPDATA%\Programs\ClipboardSync`，添加开始菜单和桌面快捷方式，不会请求管理员权限。               |
+| `clipboardsync-<version>-1.fcXX.x86_64.rpm`    | Fedora 软件包：`sudo dnf install ./clipboardsync-<version>-*.rpm`。安装到 `/opt/ClipboardSync`，并提供 `clipboardsync` 命令、桌面项和图标。 |
+| `clipboardsync_<version>_amd64.deb`            | Debian/Ubuntu 软件包：`sudo apt install ./clipboardsync_<version>_amd64.deb`。布局与 RPM 相同。                                             |
+| `clipboardsync-<version>-1-x86_64.pkg.tar.zst` | Arch Linux 软件包：`sudo pacman -U clipboardsync-<version>-1-x86_64.pkg.tar.zst`。布局与 RPM 相同。                                         |
 
 ### Windows
 
@@ -162,17 +161,16 @@ VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/li
 
 ## 数据保存位置
 
-|                  | Windows                                            | Linux                                              |
-|------------------|----------------------------------------------------|----------------------------------------------------|
-| 设置             | `%APPDATA%\ClipboardSync\settings.json`            | `~/.config/ClipboardSync/settings.json`            |
-| 已配对设备       | `%APPDATA%\ClipboardSync\peers.json`               | `~/.config/ClipboardSync/peers.json`               |
-| 设备身份         | `%APPDATA%\ClipboardSync\device.key`               | `~/.config/ClipboardSync/device.key`               |
-| 历史             | `%LOCALAPPDATA%\ClipboardSync\history.json`        | `~/.local/share/ClipboardSync/history.json`        |
-| 图片缓存         | `%LOCALAPPDATA%\ClipboardSync\clipboard`           | `~/.local/share/ClipboardSync/clipboard`           |
-| 日志             | `%APPDATA%\ClipboardSync\logs\clipboardsync-*.log` | `~/.config/ClipboardSync/logs/clipboardsync-*.log` |
+|            | Windows                                            | Linux                                              |
+|------------|----------------------------------------------------|----------------------------------------------------|
+| 设置       | `%APPDATA%\ClipboardSync\settings.json`            | `~/.config/ClipboardSync/settings.json`            |
+| 已配对设备 | `%APPDATA%\ClipboardSync\peers.json`               | `~/.config/ClipboardSync/peers.json`               |
+| 设备身份   | `%APPDATA%\ClipboardSync\device.key`               | `~/.config/ClipboardSync/device.key`               |
+| 历史       | `%LOCALAPPDATA%\ClipboardSync\history.json`        | `~/.local/share/ClipboardSync/history.json`        |
+| 图片缓存   | `%LOCALAPPDATA%\ClipboardSync\clipboard`           | `~/.local/share/ClipboardSync/clipboard`           |
+| 日志       | `%APPDATA%\ClipboardSync\logs\clipboardsync-*.log` | `~/.config/ClipboardSync/logs/clipboardsync-*.log` |
 
-身份密钥就是配对时对方记录的公钥，因此设置文件夹应只允许你的账户访问。历史记录的上限由
-**设置 → 历史 → 保留项目数** 控制。
+身份密钥就是配对时对方记录的公钥，因此设置文件夹应只允许你的账户访问。历史记录的上限由 **设置 → 历史 → 保留项目数** 控制。
 
 日志会写入文件，同时镜像到控制台，因此报告问题时提供日志文件就够了。日志每天滚动，保留最近
 7 天。
