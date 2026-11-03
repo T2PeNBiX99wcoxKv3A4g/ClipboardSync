@@ -2,12 +2,13 @@ import styled from "styled-components";
 import {useEffect, useState} from "react";
 import {useLocale, useTranslation} from "@photino-net-utils/bridge";
 import {getImagePreview, type ClipboardItem, type ClipboardKind, type TransferStatus} from "../api/peer";
-import {relativeTime} from "../utils/format";
+import {relativeTime, formatSize} from "../utils/format";
 import {
     CheckIcon,
     CopyIcon,
     DownloadIcon,
     FileIcon,
+    FolderIcon,
     ImageIcon,
     LinkIcon,
     TextIcon,
@@ -29,6 +30,20 @@ export function ClipboardEntry({item, copied, onCopy}: ClipboardEntryProps) {
     const count = `${item.reached}/${item.peers}`;
     const showCount = item.status !== "received" && item.peers > 0;
     const [preview, setPreview] = useState<string | null | undefined>(undefined);
+    const fileCount = item.files?.filter((file) => !file.directory).length ?? 0;
+    const percent = item.kind === "file" && item.totalBytes > 0
+        ? Math.min(100, Math.round(item.progress / item.totalBytes * 100))
+        : null;
+    const title = item.kind === "file"
+        ? item.files?.length === 1
+            ? item.files[0].path
+            : t("{count} items", {count: item.files?.length ?? 0})
+        : item.content;
+    const meta = item.kind === "file"
+        ? fileCount === 0
+            ? t("Empty folder")
+            : `${fileCount === 1 ? t("1 file") : t("{count} files", {count: fileCount})} · ${formatSize(item.totalBytes)}`
+        : item.meta;
 
     useEffect(() => {
         if (item.kind !== "image") return;
@@ -55,9 +70,9 @@ export function ClipboardEntry({item, copied, onCopy}: ClipboardEntryProps) {
                 </Kind>
 
                 <Text>
-                    <Content title={item.content}>{item.content}</Content>
+                    <Content title={title}>{title}</Content>
                     <Meta>
-                        {item.meta && <span>{item.meta}</span>}
+                        {meta && <span>{meta}</span>}
                         <span>{relativeTime(item.at, locale)}</span>
                     </Meta>
                 </Text>
@@ -84,6 +99,19 @@ export function ClipboardEntry({item, copied, onCopy}: ClipboardEntryProps) {
                 </Preview>
             )}
 
+            {item.kind === "file" && item.files && item.files.length > 0 && (
+                <FileList>
+                    {item.files.slice(0, 4).map((file) => (
+                        <FileRow key={file.path}>
+                            {file.directory ? <FolderIcon size={11}/> : <FileIcon size={11}/>}
+                            <FileName title={file.path}>{file.path}</FileName>
+                            {!file.directory && <FileSize>{formatSize(file.size)}</FileSize>}
+                        </FileRow>
+                    ))}
+                    {item.files.length > 4 && <More>+{item.files.length - 4}</More>}
+                </FileList>
+            )}
+
             <Bottom>
                 <Status
                     $status={item.status}
@@ -96,6 +124,7 @@ export function ClipboardEntry({item, copied, onCopy}: ClipboardEntryProps) {
                 >
                     <Dot/>
                     {t(status)}
+                    {percent !== null && item.status === "transferring" && <Percent>{percent}%</Percent>}
                     {showCount && <Count>{count}</Count>}
                 </Status>
 
@@ -216,8 +245,51 @@ const PreviewPlaceholder = styled.div`
     background: linear-gradient(135deg, rgba(96, 165, 250, 0.08), rgba(255, 138, 61, 0.04));
 `;
 
-const Kind = styled.span<{ $kind: ClipboardKind }>`
-    display: grid;
+const FileList = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 7px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: rgba(10, 8, 6, 0.45);
+`;
+
+const FileRow = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+
+    svg {
+        flex-shrink: 0;
+        color: #ffd166;
+    }
+`;
+
+const FileName = styled.span`
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+`;
+
+const FileSize = styled.span`
+    margin-left: auto;
+    color: var(--text-muted);
+`;
+
+const More = styled.span`
+    padding-left: 17px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+`;
+
+const Kind = styled.span<{ $kind: ClipboardKind }>`    display: grid;
     place-items: center;
     width: 26px;
     height: 26px;
@@ -311,6 +383,13 @@ const Count = styled.span`
     border-radius: 3px;
     background: rgba(255, 255, 255, 0.05);
     color: var(--text-secondary);
+`;
+
+const Percent = styled.span`
+    padding: 1px 4px;
+    border-radius: 3px;
+    background: rgba(255, 138, 61, 0.12);
+    color: var(--accent-primary);
 `;
 
 const Direction = styled.span`

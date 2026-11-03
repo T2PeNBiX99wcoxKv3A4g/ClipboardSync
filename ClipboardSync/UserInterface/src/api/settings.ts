@@ -11,6 +11,7 @@ export interface Settings {
     syncFiles: boolean;
     historyLimit: number;
     maxImageMb: number;
+    maxFileMb: number;
 }
 
 /** Used in a browser preview, where there is no settings file to read. */
@@ -21,9 +22,10 @@ export const PREVIEW_SETTINGS: Settings = {
     syncEnabled: true,
     syncText: true,
     syncImages: true,
-    syncFiles: false,
+    syncFiles: true,
     historyLimit: 200,
     maxImageMb: 10,
+    maxFileMb: 512,
 };
 
 export async function getSettings(): Promise<Settings> {

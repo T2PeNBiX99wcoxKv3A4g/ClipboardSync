@@ -7,6 +7,13 @@ internal static class ClipboardLimits
     public const int MinImageMb = 1;
     public const int MaxImageMb = 32;
 
+    public const int DefaultFileMb = 512;
+    public const int MinFileMb = 1;
+    public const int MaxFileMb = 4096;
+
     /// <summary>Largest image accepted from the clipboard; updated from the settings.</summary>
     public static int MaxImageBytes { get; set; } = DefaultImageMb * 1024 * 1024;
+
+    /// <summary>Total size of one file selection; updated from the settings.</summary>
+    public static long MaxFileBytes { get; set; } = DefaultFileMb * 1024L * 1024L;
 }

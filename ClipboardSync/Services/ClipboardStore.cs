@@ -1,6 +1,7 @@
 using System.Text.Json;
 using ClipboardSync.Messaging;
 using ClipboardSync.Models;
+using ClipboardSync.Security;
 using PhotinoNetUtils.Extensions;
 using PhotinoNetUtils.Utils;
 
@@ -18,7 +19,24 @@ internal sealed class ClipboardStore : Singleton<ClipboardStore>
     private readonly Lock _gate = new();
     private readonly List<ClipboardRecord> _items = [];
 
-    public ClipboardStore() => Load();
+    public ClipboardStore()
+    {
+        Load();
+
+        lock (_gate)
+        {
+            CleanupIncomplete();
+            CleanupViews();
+            BlobStore.GarbageCollect(HashesUnlocked());
+        }
+    }
+
+    /// <summary>Drops blobs no item refers to, for example after a refused capture.</summary>
+    public void CollectGarbage()
+    {
+        lock (_gate)
+            BlobStore.GarbageCollect(HashesUnlocked());
+    }
 
     /// <summary>Newest first.</summary>
     public IReadOnlyList<ClipboardRecord> Snapshot()
@@ -94,6 +112,47 @@ internal sealed class ClipboardStore : Singleton<ClipboardStore>
         }
     }
 
+    /// <summary>Updates the transient progress counter without rewriting the history file per chunk.</summary>
+    public void SetProgress(string id, long progress)
+    {
+        lock (_gate)
+        {
+            var record = FindUnlocked(id);
+            if (record is null) return;
+
+            record.Progress = progress;
+        }
+    }
+
+    /// <summary>Marks a received file item complete; its bytes live in the blob store.</summary>
+    public void CompleteFile(string id)
+    {
+        lock (_gate)
+        {
+            var record = FindUnlocked(id);
+            if (record is null) return;
+
+            record.Progress = record.TotalBytes;
+            Save();
+        }
+    }
+
+    /// <summary>Removes a failed incoming item before it ever reached the board.</summary>
+    public void Remove(string id)
+    {
+        lock (_gate)
+        {
+            var record = FindUnlocked(id);
+            if (record is null) return;
+
+            DeleteBinary(record.DataFile);
+            ClipboardFiles.DeleteView(record.Id);
+            _items.Remove(record);
+            Save();
+            BlobStore.GarbageCollect(HashesUnlocked());
+        }
+    }
+
     /// <summary>Forgets a device's delivery state when it is unpaired.</summary>
     public void ForgetPeer(string peerId)
     {
@@ -114,6 +173,54 @@ internal sealed class ClipboardStore : Singleton<ClipboardStore>
 
     private ClipboardRecord? FindUnlocked(string id) =>
         _items.FirstOrDefault(item => string.Equals(item.Id, id, StringComparison.Ordinal));
+
+    private IEnumerable<string> HashesUnlocked() =>
+        _items.SelectMany(item => item.Files ?? [])
+            .Where(entry => !entry.Directory && entry.Hash.Length == 64)
+            .Select(entry => entry.Hash);
+
+    /// <summary>Drops remote file items that were still arriving when the app stopped.</summary>
+    private void CleanupIncomplete()
+    {
+        var localId = DeviceIdentity.Instance.Id;
+        var incomplete = _items
+            .Where(item => item.Kind == "file" &&
+                           item.OriginDeviceId != localId &&
+                           item.Progress < item.TotalBytes)
+            .ToArray();
+
+        if (incomplete.Length == 0)
+            return;
+
+        foreach (var item in incomplete)
+        {
+            ClipboardFiles.DeleteView(item.Id);
+            _items.Remove(item);
+        }
+
+        Save();
+    }
+
+    /// <summary>Removes view folders whose item no longer exists.</summary>
+    private void CleanupViews()
+    {
+        var root = Path.Combine(Constants.DataDirectory, "clipboard", "items");
+        if (!Directory.Exists(root))
+            return;
+
+        var ids = _items.Select(item => item.Id).ToHashSet(StringComparer.Ordinal);
+
+        try
+        {
+            foreach (var directory in Directory.EnumerateDirectories(root))
+                if (!ids.Contains(Path.GetFileName(directory)))
+                    ClipboardFiles.DeleteView(Path.GetFileName(directory));
+        }
+        catch (Exception ex)
+        {
+            Constants.Logger.Debug(ex, "Failed to clean up clipboard views");
+        }
+    }
 
     /// <summary>Writes an image payload under the data folder and returns its relative path.</summary>
     public static string SaveBinary(string id, byte[] data, string extension)
@@ -143,7 +250,9 @@ internal sealed class ClipboardStore : Singleton<ClipboardStore>
         Try.Run(() =>
         {
             var path = Path.Combine(Constants.DataDirectory, relativePath);
-            if (File.Exists(path))
+            if (Directory.Exists(path))
+                Directory.Delete(path, true);
+            else if (File.Exists(path))
                 File.Delete(path);
         }).OnFailure(ex => Constants.Logger.Debug(ex, "Failed to delete {Path}", relativePath));
     }
@@ -157,8 +266,12 @@ internal sealed class ClipboardStore : Singleton<ClipboardStore>
         foreach (var old in _items.OrderByDescending(item => item.At).Skip(limit).ToArray())
         {
             DeleteBinary(old.DataFile);
+            ClipboardFiles.DeleteView(old.Id);
             _items.Remove(old);
         }
+
+        Save();
+        BlobStore.GarbageCollect(HashesUnlocked());
     }
 
     private void Load()

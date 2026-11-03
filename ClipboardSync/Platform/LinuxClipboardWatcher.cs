@@ -22,7 +22,10 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
     private CancellationTokenSource? _cancellation;
     private bool _imageBaselineSet;
     private CancellationTokenSource? _imageCancellation;
+    private bool _fileBaselineSet;
+    private CancellationTokenSource? _fileCancellation;
     private string? _lastImageHash;
+    private string? _lastFiles;
     private string? _lastText;
     private Process? _process;
     private bool _started;
@@ -31,6 +34,8 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
 
     public event Action<byte[]>? ImageCopied;
 
+    public event Action<string[]>? FilesCopied;
+
     public void Start()
     {
         if (_started)
@@ -38,8 +43,11 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
 
         _started = true;
         _imageBaselineSet = false;
+        _fileBaselineSet = false;
         _imageCancellation = new();
+        _fileCancellation = new();
         _ = Task.Run(() => ImageLoopAsync(_imageCancellation.Token));
+        _ = Task.Run(() => FileLoopAsync(_fileCancellation.Token));
 
         if (TryWatchWithKlipper())
             return;
@@ -57,6 +65,7 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
     {
         _cancellation?.Cancel();
         _imageCancellation?.Cancel();
+        _fileCancellation?.Cancel();
 
         Try.Run(() =>
         {
@@ -67,12 +76,16 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
         _process = null;
         _lastText = null;
         _lastImageHash = null;
+        _lastFiles = null;
         _imageBaselineSet = false;
+        _fileBaselineSet = false;
         _started = false;
         _cancellation?.Dispose();
         _cancellation = null;
         _imageCancellation?.Dispose();
         _imageCancellation = null;
+        _fileCancellation?.Dispose();
+        _fileCancellation = null;
 
         LinuxGtk.StopWatchingClipboard();
     }
@@ -141,6 +154,40 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
         }
     }
 
+    public bool WriteFiles(IReadOnlyList<string> paths)
+    {
+        if (!_clipboardGate.Wait(2000))
+            return false;
+
+        try
+        {
+            var valid = paths.Where(path => File.Exists(path) || Directory.Exists(path)).ToArray();
+            if (valid.Length == 0)
+                return false;
+
+            var written = Try.Run(() => WriteFilesWithCommand(valid)).GetOrElse(ex =>
+            {
+                Log.Debug(ex, "Could not write the clipboard file list");
+                return false;
+            });
+
+            if (written)
+            {
+                _lastFiles = string.Join('\n', valid);
+                _lastImageHash = null;
+                _lastText = null;
+            }
+            else
+                Log.Warning("Could not write the clipboard file list");
+
+            return written;
+        }
+        finally
+        {
+            _clipboardGate.Release();
+        }
+    }
+
     private async Task ImageLoopAsync(CancellationToken token)
     {
         while (!token.IsCancellationRequested)
@@ -185,6 +232,45 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
             catch (Exception ex)
             {
                 Log.Debug(ex, "The image clipboard watcher stopped");
+                break;
+            }
+    }
+
+    private async Task FileLoopAsync(CancellationToken token)
+    {
+        while (!token.IsCancellationRequested)
+            try
+            {
+                var files = ReadFilesWithCommand();
+
+                if (files is { Length: > 0 })
+                {
+                    var signature = string.Join('\n', files);
+
+                    if (!_fileBaselineSet)
+                    {
+                        _fileBaselineSet = true;
+                        _lastFiles = signature;
+                    }
+                    else if (signature != _lastFiles)
+                    {
+                        _lastFiles = signature;
+                        _lastText = null;
+                        _lastImageHash = null;
+                        Try.Run(() => FilesCopied?.Invoke(files))
+                            .OnFailure(ex => Log.Warning(ex, "Clipboard file handler failed"));
+                    }
+                }
+
+                await Task.Delay(TimeSpan.FromMilliseconds(1_500), token);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "The clipboard file watcher stopped");
                 break;
             }
     }
@@ -294,12 +380,15 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
 
     private void Report(string? text)
     {
-        if (string.IsNullOrEmpty(text) || text == _lastText)
+        if (string.IsNullOrEmpty(text) || text == _lastText || LooksLikeFileList(text))
             return;
 
         _lastText = text;
         OnTextCopied(text);
     }
+
+    private static bool LooksLikeFileList(string text) =>
+        text.Split('\n').Any(line => line.TrimStart().StartsWith("file://", StringComparison.OrdinalIgnoreCase));
 
     private bool TryWatchWithWlPaste()
     {
@@ -428,6 +517,66 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
 
         foreach (var (command, arguments) in candidates)
             if (RunWithInput(command, arguments, text))
+                return true;
+
+        return false;
+    }
+
+    private static string[]? ReadFilesWithCommand()
+    {
+        (string Command, string[] Arguments)[] candidates =
+        [
+            ("wl-paste", ["--no-newline", "--type", "text/uri-list"]),
+            ("xclip", ["-selection", "clipboard", "-t", "text/uri-list", "-o"])
+        ];
+
+        foreach (var (command, arguments) in candidates)
+        {
+            var value = Run(command, arguments);
+            if (string.IsNullOrEmpty(value))
+                continue;
+
+            var files = ParseFileList(value);
+            if (files.Length > 0)
+                return files;
+        }
+
+        return null;
+    }
+
+    private static string[] ParseFileList(string value)
+    {
+        var paths = new List<string>();
+
+        foreach (var raw in value.Split('\n'))
+        {
+            var line = raw.Trim().TrimEnd('\r');
+            if (line.Length == 0 || line.StartsWith('#'))
+                continue;
+
+            if (!Uri.TryCreate(line, UriKind.Absolute, out var uri) || !uri.IsFile)
+                continue;
+
+            var path = uri.LocalPath;
+            if (File.Exists(path) || Directory.Exists(path))
+                paths.Add(path);
+        }
+
+        return [.. paths];
+    }
+
+    private static bool WriteFilesWithCommand(string[] paths)
+    {
+        var value = string.Join("\r\n", paths.Select(path => new Uri(path).AbsoluteUri)) + "\r\n";
+
+        (string Command, string[] Arguments)[] candidates =
+        [
+            ("wl-copy", ["--type", "text/uri-list"]),
+            ("xclip", ["-selection", "clipboard", "-t", "text/uri-list", "-in"])
+        ];
+
+        foreach (var (command, arguments) in candidates)
+            if (RunWithInput(command, arguments, value))
                 return true;
 
         return false;

@@ -12,6 +12,9 @@ internal interface IClipboardWatcher : IDisposable
     /// <summary>Raised with the PNG bytes of a freshly copied image.</summary>
     event Action<byte[]>? ImageCopied;
 
+    /// <summary>Raised with the paths of a freshly copied file or folder selection.</summary>
+    event Action<string[]>? FilesCopied;
+
     void Start();
 
     void Stop();
@@ -24,4 +27,7 @@ internal interface IClipboardWatcher : IDisposable
 
     /// <summary>Replaces the clipboard with a PNG image.</summary>
     bool WriteImage(byte[] png);
+
+    /// <summary>Replaces the clipboard with a file list.</summary>
+    bool WriteFiles(IReadOnlyList<string> paths);
 }

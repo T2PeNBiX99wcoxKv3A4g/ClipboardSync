@@ -4,6 +4,12 @@ export type TransferStatus = "synced" | "transferring" | "waiting" | "failed" | 
 export type TransferDirection = "out" | "in";
 export type ClipboardKind = "text" | "link" | "image" | "file";
 
+export interface ClipboardFile {
+    path: string;
+    size: number;
+    directory: boolean;
+}
+
 export interface ClipboardItem {
     id: string;
     originDeviceId: string;
@@ -16,6 +22,9 @@ export interface ClipboardItem {
     status: TransferStatus;
     reached: number;
     peers: number;
+    files?: ClipboardFile[] | null;
+    totalBytes: number;
+    progress: number;
 }
 
 export interface DeviceInfo {
@@ -102,6 +111,12 @@ export async function getImagePreview(itemId: string): Promise<string | null> {
 export async function copyImage(itemId: string): Promise<void> {
     if (!Native.available) return;
     await Native.request("image.copy", {itemId});
+}
+
+/** Puts a stored file selection back on this device's clipboard. */
+export async function copyFiles(itemId: string): Promise<void> {
+    if (!Native.available) return;
+    await Native.request("file.copy", {itemId});
 }
 
 export async function startDiscovery(): Promise<void> {

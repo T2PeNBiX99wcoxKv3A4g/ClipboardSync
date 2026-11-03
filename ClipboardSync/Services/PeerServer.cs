@@ -129,7 +129,7 @@ internal sealed class PeerServer : Singleton<PeerServer>
                         break;
 
                     case PeerProtocol.SessionHello:
-                        await HandleSessionAsync(stream, frame, client, cts.Token);
+                        await HandleSessionAsync(stream, frame, client, cts.Token, token);
                         break;
 
                     case PeerProtocol.Discover:
@@ -160,12 +160,12 @@ internal sealed class PeerServer : Singleton<PeerServer>
     }
 
     private async Task HandleSessionAsync(NetworkStream stream, byte[] frame, TcpClient client,
-        CancellationToken token)
+        CancellationToken handshakeToken, CancellationToken sessionToken)
     {
         using var session = await PeerHandshake.AcceptAsync(stream, DeviceIdentity.Instance,
-            id => PeerStore.Instance.Find(id), frame, token, client);
+            id => PeerStore.Instance.Find(id), frame, handshakeToken, client);
 
-        await SyncService.Instance.HandleSessionAsync(session, token);
+        await SyncService.Instance.HandleSessionAsync(session, sessionToken);
     }
 
     private static Task WriteAnnounceAsync(NetworkStream stream, CancellationToken token)

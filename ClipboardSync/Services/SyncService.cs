@@ -25,9 +25,12 @@ internal sealed class SyncService : Singleton<SyncService>
     private readonly PeerServer _server = PeerServer.Instance;
     private readonly SettingsService _settings = SettingsService.Instance;
     private readonly ClipboardStore _store = ClipboardStore.Instance;
+    private long _lastFileAt;
     private long _lastImageAt;
+    private long _lastProgressPublish;
     private long _suppressAt;
 
+    private string? _lastFileSignature;
     private string? _suppressText;
 
     public SyncService()
@@ -35,6 +38,7 @@ internal sealed class SyncService : Singleton<SyncService>
         NativeBridge.MessageReceived += HandleMessageAsync;
         _clipboard.TextCopied += OnTextCopied;
         _clipboard.ImageCopied += OnImageCopied;
+        _clipboard.FilesCopied += OnFilesCopied;
         SettingsService.Changed += _ => ApplyCurrent();
 
         ApplyCurrent();
@@ -94,8 +98,10 @@ internal sealed class SyncService : Singleton<SyncService>
 
         ClipboardLimits.MaxImageBytes =
             Math.Clamp(settings.MaxImageMb, ClipboardLimits.MinImageMb, ClipboardLimits.MaxImageMb) * 1024 * 1024;
+        ClipboardLimits.MaxFileBytes =
+            Math.Clamp(settings.MaxFileMb, ClipboardLimits.MinFileMb, ClipboardLimits.MaxFileMb) * 1024L * 1024L;
 
-        if (enabled && (settings.SyncText || settings.SyncImages))
+        if (enabled && (settings.SyncText || settings.SyncImages || settings.SyncFiles))
             _clipboard.Start();
         else
             _clipboard.Stop();
@@ -114,8 +120,10 @@ internal sealed class SyncService : Singleton<SyncService>
         if (!_settings.Current.SyncEnabled || !_settings.Current.SyncText)
             return;
 
-        // Klipper may report a text representation for the same image copy; the image event wins.
-        if (Environment.TickCount64 - _lastImageAt < 1_500)
+        // Klipper may report a text representation for the same image or file copy; that event wins.
+        if (Environment.TickCount64 - _lastImageAt < 1_500 ||
+            Environment.TickCount64 - _lastFileAt < 1_500 ||
+            text.Contains("file://", StringComparison.OrdinalIgnoreCase))
             return;
 
         if (text.Length is 0 or > PeerProtocol.MaxClipboardText)
@@ -198,6 +206,74 @@ internal sealed class SyncService : Singleton<SyncService>
         _ = BroadcastAsync(record);
     }
 
+    private void OnFilesCopied(string[] paths)
+    {
+        if (!_settings.Current.SyncEnabled || !_settings.Current.SyncFiles || paths.Length == 0)
+            return;
+
+        _lastFileAt = Environment.TickCount64;
+        _ = Task.Run(() => CaptureFilesAsync(paths));
+    }
+
+    private async Task CaptureFilesAsync(string[] paths)
+    {
+        var id = Guid.NewGuid().ToString("N");
+        ClipboardFileSnapshot? snapshot;
+
+        try
+        {
+            snapshot = await Task.Run(() => ClipboardFiles.Snapshot(paths, ClipboardLimits.MaxFileBytes));
+        }
+        catch (ClipboardFiles.FileLimitException)
+        {
+            Log.Warning("A copied file selection is larger than {Limit} or has too many entries",
+                ClipboardFiles.FormatSize(ClipboardLimits.MaxFileBytes));
+            _store.CollectGarbage();
+            return;
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to snapshot a copied file selection");
+            return;
+        }
+
+        if (snapshot is null)
+            return;
+
+        if (snapshot.Signature == _lastFileSignature)
+            return;
+
+        _lastFileSignature = snapshot.Signature;
+        var count = snapshot.Files.Count(entry => !entry.Directory);
+        var content = snapshot.Roots.Length == 1
+            ? Path.GetFileName(snapshot.Roots[0])
+            : $"{snapshot.Roots.Length} items";
+
+        var record = new ClipboardRecord
+        {
+            Id = id,
+            OriginDeviceId = _identity.Id,
+            OriginDeviceName = _settings.Current.DeviceName,
+            Kind = "file",
+            Content = content,
+            Meta = count == 0
+                ? "Empty folder"
+                : $"{count} files · {ClipboardFiles.FormatSize(snapshot.TotalBytes)}",
+            Files = [.. snapshot.Files],
+            Roots = [.. snapshot.Roots],
+            TotalBytes = snapshot.TotalBytes,
+            At = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        };
+
+        if (!_store.Add(record))
+            return;
+
+        Log.Information("Captured a clipboard file selection ({Count} files, {Size})", count,
+            ClipboardFiles.FormatSize(snapshot.TotalBytes));
+        PublishBoard();
+        _ = BroadcastAsync(record);
+    }
+
     private async Task BroadcastAsync(ClipboardRecord record)
     {
         var peers = _peers.All;
@@ -215,7 +291,7 @@ internal sealed class SyncService : Singleton<SyncService>
 
         try
         {
-            using var cts = new CancellationTokenSource(PeerProtocol.ConnectionTimeout);
+            using var cts = new CancellationTokenSource(PeerProtocol.TransferTimeout);
             using var session = await PeerClient.ConnectAsync(peer, cts.Token);
             _presence.MarkOnline(peer.Id);
 
@@ -233,13 +309,23 @@ internal sealed class SyncService : Singleton<SyncService>
             }
 
             var message = new ClipboardItemMessage(PeerProtocol.ClipboardItem, record.Id, record.OriginDeviceId,
-                record.OriginDeviceName, record.Kind, record.Content, record.Meta, record.At, data);
+                record.OriginDeviceName, record.Kind, record.Content, record.Meta, record.At, data,
+                record.Files?.ToArray(), record.Roots?.ToArray(), record.TotalBytes);
+
+            if (record.Kind == "file" && record.DeliveredTo.Count == 0)
+                _store.SetProgress(record.Id, record.TotalBytes > 0 ? 1 : 0);
 
             await session.SendJsonAsync(message, AppJsonContext.Default.ClipboardItemMessage, cts.Token);
-            var ack = await session.ReceiveJsonAsync(AppJsonContext.Default.ClipboardAckMessage, cts.Token);
+
+            var ack = record.Kind == "file"
+                ? await ServeFileRequestsAsync(session, record, cts.Token)
+                : await session.ReceiveJsonAsync(AppJsonContext.Default.ClipboardAckMessage, cts.Token);
 
             if (ack is { Ok: true })
+            {
+                _store.SetProgress(record.Id, record.TotalBytes);
                 _store.MarkDelivered(record.Id, peer.Id);
+            }
             else
                 _store.MarkFailed(record.Id, peer.Id);
         }
@@ -255,6 +341,82 @@ internal sealed class SyncService : Singleton<SyncService>
             PublishDevices();
         }
     }
+
+    private async Task<ClipboardAckMessage?> ServeFileRequestsAsync(SecureSession session, ClipboardRecord record,
+        CancellationToken token)
+    {
+        if (record.Files is not { Count: > 0 } files)
+            throw new IOException("The file item has no manifest.");
+
+        while (true)
+        {
+            var frame = await session.ReceiveAsync(token)
+                        ?? throw new IOException("The receiver closed the file transfer.");
+
+            switch (FrameProtocol.ReadType(frame))
+            {
+                case PeerProtocol.ClipboardAck:
+                    return JsonSerializer.Deserialize(frame, AppJsonContext.Default.ClipboardAckMessage);
+
+                case PeerProtocol.FileBlobRequest:
+                    var request = JsonSerializer.Deserialize(frame, AppJsonContext.Default.FileBlobRequestMessage);
+                    if (request is null || request.Id != record.Id || request.Offset < 0 ||
+                        request.Length is <= 0 or > PeerProtocol.FileChunkBytes)
+                    {
+                        await SendBlobErrorAsync(session, record.Id, request?.Hash ?? "", "Invalid blob request.",
+                            token);
+                        continue;
+                    }
+
+                    var entry = files.FirstOrDefault(file =>
+                        !file.Directory && string.Equals(file.Hash, request.Hash, StringComparison.Ordinal));
+
+                    if (entry is null || !BlobStore.Exists(request.Hash) ||
+                        request.Offset + request.Length > entry.Size)
+                    {
+                        await SendBlobErrorAsync(session, record.Id, request.Hash, "The blob is not available.",
+                            token);
+                        continue;
+                    }
+
+                    var data = new byte[request.Length];
+
+                    await using (var stream = BlobStore.OpenRead(request.Hash, request.Offset))
+                    {
+                        var read = 0;
+                        while (read < data.Length)
+                        {
+                            var count = await stream.ReadAsync(data.AsMemory(read), token);
+                            if (count == 0)
+                                break;
+
+                            read += count;
+                        }
+
+                        if (read != data.Length)
+                        {
+                            await SendBlobErrorAsync(session, record.Id, request.Hash, "The blob is incomplete.",
+                                token);
+                            continue;
+                        }
+                    }
+
+                    await session.SendJsonAsync(
+                        new FileBlobChunkMessage(PeerProtocol.FileBlobChunk, record.Id, request.Hash,
+                            request.Offset, Convert.ToBase64String(data)),
+                        AppJsonContext.Default.FileBlobChunkMessage, token);
+                    break;
+
+                default:
+                    throw new IOException("Unexpected frame during a file transfer.");
+            }
+        }
+    }
+
+    private static Task SendBlobErrorAsync(SecureSession session, string id, string hash, string error,
+        CancellationToken token) =>
+        session.SendJsonAsync(new FileBlobErrorMessage(PeerProtocol.FileBlobError, id, hash, error),
+            AppJsonContext.Default.FileBlobErrorMessage, token);
 
     private async Task ReceiveItemAsync(SecureSession session, ClipboardItemMessage message, CancellationToken token)
     {
@@ -288,6 +450,12 @@ internal sealed class SyncService : Singleton<SyncService>
         var at = message.At > 0 ? message.At : DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
         ClipboardRecord record;
+
+        if (message.Kind == "file")
+        {
+            await ReceiveFileItemAsync(session, message, originId, originName, at, token);
+            return;
+        }
 
         if (message.Kind == "text")
         {
@@ -390,6 +558,178 @@ internal sealed class SyncService : Singleton<SyncService>
         await AcknowledgeAsync(session, message.Id, true, null, token);
     }
 
+    private async Task ReceiveFileItemAsync(SecureSession session, ClipboardItemMessage message, string originId,
+        string originName, long at, CancellationToken token)
+    {
+        using var writeLease = BlobStore.BeginWrite();
+
+        if (!_settings.Current.SyncFiles)
+            throw new PeerSecurityException("File syncing is disabled on this device.");
+
+        var files = message.Files ?? [];
+        var roots = message.Roots ?? [];
+
+        if (files.Length is 0 or > PeerProtocol.MaxFiles || roots.Length == 0)
+            throw new PeerSecurityException("Unsupported clipboard file item.");
+
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        long total = 0;
+
+        foreach (var entry in files)
+        {
+            if (entry.Path.Length == 0 || !seen.Add(entry.Path) ||
+                ClipboardFiles.Resolve(Constants.DataDirectory, entry.Path) is null ||
+                entry.Size < 0 ||
+                (!entry.Directory && (entry.Hash.Length != 64 || !entry.Hash.All(Uri.IsHexDigit))))
+                throw new PeerSecurityException("The file item contains an unsafe path or hash.");
+
+            total += entry.Size;
+            if (total > ClipboardLimits.MaxFileBytes)
+                throw new PeerSecurityException("The file item is larger than the configured limit.");
+        }
+
+        if (roots.Any(root => !seen.Contains(root) || ClipboardFiles.Resolve(Constants.DataDirectory, root) is null))
+            throw new PeerSecurityException("The file item has an unsafe root.");
+
+        if (_store.Find(message.Id) is not null)
+        {
+            await AcknowledgeAsync(session, message.Id, true, null, token);
+            return;
+        }
+
+        var content = message.Content.Length > 0
+            ? message.Content
+            : roots.Length == 1
+                ? Path.GetFileName(roots[0])
+                : $"{roots.Length} items";
+
+        var placeholder = new ClipboardRecord
+        {
+            Id = message.Id,
+            OriginDeviceId = originId,
+            OriginDeviceName = originName,
+            Kind = "file",
+            Content = content,
+            Meta = message.Meta,
+            Files = [.. files],
+            Roots = [.. roots],
+            TotalBytes = total,
+            Progress = 0,
+            At = at
+        };
+
+        if (!_store.Add(placeholder))
+        {
+            await AcknowledgeAsync(session, message.Id, true, null, token);
+            return;
+        }
+
+        PublishBoard();
+        var completed = 0L;
+
+        try
+        {
+            foreach (var entry in files)
+            {
+                if (entry.Directory)
+                    continue;
+
+                if (entry.Size == 0)
+                {
+                    BlobStore.PutEmpty();
+                    continue;
+                }
+
+                if (BlobStore.Exists(entry.Hash) && BlobStore.Length(entry.Hash) == entry.Size)
+                {
+                    completed += entry.Size;
+                    _store.SetProgress(message.Id, completed);
+                    continue;
+                }
+
+                if (BlobStore.Exists(entry.Hash))
+                    BlobStore.Delete(entry.Hash);
+
+                var offset = BlobStore.PartialLength(entry.Hash);
+                if (offset > entry.Size)
+                {
+                    BlobStore.DeletePartial(entry.Hash);
+                    offset = 0;
+                }
+
+                completed += offset;
+                _store.SetProgress(message.Id, completed);
+
+                while (offset < entry.Size)
+                {
+                    var length = (int)Math.Min(PeerProtocol.FileChunkBytes, entry.Size - offset);
+                    await session.SendJsonAsync(
+                        new FileBlobRequestMessage(PeerProtocol.FileBlobRequest, message.Id, entry.Hash, offset,
+                            length), AppJsonContext.Default.FileBlobRequestMessage, token);
+
+                    var frame = await session.ReceiveAsync(token)
+                                ?? throw new PeerSecurityException("The file transfer ended early.");
+
+                    switch (FrameProtocol.ReadType(frame))
+                    {
+                        case PeerProtocol.FileBlobChunk:
+                            var chunk = FrameProtocol.Read(frame, AppJsonContext.Default.FileBlobChunkMessage)
+                                        ?? throw new PeerSecurityException("A blob chunk could not be read.");
+
+                            if (chunk.Id != message.Id || chunk.Hash != entry.Hash || chunk.Offset != offset)
+                                throw new PeerSecurityException("A blob chunk is out of order.");
+
+                            byte[] bytes;
+                            try
+                            {
+                                bytes = Convert.FromBase64String(chunk.Data);
+                            }
+                            catch (FormatException)
+                            {
+                                throw new PeerSecurityException("A blob chunk is malformed.");
+                            }
+
+                            if (bytes.Length is 0 or > PeerProtocol.FileChunkBytes)
+                                throw new PeerSecurityException("A blob chunk has an invalid size.");
+
+                            BlobStore.AppendPartial(entry.Hash, offset, bytes);
+                            offset += bytes.Length;
+                            completed += bytes.Length;
+                            _store.SetProgress(message.Id, completed);
+                            PublishProgress();
+                            break;
+
+                        case PeerProtocol.FileBlobError:
+                            var error = FrameProtocol.Read(frame, AppJsonContext.Default.FileBlobErrorMessage);
+                            throw new IOException(error?.Error ?? "The other device could not read a file.");
+
+                        default:
+                            throw new PeerSecurityException("Unexpected frame during a file transfer.");
+                    }
+                }
+
+                if (!BlobStore.CompletePartial(entry.Hash, entry.Size))
+                    throw new PeerSecurityException("A file arrived corrupted.");
+            }
+
+            var record = _store.Find(message.Id)
+                         ?? throw new PeerSecurityException("The file item disappeared while receiving.");
+
+            ClipboardFiles.Materialize(record);
+            _store.CompleteFile(message.Id);
+            ApplyRemoteFiles(record);
+            PublishBoard();
+            _ = RelayAsync(record, session.PeerDeviceId);
+            await AcknowledgeAsync(session, message.Id, true, null, token);
+        }
+        catch
+        {
+            _store.Remove(message.Id);
+            PublishBoard();
+            throw;
+        }
+    }
+
     private static Task AcknowledgeAsync(SecureSession session, string id, bool ok, string? error,
         CancellationToken token) =>
         session.SendJsonAsync(new(PeerProtocol.ClipboardAck, id, ok, error),
@@ -414,6 +754,36 @@ internal sealed class SyncService : Singleton<SyncService>
 
         _lastImageAt = Environment.TickCount64;
         _clipboard.WriteImage(png);
+    }
+
+    private void ApplyRemoteFiles(ClipboardRecord record)
+    {
+        if (!_settings.Current.SyncEnabled || !_settings.Current.SyncFiles ||
+            record.Roots is not { Count: > 0 } roots || record.Files is not { Count: > 0 })
+            return;
+
+        string folder;
+        try
+        {
+            folder = ClipboardFiles.Materialize(record);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Could not materialise the received files");
+            return;
+        }
+
+        var paths = new List<string>(roots.Count);
+
+        foreach (var root in roots)
+        {
+            var path = ClipboardFiles.Resolve(folder, root);
+            if (path is not null && (File.Exists(path) || Directory.Exists(path)))
+                paths.Add(path);
+        }
+
+        if (paths.Count > 0 && !_clipboard.WriteFiles(paths))
+            Log.Warning("Could not put the received files back on the clipboard");
     }
 
     private static string FormatSize(int bytes) =>
@@ -487,6 +857,7 @@ internal sealed class SyncService : Singleton<SyncService>
         "history.get" => Task.FromResult<NativeResponse?>(context.Reply("history.get.result", BuildHistory())),
         "image.get" => Task.FromResult<NativeResponse?>(GetImage(context)),
         "image.copy" => Task.FromResult<NativeResponse?>(CopyImage(context)),
+        "file.copy" => Task.FromResult<NativeResponse?>(CopyFiles(context)),
         "device.remove" => Task.FromResult<NativeResponse?>(RemoveDevice(context)),
         "discovery.start" => StartDiscovery(context, true),
         "discovery.stop" => StartDiscovery(context, false),
@@ -537,6 +908,39 @@ internal sealed class SyncService : Singleton<SyncService>
         return _store.Find(id) is { Kind: "image" } record ? record : null;
     }
 
+    private NativeResponse CopyFiles(NativeContext context)
+    {
+        var id = context.Payload<FileItemRequest>()?.ItemId;
+        var record = id is { Length: > 0 } ? _store.Find(id) : null;
+
+        if (record is not { Kind: "file", Roots: { Count: > 0 } roots, Files: { Count: > 0 } })
+            return context.Fail("file.copy.result", "The files are not available.");
+
+        string folder;
+        try
+        {
+            folder = ClipboardFiles.Materialize(record);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Could not materialise a file item");
+            return context.Fail("file.copy.result", "The files are not available.");
+        }
+
+        var paths = new List<string>(roots.Count);
+
+        foreach (var root in roots)
+        {
+            var path = ClipboardFiles.Resolve(folder, root);
+            if (path is not null && (File.Exists(path) || Directory.Exists(path)))
+                paths.Add(path);
+        }
+
+        return paths.Count > 0 && _clipboard.WriteFiles(paths)
+            ? context.Reply("file.copy.result", new OkPayload())
+            : context.Fail("file.copy.result", "The clipboard is busy.");
+    }
+
     private NativeResponse RemoveDevice(NativeContext context)
     {
         var id = context.Payload<DeviceRemoveRequest>()?.DeviceId;
@@ -561,6 +965,16 @@ internal sealed class SyncService : Singleton<SyncService>
 
     private void PublishHistory() =>
         WindowManager.Instance.NotifyMainWindow("history.changed", BuildHistory());
+
+    private void PublishProgress()
+    {
+        var now = Environment.TickCount64;
+        if (now - _lastProgressPublish < 100)
+            return;
+
+        _lastProgressPublish = now;
+        PublishHistory();
+    }
 
     private DevicesPayload BuildDevices()
     {
@@ -596,17 +1010,24 @@ internal sealed class SyncService : Singleton<SyncService>
 
         string status;
         if (!local)
-            status = "received";
+            status = record.Kind == "file" && record.Progress < record.TotalBytes
+                ? "transferring"
+                : "received";
         else if (record.FailedFor.Count > 0)
             status = "failed";
         else if (record.PendingFor.Count > 0)
-            status = reached > 0 ? "transferring" : "waiting";
+            status = record.Kind == "file" && record.Progress > 0 && record.Progress < record.TotalBytes
+                ? "transferring"
+                : reached > 0
+                    ? "transferring"
+                    : "waiting";
         else if (peers == 0 || reached >= peers)
             status = "synced";
         else
             status = "waiting";
 
         return new(record.Id, record.OriginDeviceId, record.OriginDeviceName, record.Kind,
-            record.Content, record.Meta, record.At, local ? "out" : "in", status, reached, peers);
+            record.Content, record.Meta, record.At, local ? "out" : "in", status, reached, peers,
+            record.Files?.ToArray(), record.TotalBytes, record.Progress);
     }
 }

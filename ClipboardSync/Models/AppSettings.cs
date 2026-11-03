@@ -24,14 +24,17 @@ public sealed record AppSettings
     /// <summary>Share images copied to the clipboard.</summary>
     public bool SyncImages { get; init; } = true;
 
-    /// <summary>Share copied files.</summary>
-    public bool SyncFiles { get; init; }
+    /// <summary>Share copied files and folders.</summary>
+    public bool SyncFiles { get; init; } = true;
 
     /// <summary>How many items the local history keeps.</summary>
     public int HistoryLimit { get; init; } = 200;
 
     /// <summary>Images larger than this many megabytes are ignored. Defaults to 10 MB.</summary>
     public int MaxImageMb { get; init; } = 10;
+
+    /// <summary>Total size of one copied file selection, in megabytes. Defaults to 512 MB.</summary>
+    public int MaxFileMb { get; init; } = 512;
 
     public static AppSettings Default { get; } = new();
 }

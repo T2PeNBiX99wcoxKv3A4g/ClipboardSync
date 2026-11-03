@@ -28,6 +28,7 @@ internal sealed class WindowsClipboardWatcher : Singleton<WindowsClipboardWatche
     private readonly ManualResetEventSlim _ready = new();
     private IntPtr _hwnd = IntPtr.Zero;
     private string? _lastImageHash;
+    private string? _lastFiles;
     private string? _lastText;
     private bool _listening;
 
@@ -37,6 +38,8 @@ internal sealed class WindowsClipboardWatcher : Singleton<WindowsClipboardWatche
     public event Action<string>? TextCopied;
 
     public event Action<byte[]>? ImageCopied;
+
+    public event Action<string[]>? FilesCopied;
 
     public void Start()
     {
@@ -149,6 +152,46 @@ internal sealed class WindowsClipboardWatcher : Singleton<WindowsClipboardWatche
         }
     }
 
+    public bool WriteFiles(IReadOnlyList<string> paths)
+    {
+        var valid = paths.Where(path => File.Exists(path) || Directory.Exists(path)).ToArray();
+        if (valid.Length == 0)
+            return false;
+
+        if (!_clipboardGate.Wait(2000))
+            return false;
+
+        try
+        {
+            for (var attempt = 0; attempt < ReadAttempts; attempt++)
+            {
+                try
+                {
+                    if (TryWriteFiles(valid))
+                    {
+                        _lastFiles = string.Join('\n', valid);
+                        _lastImageHash = null;
+                        _lastText = null;
+                        return true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Debug(ex, "Could not write the clipboard file list");
+                }
+
+                Thread.Sleep(ReadRetryMs);
+            }
+
+            Log.Warning("The clipboard stayed locked; could not write the file list");
+            return false;
+        }
+        finally
+        {
+            _clipboardGate.Release();
+        }
+    }
+
     private void EnsureThread()
     {
         if (_thread is not null)
@@ -215,13 +258,16 @@ internal sealed class WindowsClipboardWatcher : Singleton<WindowsClipboardWatche
 
         byte[]? png = null;
         string? text = null;
+        string[]? files = null;
 
         if (!_clipboardGate.Wait(1_000))
             return;
 
         try
         {
-            if (HasImageFormat())
+            if (HasFileFormat())
+                TryReadFiles(out files);
+            else if (HasImageFormat())
                 TryReadImagePng(out png);
             else
                 text = ReadText();
@@ -231,6 +277,20 @@ internal sealed class WindowsClipboardWatcher : Singleton<WindowsClipboardWatche
             _clipboardGate.Release();
         }
 
+        if (files is { Length: > 0 })
+        {
+            var signature = string.Join('\n', files);
+            if (signature == _lastFiles)
+                return;
+
+            _lastFiles = signature;
+            _lastImageHash = null;
+            _lastText = null;
+            Try.Run(() => FilesCopied?.Invoke(files))
+                .OnFailure(ex => Log.Warning(ex, "Clipboard file handler failed"));
+            return;
+        }
+
         if (png is not null)
         {
             var hash = Convert.ToHexString(SHA256.HashData(png));
@@ -238,6 +298,7 @@ internal sealed class WindowsClipboardWatcher : Singleton<WindowsClipboardWatche
                 return;
 
             _lastImageHash = hash;
+            _lastFiles = null;
             _lastText = null;
             Try.Run(() => ImageCopied?.Invoke(png))
                 .OnFailure(ex => Log.Warning(ex, "Clipboard image handler failed"));
@@ -248,6 +309,7 @@ internal sealed class WindowsClipboardWatcher : Singleton<WindowsClipboardWatche
             return;
 
         _lastText = text;
+        _lastFiles = null;
         Try.Run(() => TextCopied?.Invoke(text)).OnFailure(ex => Log.Warning(ex, "Clipboard handler failed"));
     }
 
@@ -257,6 +319,47 @@ internal sealed class WindowsClipboardWatcher : Singleton<WindowsClipboardWatche
         return owner != IntPtr.Zero &&
                NativeMethods.GetWindowThreadProcessId(owner, out var processId) != 0 &&
                processId == Environment.ProcessId;
+    }
+
+    private static bool HasFileFormat() => IsClipboardFormatAvailable(15);
+
+    private static bool TryReadFiles(out string[] files)
+    {
+        files = [];
+
+        if (!NativeMethods.OpenClipboard(IntPtr.Zero))
+            return false;
+
+        try
+        {
+            var handle = NativeMethods.GetClipboardData(15);
+            if (handle == IntPtr.Zero)
+                return false;
+
+            var count = DragQueryFile(handle, uint.MaxValue, null, 0);
+            if (count is 0 or > 10_000)
+                return false;
+
+            var paths = new List<string>((int)count);
+
+            for (uint index = 0; index < count; index++)
+            {
+                var length = (int)DragQueryFile(handle, index, null, 0);
+                if (length <= 0)
+                    continue;
+
+                var builder = new StringBuilder(length + 1);
+                if (DragQueryFile(handle, index, builder, (uint)builder.Capacity) > 0)
+                    paths.Add(builder.ToString());
+            }
+
+            files = [.. paths.Where(path => File.Exists(path) || Directory.Exists(path))];
+            return files.Length > 0;
+        }
+        finally
+        {
+            NativeMethods.CloseClipboard();
+        }
     }
 
     private static bool HasImageFormat()
@@ -395,6 +498,72 @@ internal sealed class WindowsClipboardWatcher : Singleton<WindowsClipboardWatche
         finally
         {
             NativeMethods.GlobalUnlock(handle);
+        }
+    }
+
+    private static bool TryWriteFiles(string[] paths)
+    {
+        if (!NativeMethods.OpenClipboard(IntPtr.Zero))
+            return false;
+
+        var handle = IntPtr.Zero;
+
+        try
+        {
+            if (!EmptyClipboard())
+                return false;
+
+            var headerSize = Marshal.SizeOf<DropFiles>();
+            var characters = paths.Sum(path => path.Length + 1) + 1;
+            var size = headerSize + characters * 2;
+
+            handle = GlobalAlloc(GmemMoveable, (UIntPtr)size);
+            if (handle == IntPtr.Zero)
+                return false;
+
+            var pointer = NativeMethods.GlobalLock(handle);
+            if (pointer == IntPtr.Zero)
+            {
+                GlobalFree(handle);
+                return false;
+            }
+
+            try
+            {
+                Marshal.StructureToPtr(new DropFiles
+                {
+                    pFiles = (uint)headerSize,
+                    fWide = 1
+                }, pointer, false);
+
+                var offset = IntPtr.Add(pointer, headerSize);
+
+                foreach (var path in paths)
+                {
+                    var bytes = Encoding.Unicode.GetBytes(path + '\0');
+                    Marshal.Copy(bytes, 0, offset, bytes.Length);
+                    offset = IntPtr.Add(offset, bytes.Length);
+                }
+
+                Marshal.WriteInt16(offset, 0);
+            }
+            finally
+            {
+                NativeMethods.GlobalUnlock(handle);
+            }
+
+            if (SetClipboardData(15, handle) == IntPtr.Zero)
+                return false;
+
+            handle = IntPtr.Zero;
+            return true;
+        }
+        finally
+        {
+            if (handle != IntPtr.Zero)
+                GlobalFree(handle);
+
+            NativeMethods.CloseClipboard();
         }
     }
 
@@ -581,6 +750,19 @@ internal sealed class WindowsClipboardWatcher : Singleton<WindowsClipboardWatche
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool IsClipboardFormatAvailable(uint format);
+
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern uint DragQueryFile(IntPtr drop, uint fileIndex, StringBuilder? fileName, uint length);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct DropFiles
+    {
+        public uint pFiles;
+        public int x;
+        public int y;
+        public int fNC;
+        public int fWide;
+    }
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern UIntPtr GlobalSize(IntPtr memory);

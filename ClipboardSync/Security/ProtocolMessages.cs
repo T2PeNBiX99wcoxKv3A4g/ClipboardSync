@@ -1,3 +1,5 @@
+using ClipboardSync.Models;
+
 namespace ClipboardSync.Security;
 
 /// <summary>
@@ -19,9 +21,21 @@ internal static class PeerProtocol
     /// <summary>Largest text accepted from the clipboard; larger values are skipped instead of framed.</summary>
     public const int MaxClipboardText = 512 * 1024;
 
+    /// <summary>Raw bytes per file chunk; base64 keeps one frame well below <see cref="MaxFrame" />.</summary>
+    public const int FileChunkBytes = 256 * 1024;
+
+    /// <summary>One copied file selection is capped here; the settings expose the byte limit.</summary>
+    public const int MaxFiles = 1_000;
+
+    /// <summary>How long a large file transfer may take before the session is abandoned.</summary>
+    public static readonly TimeSpan TransferTimeout = TimeSpan.FromHours(12);
+
     public const string Discover = "discover";
     public const string Announce = "announce";
     public const string ClipboardItem = "clipboard.item";
+    public const string FileBlobRequest = "file.blob.request";
+    public const string FileBlobChunk = "file.blob.chunk";
+    public const string FileBlobError = "file.blob.error";
     public const string ClipboardAck = "clipboard.ack";
 
     public const string PairRequest = "pair.request";
@@ -97,7 +111,18 @@ internal sealed record ClipboardItemMessage(
     string Content,
     string? Meta,
     long At,
-    string? Data);
+    string? Data,
+    ClipboardFileEntry[]? Files = null,
+    string[]? Roots = null,
+    long TotalBytes = 0);
+
+/// <summary>One range request for a blob that belongs to a file item.</summary>
+internal sealed record FileBlobRequestMessage(string Type, string Id, string Hash, long Offset, int Length);
+
+/// <summary>One range of a blob, or the reason it could not be read.</summary>
+internal sealed record FileBlobChunkMessage(string Type, string Id, string Hash, long Offset, string Data);
+
+internal sealed record FileBlobErrorMessage(string Type, string Id, string Hash, string Error);
 
 /// <summary>The receiver's acknowledgement for one clipboard item.</summary>
 internal sealed record ClipboardAckMessage(string Type, string Id, bool Ok, string? Error);

@@ -1,3 +1,5 @@
+using ClipboardSync.Models;
+
 namespace ClipboardSync.Messaging;
 
 // Shapes that cross the bridge for the device board, clipboard history and pairing flow.
@@ -19,7 +21,10 @@ internal sealed record ClipboardItemPayload(
     string Direction,
     string Status,
     int Reached,
-    int Peers);
+    int Peers,
+    ClipboardFileEntry[]? Files,
+    long TotalBytes,
+    long Progress);
 
 internal sealed record HistoryPayload(ClipboardItemPayload[] Items);
 
@@ -43,6 +48,9 @@ internal sealed record PairResultPayload(bool Ok, string? DeviceId, string? Devi
 
 /// <summary>Payload for <c>image.get</c> and <c>image.copy</c>.</summary>
 internal sealed record ImageRequest(string ItemId);
+
+/// <summary>Payload for <c>file.copy</c>.</summary>
+internal sealed record FileItemRequest(string ItemId);
 
 /// <summary>Body for <c>image.get</c>: a data URL the interface can render directly.</summary>
 internal sealed record ImagePayload(string? DataUrl);

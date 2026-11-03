@@ -155,9 +155,10 @@ export function SettingsPage({info}: SettingsPageProps) {
             syncEnabled: true,
             syncText: true,
             syncImages: true,
-            syncFiles: false,
+            syncFiles: true,
             historyLimit: 200,
             maxImageMb: 10,
+            maxFileMb: 512,
         });
     };
 
@@ -288,6 +289,18 @@ export function SettingsPage({info}: SettingsPageProps) {
                     </Field>
                     <Field>
                         <FieldText>
+                            <label>{t("Files and folders")}</label>
+                            <p>{t("Copying files or folders sends them to the other devices.")}</p>
+                        </FieldText>
+                        <Toggle
+                            checked={settings.syncFiles}
+                            disabled={!settings.syncEnabled}
+                            label={t("Files and folders")}
+                            onChange={(value) => update("syncFiles", value)}
+                        />
+                    </Field>
+                    <Field>
+                        <FieldText>
                             <label htmlFor="image-limit">{t("Image size limit")}</label>
                             <p>{t("Images larger than this are skipped.")}</p>
                         </FieldText>
@@ -303,8 +316,25 @@ export function SettingsPage({info}: SettingsPageProps) {
                             <Unit>MB</Unit>
                         </SizeRow>
                     </Field>
+                    <Field>
+                        <FieldText>
+                            <label htmlFor="file-limit">{t("File size limit")}</label>
+                            <p>{t("One copied selection larger than this is skipped.")}</p>
+                        </FieldText>
+                        <SizeRow>
+                            <NumberInput
+                                id="file-limit"
+                                max={4096}
+                                min={1}
+                                onChange={(event) => update("maxFileMb", Number(event.target.value) || 1)}
+                                type="number"
+                                value={settings.maxFileMb}
+                            />
+                            <Unit>MB</Unit>
+                        </SizeRow>
+                    </Field>
                 </Card>
-                <Note>{t("Images are shared as PNG; files come later.")}</Note>
+                <Note>{t("Images are shared as PNG; files and folders are copied recursively.")}</Note>
             </Section>
 
             <Section id="settings-history" ref={(node) => { sectionRefs.current.history = node; }}>

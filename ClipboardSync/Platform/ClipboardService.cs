@@ -18,11 +18,14 @@ internal sealed class ClipboardService : Singleton<ClipboardService>
 
         _watcher.TextCopied += text => TextCopied?.Invoke(text);
         _watcher.ImageCopied += image => ImageCopied?.Invoke(image);
+        _watcher.FilesCopied += files => FilesCopied?.Invoke(files);
     }
 
     public event Action<string>? TextCopied;
 
     public event Action<byte[]>? ImageCopied;
+
+    public event Action<string[]>? FilesCopied;
 
     public void Start() => _watcher.Start();
 
@@ -33,4 +36,6 @@ internal sealed class ClipboardService : Singleton<ClipboardService>
     public bool WriteText(string text) => _watcher.WriteText(text);
 
     public bool WriteImage(byte[] png) => _watcher.WriteImage(png);
+
+    public bool WriteFiles(IReadOnlyList<string> paths) => _watcher.WriteFiles(paths);
 }

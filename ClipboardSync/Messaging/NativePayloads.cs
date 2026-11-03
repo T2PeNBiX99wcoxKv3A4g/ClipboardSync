@@ -19,7 +19,8 @@ internal sealed record SettingsPayload(
     bool SyncImages,
     bool SyncFiles,
     int HistoryLimit,
-    int MaxImageMb);
+    int MaxImageMb,
+    int MaxFileMb);
 
 /// <summary>Payload for <c>app.setStartup</c>: whether the startup entry should exist.</summary>
 internal sealed record StartupRequest(bool Enabled);

@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import styled, {keyframes} from "styled-components";
 import {Native, ResizeHandles, useTranslation, useWindowCorners} from "@photino-net-utils/bridge";
 import {type AppInfo, getAppInfo} from "./api/system";
-import {type ClipboardItem, copyImage} from "./api/peer";
+import {type ClipboardItem, copyFiles, copyImage} from "./api/peer";
 import {Sidebar} from "./components/Sidebar";
 import {TitleBar} from "./components/TitleBar";
 import {DevicesPage} from "./pages/DevicesPage";
@@ -64,6 +64,8 @@ export default function App() {
     const copy = (item: ClipboardItem) => {
         if (item.kind === "image")
             void copyImage(item.id).catch(() => undefined);
+        else if (item.kind === "file")
+            void copyFiles(item.id).catch(() => undefined);
         else
             void navigator.clipboard?.writeText(item.content).catch(() => undefined);
 

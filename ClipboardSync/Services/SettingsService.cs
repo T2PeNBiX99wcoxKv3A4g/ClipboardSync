@@ -40,7 +40,10 @@ internal sealed class SettingsService : Singleton<SettingsService>
                 DeviceName = stored.DeviceName is { Length: > 0 } name ? name.Trim() : Current.DeviceName,
                 Language = NormalizeLanguage(stored.Language),
                 HistoryLimit = Math.Clamp(stored.HistoryLimit, 10, 5000),
-                MaxImageMb = Math.Clamp(stored.MaxImageMb, ClipboardLimits.MinImageMb, ClipboardLimits.MaxImageMb)
+                MaxImageMb = Math.Clamp(stored.MaxImageMb, ClipboardLimits.MinImageMb, ClipboardLimits.MaxImageMb),
+                MaxFileMb = stored.MaxFileMb > 0
+                    ? Math.Clamp(stored.MaxFileMb, ClipboardLimits.MinFileMb, ClipboardLimits.MaxFileMb)
+                    : ClipboardLimits.DefaultFileMb
             };
     }
 
@@ -49,7 +52,8 @@ internal sealed class SettingsService : Singleton<SettingsService>
 
     private SettingsPayload Payload() =>
         new(Current.DeviceName, Current.Language, Current.StartHidden, Current.SyncEnabled,
-            Current.SyncText, Current.SyncImages, Current.SyncFiles, Current.HistoryLimit, Current.MaxImageMb);
+            Current.SyncText, Current.SyncImages, Current.SyncFiles, Current.HistoryLimit, Current.MaxImageMb,
+            Current.MaxFileMb);
 
     private Task<NativeResponse?> HandleMessageAsync(NativeContext context) => context.Request.Type switch
     {
@@ -76,7 +80,8 @@ internal sealed class SettingsService : Singleton<SettingsService>
             SyncImages = settings.SyncImages,
             SyncFiles = settings.SyncFiles,
             HistoryLimit = Math.Clamp(settings.HistoryLimit, 10, 5000),
-            MaxImageMb = Math.Clamp(settings.MaxImageMb, ClipboardLimits.MinImageMb, ClipboardLimits.MaxImageMb)
+            MaxImageMb = Math.Clamp(settings.MaxImageMb, ClipboardLimits.MinImageMb, ClipboardLimits.MaxImageMb),
+            MaxFileMb = Math.Clamp(settings.MaxFileMb, ClipboardLimits.MinFileMb, ClipboardLimits.MaxFileMb)
         };
 
         Log.Information("Settings saved for {DeviceName}; sync {State}", Current.DeviceName,
