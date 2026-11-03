@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.3](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.4.2..v0.4.3) - 2026-11-03
+
+### 🚜 Refactor
+
+- *(linux)* Move tray icon handling into PhotinoNETUtils - ([d8ea2e6](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/d8ea2e6f1e0a3ede89f9d69216a8c342b3e44bc2))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([6d3dbfc](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/6d3dbfc98f5e05689085019a044e673847ca7bc4))
+
+
 ## [0.4.2](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.4.1..v0.4.2) - 2026-11-03
 
 ### 🐛 Bug Fixes
