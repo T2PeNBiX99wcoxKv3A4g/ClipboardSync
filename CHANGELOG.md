@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.2](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.4.1..v0.4.2) - 2026-11-03
+
+### 🐛 Bug Fixes
+
+- *(linux)* Use a theme icon name for the tray - ([bb41947](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/bb419477a22aefe146e56751a2053e8e9555afda))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([3f21055](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/3f210555ad78a77e4b274b7b4b94a1362de1e003))
+
+
 ## [0.4.1](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.4.0..v0.4.1) - 2026-11-03
 
 ### 🐛 Bug Fixes
