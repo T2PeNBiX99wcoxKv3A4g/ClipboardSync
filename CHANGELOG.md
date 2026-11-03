@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.2.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.1.0..v0.2.0) - 2026-11-03
+
+### ⛰️  Features
+
+- *(files)* Sync files and folders as encrypted blobs - ([66f81fa](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/66f81fa5207f1706282ba15d19360599b657e9cb))
+
+### 📚 Documentation
+
+- *(site)* Correct the discovery and address note - ([9d81169](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/9d81169ba0965be235c577fd39b85a242267d3bc))
+- Describe file and folder syncing - ([288b8f0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/288b8f0b8fb4c882725deec8491e397b0691a51d))
+- Remove redundant tray/autostart section and fix table alignments in localized READMEs - ([007dd53](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/007dd53ad4a23b6ec9fa045218d56d7aeae16eb5))
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump the nuget group with 1 update - ([125e882](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/125e8825acdf06610d0836d60cab4bde993d604f))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([29de57f](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/29de57fb2e55afe4d281ba6a1532399148aad22a))
+
+## New Contributors ❤️
+
+* @github-actions[bot] made their first contribution in [#1](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/pull/1)
+* @dependabot[bot] made their first contribution
+
 ## [0.1.0] - 2026-11-03
 
 ### ⛰️  Features
