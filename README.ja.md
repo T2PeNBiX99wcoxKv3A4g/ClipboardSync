@@ -147,35 +147,6 @@ dotnet run --project ClipboardSync
 `dotnet run --project ClipboardSync -- --identity` は、ペアリングで使う安定した ID、公開鍵、
 フィンガープリントを表示します。
 
-### リリース
-
-`npm run build` はインターフェースを `ClipboardSync/Resources/wwwroot` にコピーし、プロジェクトが
-それを実行ファイルに埋め込みます。そのため、公開する前にインターフェースをビルドしてください。
-
-```bash
-cd ClipboardSync/UserInterface && npm run build
-cd ../.. && dotnet publish ClipboardSync/ClipboardSync.csproj -c Release -r win-x64
-```
-
-Linux では `-r linux-x64` を使います。`ClipboardSync/bin/Release/net10.0/<rid>/publish/` に
-自己完結型の単一実行ファイルができます。
-
-### パッケージ
-
-インストーラースクリプトは公開済みのビルドを入力にし、`release/` に出力します:
-
-```bash
-# Windows — WiX は初回にローカルへインストールされます
-./installer/windows/build-msi.ps1 -Version 0.1.0 -SourceDir publish/win-x64 -OutputDir release
-
-# Linux — 各ディストリビューション上、またはスクリプト冒頭のコンテナ内で実行します
-VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-deb.sh
-VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-rpm.sh
-VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-arch.sh
-```
-
-リリースワークフローは公開後にこの 4 つを実行します。
-
 ## 保存場所
 
 |                    | Windows                                            | Linux                                              |

@@ -132,35 +132,6 @@ dotnet run --project ClipboardSync
 调试构建会从开发服务器加载界面。`dotnet run --project ClipboardSync -- --identity` 会打印配对
 使用的稳定 ID、公开密钥和指纹。
 
-### 发布
-
-`npm run build` 会把界面复制到 `ClipboardSync/Resources/wwwroot`，项目再把它嵌入可执行文件。
-因此发布前需要先构建界面。
-
-```bash
-cd ClipboardSync/UserInterface && npm run build
-cd ../.. && dotnet publish ClipboardSync/ClipboardSync.csproj -c Release -r win-x64
-```
-
-Linux 请使用 `-r linux-x64`。输出位于 `ClipboardSync/bin/Release/net10.0/<rid>/publish/`，
-是单个自包含可执行文件。
-
-### 打包
-
-安装脚本以已发布的构建为输入，输出到 `release/`：
-
-```bash
-# Windows — 首次使用时会在本地安装 WiX
-./installer/windows/build-msi.ps1 -Version 0.1.0 -SourceDir publish/win-x64 -OutputDir release
-
-# Linux — 在对应发行版上运行，或使用脚本开头所示的容器
-VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-deb.sh
-VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-rpm.sh
-VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-arch.sh
-```
-
-发布工作流会在发布步骤后运行这四个脚本。
-
 ## 数据保存位置
 
 |            | Windows                                            | Linux                                              |

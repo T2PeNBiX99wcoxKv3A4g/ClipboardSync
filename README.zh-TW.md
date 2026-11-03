@@ -135,35 +135,6 @@ dotnet run --project ClipboardSync
 偵錯建置會從開發伺服器載入介面。`dotnet run --project ClipboardSync -- --identity` 會印出配對
 使用的穩定 ID、公開金鑰和指紋。
 
-### 發佈
-
-`npm run build` 會把介面複製到 `ClipboardSync/Resources/wwwroot`，專案再將它嵌入執行檔。
-因此發佈前需要先建置介面。
-
-```bash
-cd ClipboardSync/UserInterface && npm run build
-cd ../.. && dotnet publish ClipboardSync/ClipboardSync.csproj -c Release -r win-x64
-```
-
-Linux 請使用 `-r linux-x64`。輸出位於 `ClipboardSync/bin/Release/net10.0/<rid>/publish/`，
-是單一自包含執行檔。
-
-### 封裝
-
-安裝腳本以已發佈的建置為輸入，輸出到 `release/`：
-
-```bash
-# Windows — 首次使用時會在本機安裝 WiX
-./installer/windows/build-msi.ps1 -Version 0.1.0 -SourceDir publish/win-x64 -OutputDir release
-
-# Linux — 在對應發行版上執行，或使用腳本開頭所示的容器
-VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-deb.sh
-VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-rpm.sh
-VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-arch.sh
-```
-
-發佈工作流程會在發佈步驟後執行這四個腳本。
-
 ## 資料儲存位置
 
 |            | Windows                                            | Linux                                              |

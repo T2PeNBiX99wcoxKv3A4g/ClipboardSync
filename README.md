@@ -144,35 +144,6 @@ dotnet run --project ClipboardSync
 Debug builds load the interface from the dev server. `dotnet run --project ClipboardSync --
 --identity` prints the stable id, public key and fingerprint used by pairing.
 
-### Release
-
-`npm run build` copies the interface into `ClipboardSync/Resources/wwwroot`, which the project embeds
-into the executable — so build the interface before publishing.
-
-```bash
-cd ClipboardSync/UserInterface && npm run build
-cd ../.. && dotnet publish ClipboardSync/ClipboardSync.csproj -c Release -r win-x64
-```
-
-Use `-r linux-x64` for Linux. That produces a single self-contained executable under
-`ClipboardSync/bin/Release/net10.0/<rid>/publish/`.
-
-### Packages
-
-The installer scripts take a published build and write to `release/`:
-
-```bash
-# Windows — WiX is installed locally on first use
-./installer/windows/build-msi.ps1 -Version 0.1.0 -SourceDir publish/win-x64 -OutputDir release
-
-# Linux — run each script on its own distribution, or in the container shown in the script header
-VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-deb.sh
-VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-rpm.sh
-VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/linux/build-arch.sh
-```
-
-The release workflow runs all four after the publish step.
-
 ## Where things are stored
 
 |                 | Windows                                            | Linux                                              |
