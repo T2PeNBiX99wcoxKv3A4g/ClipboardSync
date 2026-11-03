@@ -12,19 +12,111 @@ internal sealed record BlobWrite(string Hash, long Size);
 internal static class BlobStore
 {
     private const int BufferSize = 1024 * 1024;
-    private static readonly string Root = Path.Combine(Constants.DataDirectory, "clipboard", "blobs");
-    private static readonly string PartialRoot = Path.Combine(Root, ".partial");
+    private static readonly string DefaultRoot = Path.Combine(Constants.DataDirectory, "clipboard", "blobs");
+    private static readonly object WriteSync = new();
+    private static string _root = DefaultRoot;
     private static int _writers;
+    private static bool _migrating;
 
-    public static string PathFor(string hash) => Path.Combine(Root, hash);
+    public static string Root => _root;
+
+    public static string DefaultDirectory => DefaultRoot;
+
+    private static string PartialRoot => Path.Combine(_root, ".partial");
+
+    public static string PathFor(string hash) => Path.Combine(_root, hash);
 
     public static string PartialPath(string hash) => Path.Combine(PartialRoot, hash + ".part");
+
+    /// <summary>Uses the configured folder, falling back to the default when it cannot be created.</summary>
+    public static void Configure(string? directory)
+    {
+        string next;
+
+        try
+        {
+            next = Resolve(directory);
+        }
+        catch (Exception ex)
+        {
+            Constants.Logger.Warning(ex, "Invalid blob folder {Directory}; using the default", directory);
+            _root = DefaultRoot;
+            return;
+        }
+
+        try
+        {
+            Directory.CreateDirectory(next);
+            _root = next;
+        }
+        catch (Exception ex)
+        {
+            Constants.Logger.Warning(ex, "Could not use the blob folder {Directory}; using the default",
+                next);
+            _root = DefaultRoot;
+        }
+    }
+
+    /// <summary>Moves existing blobs to a new folder before it becomes the active store.</summary>
+    public static async Task MoveToAsync(string? directory, CancellationToken token = default)
+    {
+        var next = Resolve(directory);
+
+        if (string.Equals(next, _root, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        if (IsUnder(next, _root) || IsUnder(_root, next))
+            throw new ArgumentException("The blob folder cannot contain the current one.", nameof(directory));
+
+        lock (WriteSync)
+        {
+            if (_migrating)
+                throw new InvalidOperationException("The blob folder is already being moved.");
+
+            _migrating = true;
+        }
+
+        try
+        {
+            while (Volatile.Read(ref _writers) > 0)
+                await Task.Delay(50, token);
+
+            Directory.CreateDirectory(next);
+            Directory.CreateDirectory(Path.Combine(next, ".partial"));
+            CopyFiles(_root, next);
+            CopyFiles(Path.Combine(_root, ".partial"), Path.Combine(next, ".partial"));
+            var previous = _root;
+            _root = next;
+            DeleteFiles(previous);
+            DeleteFiles(Path.Combine(previous, ".partial"));
+        }
+        finally
+        {
+            lock (WriteSync)
+                _migrating = false;
+        }
+    }
 
     /// <summary>Keeps garbage collection from deleting blobs a capture or receive is still adding.</summary>
     public static IDisposable BeginWrite()
     {
-        Interlocked.Increment(ref _writers);
-        return new WriteLease();
+        while (true)
+        {
+            lock (WriteSync)
+            {
+                if (_migrating)
+                {
+                    // The folder is being moved; wait for it to finish.
+                }
+                else
+                {
+                    _writers++;
+                    return new WriteLease();
+                }
+            }
+
+            Thread.Sleep(20);
+        }
     }
 
     public static bool Exists(string hash) =>
@@ -161,7 +253,7 @@ internal static class BlobStore
     /// <summary>Deletes blobs no record refers to, and partial uploads nobody resumed for a week.</summary>
     public static void GarbageCollect(IEnumerable<string> referenced)
     {
-        if (Volatile.Read(ref _writers) > 0)
+        if (Volatile.Read(ref _migrating) || Volatile.Read(ref _writers) > 0)
             return;
 
         var keep = referenced
@@ -207,6 +299,51 @@ internal static class BlobStore
         }
     }
 
+    private static string Resolve(string? directory) =>
+        string.IsNullOrWhiteSpace(directory)
+            ? DefaultRoot
+            : Path.GetFullPath(Expand(directory.Trim()));
+
+    private static string Expand(string value)
+    {
+        var expanded = Environment.ExpandEnvironmentVariables(value);
+
+        if (expanded is "~" || expanded.StartsWith("~/") || expanded.StartsWith("~\\"))
+            expanded = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                expanded[1..].TrimStart('/', '\\'));
+
+        return expanded;
+    }
+
+    private static bool IsUnder(string path, string parent)
+    {
+        var root = Path.GetFullPath(parent).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        return Path.GetFullPath(path).StartsWith(root, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void CopyFiles(string source, string destination)
+    {
+        if (!Directory.Exists(source))
+            return;
+
+        Directory.CreateDirectory(destination);
+
+        foreach (var file in Directory.EnumerateFiles(source))
+        {
+            var target = Path.Combine(destination, Path.GetFileName(file));
+            File.Copy(file, target, true);
+        }
+    }
+
+    private static void DeleteFiles(string directory)
+    {
+        if (!Directory.Exists(directory))
+            return;
+
+        foreach (var file in Directory.EnumerateFiles(directory))
+            TryDelete(file);
+    }
+
     private sealed class WriteLease : IDisposable
     {
         private int _disposed;
@@ -214,7 +351,8 @@ internal static class BlobStore
         public void Dispose()
         {
             if (Interlocked.Exchange(ref _disposed, 1) == 0)
-                Interlocked.Decrement(ref _writers);
+                lock (WriteSync)
+                    _writers--;
         }
     }
 }

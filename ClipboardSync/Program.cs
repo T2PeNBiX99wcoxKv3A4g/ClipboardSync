@@ -32,6 +32,7 @@ internal static class Program
 
         // The language lives in the settings; load them before anything asks for a string.
         SettingsService.Instance.Load();
+        BlobStore.Configure(SettingsService.Instance.Current.BlobDirectory);
         Localization.Initialize(typeof(Program).Assembly, "ClipboardSync.Resources.i18n.",
             () => SettingsService.Instance.Language);
 
@@ -86,6 +87,7 @@ internal static class Program
 
             // Touching each singleton constructs it, which is what registers its message handlers.
             _ = AppInfoService.Instance;
+            _ = UpdateService.Instance;
             _ = StartupService.Instance;
 
             var manager = WindowManager.Instance;

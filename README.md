@@ -198,6 +198,8 @@ problem. They roll daily and the last seven are kept.
   limit** (512 MB by default) and 1,000 entries. Blobs are content-addressed and shared between
   items; materialised views use hardlinks where the filesystem allows it. Transfers are encrypted,
   but the blob store on disk is ordinary plaintext files in the local data folder.
+- **Settings → Sync → Blob storage folder** changes where blobs live. Leave it empty for the app data
+  folder; changing it moves the existing blobs.
 - The mesh depends on each device being able to reach the others on TCP 45456. UDP 45457 is only the
   discovery hint; the manual address field covers networks where broadcast is blocked.
 - Closing the window sends the app to the tray. Turn on **Start with the window hidden** if you want

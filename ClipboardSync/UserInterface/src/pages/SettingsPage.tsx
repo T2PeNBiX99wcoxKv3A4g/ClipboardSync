@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from "react";
 import styled, {css, keyframes} from "styled-components";
 import {useTranslation} from "@photino-net-utils/bridge";
-import {type AppInfo, openLogsFolder, setStartup, startupStatus} from "../api/system";
+import {type AppInfo, checkForUpdates, getUpdateStatus, openLogsFolder, openReleasePage, setStartup, startupStatus, type UpdateCheck} from "../api/system";
 import {getSettings, type Settings, saveSettings} from "../api/settings";
 import {Toggle} from "../components/Toggle";
 import {Dropdown} from "../components/Dropdown";
@@ -34,6 +34,9 @@ export function SettingsPage({info}: SettingsPageProps) {
     const [startup, setStartupState] = useState<{ supported: boolean; enabled: boolean } | null>(null);
     const [saving, setSaving] = useState(false);
     const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
+    const [updateState, setUpdateState] = useState<UpdateCheck | null>(null);
+    const [updateBusy, setUpdateBusy] = useState(false);
+    const [updateError, setUpdateError] = useState(false);
     const [activeSection, setActiveSection] = useState<SectionId>("general");
     const pageRef = useRef<HTMLDivElement>(null);
     const sectionRefs = useRef<Record<SectionId, HTMLElement | null>>({
@@ -96,6 +99,10 @@ export function SettingsPage({info}: SettingsPageProps) {
             if (!cancelled) setStartupState(next);
         }, () => undefined);
 
+        void getUpdateStatus().then((next) => {
+            if (!cancelled) setUpdateState(next);
+        }, () => undefined);
+
         return () => {
             cancelled = true;
         };
@@ -136,8 +143,8 @@ export function SettingsPage({info}: SettingsPageProps) {
             setSettings(next);
             setSaved(next);
             setNotice({ok: true, text: t("Settings saved.")});
-        }, () => {
-            setNotice({ok: false, text: t("The host did not answer.")});
+        }, (error) => {
+            setNotice({ok: false, text: error instanceof Error ? error.message : t("The host did not answer.")});
         }).finally(() => {
             setSaving(false);
             window.setTimeout(() => setNotice(null), 4000);
@@ -159,6 +166,7 @@ export function SettingsPage({info}: SettingsPageProps) {
             historyLimit: 200,
             maxImageMb: 10,
             maxFileMb: 512,
+            blobDirectory: "",
         });
     };
 
@@ -174,6 +182,18 @@ export function SettingsPage({info}: SettingsPageProps) {
 
         setActiveSection(id);
         element.scrollIntoView({behavior: "smooth", block: "start"});
+    };
+
+    const checkUpdate = () => {
+        setUpdateBusy(true);
+        setUpdateError(false);
+        void checkForUpdates().then((next) => {
+            setUpdateState(next);
+        }, () => {
+            setUpdateError(true);
+        }).finally(() => {
+            setUpdateBusy(false);
+        });
     };
 
     if (!settings) {
@@ -333,6 +353,18 @@ export function SettingsPage({info}: SettingsPageProps) {
                             <Unit>MB</Unit>
                         </SizeRow>
                     </Field>
+                    <Field>
+                        <FieldText>
+                            <label htmlFor="blob-directory">{t("Blob storage folder")}</label>
+                            <p>{t("Leave empty to use the app data folder. Changing it moves existing blobs.")}</p>
+                        </FieldText>
+                        <PathInput
+                            id="blob-directory"
+                            onChange={(event) => update("blobDirectory", event.target.value)}
+                            placeholder={t("Default")}
+                            value={settings.blobDirectory}
+                        />
+                    </Field>
                 </Card>
                 <Note>{t("Images are shared as PNG; files and folders are copied recursively.")}</Note>
             </Section>
@@ -372,6 +404,30 @@ export function SettingsPage({info}: SettingsPageProps) {
                             <p>{info ? `${info.version} · ${info.platform}` : t("browser preview")}</p>
                         </FieldText>
                         <InfoIcon size={15}/>
+                    </Field>
+                    <Field>
+                        <FieldText>
+                            <label>{t("Updates")}</label>
+                            <p>
+                                {updateError
+                                    ? t("The update check failed.")
+                                    : updateState
+                                        ? updateState.available
+                                            ? t("A newer version is available: v{version}", {version: updateState.latest})
+                                            : t("You are running the latest version.")
+                                        : t("Check the published version.")}
+                            </p>
+                        </FieldText>
+                        <UpdateActions>
+                            <GhostButton disabled={updateBusy} onClick={checkUpdate} type="button">
+                                {updateBusy ? t("Checking…") : t("Check for updates")}
+                            </GhostButton>
+                            {updateState?.available && (
+                                <GhostButton onClick={() => void openReleasePage().catch(() => undefined)} type="button">
+                                    {t("Open release page")}
+                                </GhostButton>
+                            )}
+                        </UpdateActions>
                     </Field>
                     <Field>
                         <FieldText>
@@ -613,6 +669,19 @@ const TextInput = styled.input`
 const NumberInput = styled(TextInput)`
     width: 92px;
     font-family: var(--font-mono);
+`;
+
+const PathInput = styled(TextInput)`
+    width: 280px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+`;
+
+const UpdateActions = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
 `;
 
 const SizeRow = styled.div`

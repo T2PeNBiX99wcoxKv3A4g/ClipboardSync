@@ -20,12 +20,16 @@ internal sealed record SettingsPayload(
     bool SyncFiles,
     int HistoryLimit,
     int MaxImageMb,
-    int MaxFileMb);
+    int MaxFileMb,
+    string BlobDirectory);
 
 /// <summary>Payload for <c>app.setStartup</c>: whether the startup entry should exist.</summary>
 internal sealed record StartupRequest(bool Enabled);
 
-/// <summary>Body for the <c>app.startup</c> messages; the entry's presence is the state.</summary>
+/// <summary>Body for <c>app.updateStatus</c> and <c>app.checkUpdate</c>.</summary>
+internal sealed record UpdateCheckPayload(string Current, string Latest, bool Available);
+
+/// <summary>Body for <c>app.startup</c>; keep this near the other app responses.</summary>
 internal sealed record StartupPayload(bool Supported, bool Enabled);
 
 /// <summary>Body for the <c>window.state</c> event.</summary>

@@ -36,5 +36,8 @@ public sealed record AppSettings
     /// <summary>Total size of one copied file selection, in megabytes. Defaults to 512 MB.</summary>
     public int MaxFileMb { get; init; } = 512;
 
+    /// <summary>Where file blobs live; empty uses the app data folder.</summary>
+    public string BlobDirectory { get; init; } = string.Empty;
+
     public static AppSettings Default { get; } = new();
 }

@@ -12,6 +12,7 @@ export interface Settings {
     historyLimit: number;
     maxImageMb: number;
     maxFileMb: number;
+    blobDirectory: string;
 }
 
 /** Used in a browser preview, where there is no settings file to read. */
@@ -26,6 +27,7 @@ export const PREVIEW_SETTINGS: Settings = {
     historyLimit: 200,
     maxImageMb: 10,
     maxFileMb: 512,
+    blobDirectory: "",
 };
 
 export async function getSettings(): Promise<Settings> {

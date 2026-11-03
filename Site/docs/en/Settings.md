@@ -19,6 +19,8 @@ The Settings page is split into four sections. The section list on the right fol
 - **Files and folders** — share copied files and folders. Folders are walked recursively.
 - **Image size limit** — 1 to 32 MB, 10 MB by default. Larger images are ignored.
 - **File size limit** — 1 to 4096 MB, 512 MB by default. One selection larger than this is skipped.
+- **Blob storage folder** — where file blobs live. Leave it empty for the app data folder; changing it moves
+  the existing blobs.
 
 ## History
 
@@ -27,6 +29,7 @@ The Settings page is split into four sections. The section list on the right fol
 ## About
 
 - **Version** — the build and platform.
+- **Updates** — compare this build with the published `.version` file and open the release page.
 - **Logs** — the log folder, with a button to open it.
 
 ## Saving

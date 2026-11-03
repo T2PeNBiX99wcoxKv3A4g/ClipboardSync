@@ -44,3 +44,32 @@ export async function openLogsFolder(): Promise<void> {
 
     await Native.request("app.openLogs");
 }
+
+export interface UpdateCheck {
+    current: string;
+    latest: string;
+    available: boolean;
+}
+
+export const RELEASES_URL = "https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/releases/latest";
+
+/** The cached update state; null when it is unknown or the automatic check failed. */
+export async function getUpdateStatus(): Promise<UpdateCheck | null> {
+    if (!Native.available) return null;
+
+    return (await Native.request<UpdateCheck | null>("app.updateStatus")) ?? null;
+}
+
+/** Forces a check against the published `.version` file, bypassing the cache. */
+export async function checkForUpdates(): Promise<UpdateCheck> {
+    if (!Native.available) return {current: "dev", latest: "dev", available: false};
+
+    return await Native.request<UpdateCheck>("app.checkUpdate");
+}
+
+/** Opens the newest release in the user's browser. */
+export async function openReleasePage(): Promise<void> {
+    if (!Native.available) return;
+
+    await Native.request("app.openRelease");
+}

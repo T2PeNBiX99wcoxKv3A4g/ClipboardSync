@@ -43,7 +43,8 @@ internal sealed class SettingsService : Singleton<SettingsService>
                 MaxImageMb = Math.Clamp(stored.MaxImageMb, ClipboardLimits.MinImageMb, ClipboardLimits.MaxImageMb),
                 MaxFileMb = stored.MaxFileMb > 0
                     ? Math.Clamp(stored.MaxFileMb, ClipboardLimits.MinFileMb, ClipboardLimits.MaxFileMb)
-                    : ClipboardLimits.DefaultFileMb
+                    : ClipboardLimits.DefaultFileMb,
+                BlobDirectory = stored.BlobDirectory?.Trim() ?? string.Empty
             };
     }
 
@@ -53,7 +54,7 @@ internal sealed class SettingsService : Singleton<SettingsService>
     private SettingsPayload Payload() =>
         new(Current.DeviceName, Current.Language, Current.StartHidden, Current.SyncEnabled,
             Current.SyncText, Current.SyncImages, Current.SyncFiles, Current.HistoryLimit, Current.MaxImageMb,
-            Current.MaxFileMb);
+            Current.MaxFileMb, Current.BlobDirectory);
 
     private Task<NativeResponse?> HandleMessageAsync(NativeContext context) => context.Request.Type switch
     {
@@ -70,6 +71,18 @@ internal sealed class SettingsService : Singleton<SettingsService>
         if (settings.DeviceName.Trim() is not { Length: > 0 } deviceName)
             return context.Fail("settings.save.result", Localization.Get("error.invalidDeviceName"));
 
+        var blobDirectory = settings.BlobDirectory?.Trim() ?? string.Empty;
+
+        try
+        {
+            await BlobStore.MoveToAsync(blobDirectory);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Could not move the blob store to {Directory}", blobDirectory);
+            return context.Fail("settings.save.result", Localization.Get("error.blobDirectory"));
+        }
+
         Current = new()
         {
             DeviceName = deviceName,
@@ -81,7 +94,8 @@ internal sealed class SettingsService : Singleton<SettingsService>
             SyncFiles = settings.SyncFiles,
             HistoryLimit = Math.Clamp(settings.HistoryLimit, 10, 5000),
             MaxImageMb = Math.Clamp(settings.MaxImageMb, ClipboardLimits.MinImageMb, ClipboardLimits.MaxImageMb),
-            MaxFileMb = Math.Clamp(settings.MaxFileMb, ClipboardLimits.MinFileMb, ClipboardLimits.MaxFileMb)
+            MaxFileMb = Math.Clamp(settings.MaxFileMb, ClipboardLimits.MinFileMb, ClipboardLimits.MaxFileMb),
+            BlobDirectory = blobDirectory.Length == 0 ? string.Empty : Path.GetFullPath(blobDirectory)
         };
 
         Log.Information("Settings saved for {DeviceName}; sync {State}", Current.DeviceName,
