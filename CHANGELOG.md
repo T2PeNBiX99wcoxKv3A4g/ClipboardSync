@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.2.0..v0.3.0) - 2026-11-03
+
+### ⛰️  Features
+
+- *(settings)* Add blob storage path and update check - ([202e87f](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/202e87f02b56de331d9c56282f195ccc370cafde))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([afe54d3](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/afe54d3e2693c0aebcff328874c80a64dc2f1478))
+
+
 ## [0.2.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.1.0..v0.2.0) - 2026-11-03
 
 ### ⛰️  Features
