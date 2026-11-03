@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.5.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.4.3..v0.5.0) - 2026-11-03
+
+### ⛰️  Features
+
+- *(settings)* Add a system default language option - ([0a6725b](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/0a6725b309dcdb2a8c9ba467bdc3c481834e38c2))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([f27e763](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/f27e7636d6d3ad7ae0a5ff16b51134c1472dd11a))
+
+
 ## [0.4.3](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.4.2..v0.4.3) - 2026-11-03
 
 ### 🚜 Refactor
