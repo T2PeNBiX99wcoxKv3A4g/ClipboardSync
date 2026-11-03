@@ -26,6 +26,7 @@ internal sealed class SyncService : Singleton<SyncService>
     private readonly SettingsService _settings = SettingsService.Instance;
     private readonly ClipboardStore _store = ClipboardStore.Instance;
     private long _lastFileAt;
+    private long _lastClearBroadcast;
     private long _lastImageAt;
     private long _lastProgressPublish;
     private long _suppressAt;
@@ -864,7 +865,16 @@ internal sealed class SyncService : Singleton<SyncService>
             }
 
             if (_settings.Current.SyncEnabled)
+            {
+                if (_store.ClearAt > 0 &&
+                    Environment.TickCount64 - _lastClearBroadcast > 300_000)
+                {
+                    await BroadcastClearAsync(_store.ClearAt);
+                    _lastClearBroadcast = Environment.TickCount64;
+                }
+
                 await SyncMissingAsync();
+            }
         }
     }
 
@@ -1017,6 +1027,7 @@ internal sealed class SyncService : Singleton<SyncService>
     private async Task<NativeResponse?> ClearHistoryAsync(NativeContext context)
     {
         var at = await _store.ClearAsync();
+        _lastClearBroadcast = Environment.TickCount64;
         PublishBoard();
         await BroadcastClearAsync(at);
         return context.Reply("history.clear.result", new OkPayload());
