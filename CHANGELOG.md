@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.3](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.3.2..v0.3.3) - 2026-11-03
+
+### 🚜 Refactor
+
+- *(storage)* Use async file and blob I/O - ([2a379c0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/2a379c01003d1d70e21e3d7c829b7f0f96b019b3))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([aefcded](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/aefcdedc2af9fb9ebe9c65b7d6aef7199606b1ec))
+
+
 ## [0.3.2](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.3.1..v0.3.2) - 2026-11-03
 
 ### 🚜 Refactor
