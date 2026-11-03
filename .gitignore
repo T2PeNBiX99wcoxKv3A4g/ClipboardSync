@@ -1,0 +1,35 @@
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+
+# Build outputs
+**/bin/
+**/obj/
+Build/
+publish/
+**/build/
+**/dist/
+
+# IDE
+.idea/
+.vscode/
+.vs/
+*.DotSettings*
+.junie/
+
+# Runtime files
+*.log
+nul
+.temp/
+
+# Front-end
+**/node_modules/
+**/package-lock.json
+*.tsbuildinfo
+
+.yafm-index.db
+opencode.json
+.opencode/
+AGENTS.md

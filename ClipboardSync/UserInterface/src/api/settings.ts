@@ -1,0 +1,48 @@
+import {Native} from "@photino-net-utils/bridge";
+
+/** Mirrors `ClipboardSync.Models.AppSettings`; the shape crosses the bridge unchanged. */
+export interface Settings {
+    deviceName: string;
+    language: string;
+    startHidden: boolean;
+    syncEnabled: boolean;
+    syncText: boolean;
+    syncImages: boolean;
+    syncFiles: boolean;
+    historyLimit: number;
+    maxImageMb: number;
+}
+
+/** Used in a browser preview, where there is no settings file to read. */
+export const PREVIEW_SETTINGS: Settings = {
+    deviceName: "This device",
+    language: "en",
+    startHidden: false,
+    syncEnabled: true,
+    syncText: true,
+    syncImages: true,
+    syncFiles: false,
+    historyLimit: 200,
+    maxImageMb: 10,
+};
+
+export async function getSettings(): Promise<Settings> {
+    if (!Native.available) return PREVIEW_SETTINGS;
+
+    return await Native.request<Settings>("settings.get");
+}
+
+export async function saveSettings(settings: Settings): Promise<Settings> {
+    if (!Native.available) return settings;
+
+    return await Native.request<Settings>("settings.save", settings);
+}
+
+/** Fires when the settings were saved, so every open view can pick the new values up. */
+export function onSettingsChanged(handler: (settings: Settings) => void): () => void {
+    if (!Native.available) return () => undefined;
+
+    return Native.on((message) => {
+        if (message.type === "settings.changed" && message.data) handler(message.data as Settings);
+    });
+}
