@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.2](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.3.1..v0.3.2) - 2026-11-03
+
+### 🚜 Refactor
+
+- *(history)* Store clipboard history in SQLite - ([1633992](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/1633992f171cfa372ce00576f5ee1b816579abcb))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([0d98974](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/0d989745ac9529f1f6342f882456e8ba4022cd36))
+
+
 ## [0.3.1](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.3.0..v0.3.1) - 2026-11-03
 
 ### 📚 Documentation
