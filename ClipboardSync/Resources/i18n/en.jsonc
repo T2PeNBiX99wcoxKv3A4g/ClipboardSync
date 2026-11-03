@@ -28,6 +28,7 @@
   "Device name": "Device name",
   "The name the other devices see.": "The name the other devices see.",
   "Language": "Language",
+  "System default": "System default",
   "Applies to the interface and the tray menu.": "Applies to the interface and the tray menu.",
   "Start with the window hidden": "Start with the window hidden",
   "Keep ClipboardSync in the tray when it launches.": "Keep ClipboardSync in the tray when it launches.",

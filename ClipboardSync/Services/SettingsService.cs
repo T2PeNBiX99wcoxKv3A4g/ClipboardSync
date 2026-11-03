@@ -56,7 +56,7 @@ internal sealed class SettingsService : Singleton<SettingsService>
     }
 
     private static string NormalizeLanguage(string? language) =>
-        language is "ja" or "zh-CN" or "zh-TW" ? language : "en";
+        language is "system" or "en" or "ja" or "zh-CN" or "zh-TW" ? language : "system";
 
     private SettingsPayload Payload() =>
         new(Current.DeviceName, Current.Language, Current.StartHidden, Current.SyncEnabled,

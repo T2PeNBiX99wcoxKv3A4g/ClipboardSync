@@ -18,7 +18,7 @@ export interface Settings {
 /** Used in a browser preview, where there is no settings file to read. */
 export const PREVIEW_SETTINGS: Settings = {
     deviceName: "This device",
-    language: "en",
+    language: "system",
     startHidden: false,
     syncEnabled: true,
     syncText: true,

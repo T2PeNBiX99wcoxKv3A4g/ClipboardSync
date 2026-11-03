@@ -22,6 +22,7 @@ const sections: { id: SectionId; label: string }[] = [
 ];
 
 const languages = [
+    {id: "system", label: "System default"},
     {id: "en", label: "English"},
     {id: "ja", label: "日本語"},
     {id: "zh-CN", label: "简体中文"},
@@ -30,6 +31,10 @@ const languages = [
 
 export function SettingsPage({info}: SettingsPageProps) {
     const t = useTranslation();
+    const languageOptions = languages.map((language) => ({
+        ...language,
+        label: language.id === "system" ? t("System default") : language.label,
+    }));
     const [settings, setSettings] = useState<Settings | null>(null);
     const [saved, setSaved] = useState<Settings | null>(null);
     const [startup, setStartupState] = useState<{ supported: boolean; enabled: boolean } | null>(null);
@@ -160,7 +165,7 @@ export function SettingsPage({info}: SettingsPageProps) {
         setSettings({
             // Keep the device name: it identifies this device to peers, not a preference.
             deviceName: settings.deviceName,
-            language: "en",
+            language: "system",
             startHidden: false,
             syncEnabled: true,
             syncText: true,
@@ -246,7 +251,7 @@ export function SettingsPage({info}: SettingsPageProps) {
                         <Dropdown
                             label={t("Language")}
                             onChange={changeLanguage}
-                            options={languages}
+                            options={languageOptions}
                             value={settings.language}
                         />
                     </Field>

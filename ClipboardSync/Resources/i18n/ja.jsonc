@@ -28,6 +28,7 @@
   "Device name": "デバイス名",
   "The name the other devices see.": "他のデバイスに表示される名前です。",
   "Language": "言語",
+  "System default": "システムの既定",
   "Applies to the interface and the tray menu.": "インターフェースとトレイメニューに適用されます。",
   "Start with the window hidden": "ウィンドウを隠して起動",
   "Keep ClipboardSync in the tray when it launches.": "起動時に ClipboardSync をトレイに残します。",

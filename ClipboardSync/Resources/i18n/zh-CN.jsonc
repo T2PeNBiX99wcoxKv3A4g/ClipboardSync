@@ -28,6 +28,7 @@
   "Device name": "设备名称",
   "The name the other devices see.": "其他设备看到的名称。",
   "Language": "语言",
+  "System default": "系统默认",
   "Applies to the interface and the tray menu.": "应用于界面与托盘菜单。",
   "Start with the window hidden": "启动时隐藏窗口",
   "Keep ClipboardSync in the tray when it launches.": "启动时将 ClipboardSync 留在托盘。",

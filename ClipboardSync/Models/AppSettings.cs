@@ -9,8 +9,8 @@ public sealed record AppSettings
     /// <summary>The name other devices will see. Defaults to this machine's name.</summary>
     public string DeviceName { get; init; } = Environment.MachineName;
 
-    /// <summary>UI and backend language: <c>en</c>, <c>ja</c>, <c>zh-CN</c> or <c>zh-TW</c>.</summary>
-    public string Language { get; init; } = "en";
+    /// <summary>UI and backend language: <c>system</c>, <c>en</c>, <c>ja</c>, <c>zh-CN</c> or <c>zh-TW</c>.</summary>
+    public string Language { get; init; } = "system";
 
     /// <summary>Start with the window hidden in the tray.</summary>
     public bool StartHidden { get; init; }
