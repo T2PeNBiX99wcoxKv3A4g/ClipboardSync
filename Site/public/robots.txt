@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://t2penbix99wcoxkv3a4g.github.io/ClipboardSync/sitemap.xml

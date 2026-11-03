@@ -1,0 +1,84 @@
+{
+  "nav": {
+    "home": "Home",
+    "docs": "Docs"
+  },
+  "version": "Version",
+  "footer": "ClipboardSync is under the MIT license.",
+  "home": {
+    "tagline": "Copy once, paste on every device you own.",
+    "noteTitle": "What is not here yet",
+    "noteText": "Files are not synced yet: copying a file in the file manager is ignored for now. Text, links and images work. Devices must also be able to reach each other on TCP 45456, so a network that blocks peer traffic needs an address that works.",
+    "download": "Download",
+    "documentation": "Documentation",
+    "whatTitle": "What it does",
+    "whatText": "ClipboardSync keeps one clipboard board across the devices you pair. Copy text, a link or an image on one machine and it shows up on the others, ready to paste. Every device talks directly to the others over an encrypted session; there is no account and no server in the middle.",
+    "featuresTitle": "Features",
+    "features": [
+      {
+        "name": "One shared board",
+        "text": "Every paired device shows the same history, grouped by the device an item came from."
+      },
+      {
+        "name": "Text and links",
+        "text": "Copying text or a URL sends it to the other devices and applies it to their clipboard."
+      },
+      {
+        "name": "Images",
+        "text": "Image copies are sent as PNG, previewed on the board and applied automatically. The size limit is yours to set."
+      },
+      {
+        "name": "Direct connections",
+        "text": "Devices find each other on the local network and talk over TCP. Nothing is relayed through a third party."
+      },
+      {
+        "name": "Encrypted sessions",
+        "text": "An Ed25519 identity, fresh X25519 keys and ChaCha20-Poly1305 protect every frame."
+      },
+      {
+        "name": "Pairing code",
+        "text": "Both screens derive the same short code from the handshake, so you can compare them before trusting a device."
+      },
+      {
+        "name": "Discovery and manual address",
+        "text": "UDP discovery finds devices on the same network; an address field covers networks where broadcast is blocked."
+      },
+      {
+        "name": "Tray and autostart",
+        "text": "Close to the tray, start hidden, launch at sign-in and keep a single instance."
+      }
+    ],
+    "howTitle": "How it works",
+    "how": [
+      "Install ClipboardSync on two devices that can reach each other on the same network.",
+      "Pair them: pick a discovered device or enter its address, then compare the code shown on both screens.",
+      "Copy anything. The item lands on both boards and is applied to the other clipboard; a periodic reconciliation fills in whatever a device missed."
+    ],
+    "installTitle": "Install",
+    "installBefore": "Builds are self-contained: the .NET runtime is bundled, so nothing else needs installing. Windows also needs the WebView2 runtime, which Windows 10 and 11 already have; Linux needs WebKitGTK 4.1 and the AppIndicator library (see the ",
+    "readme": "README",
+    "installAfter": "). The Windows build is not code-signed, so Windows may warn the first time.",
+    "platforms": [
+      {
+        "name": "Windows",
+        "note": "x64, self-contained"
+      },
+      {
+        "name": "Fedora",
+        "note": "x86_64, self-contained"
+      },
+      {
+        "name": "Debian / Ubuntu",
+        "note": "amd64, self-contained"
+      },
+      {
+        "name": "Arch Linux",
+        "note": "x86_64, self-contained"
+      }
+    ]
+  },
+  "docs": {
+    "setup": "Setup",
+    "reference": "Reference"
+  }
+}

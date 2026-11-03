@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="title">
+    <title id="title">ClipboardSync</title>
+
+    <defs>
+        <linearGradient id="background" x1="8" y1="8" x2="248" y2="248" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#ff3d6e"/>
+            <stop offset="1" stop-color="#ff9a3d"/>
+        </linearGradient>
+    </defs>
+
+    <rect x="8" y="8" width="240" height="240" rx="54" fill="url(#background)"/>
+
+    <!-- One clipboard, centred -->
+    <rect x="66" y="52" width="124" height="156" rx="22" fill="#fff8f0"/>
+    <rect x="102" y="36" width="52" height="30" rx="12" fill="#ffd166"/>
+
+    <!-- Two large horizontal arrows on top of the board -->
+    <path d="M82 112h78" stroke="#ff6b3d" stroke-width="14" stroke-linecap="round"/>
+    <path d="M158 88l28 24-28 24z" fill="#ff6b3d"/>
+
+    <path d="M174 152H96" stroke="#ff6b3d" stroke-width="14" stroke-linecap="round"/>
+    <path d="M98 128 70 152l28 24z" fill="#ff6b3d"/>
+</svg>
