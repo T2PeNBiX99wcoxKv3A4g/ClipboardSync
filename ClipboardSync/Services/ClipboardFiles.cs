@@ -35,7 +35,8 @@ internal static class ClipboardFiles
     ///     nothing usable; throws <see cref="FileLimitException" /> when the size or count is over
     ///     the configured limit.
     /// </summary>
-    public static ClipboardFileSnapshot? Snapshot(IReadOnlyList<string> sources, long maxBytes)
+    public static async Task<ClipboardFileSnapshot?> SnapshotAsync(IReadOnlyList<string> sources, long maxBytes,
+        CancellationToken token = default)
     {
         using var writeLease = BlobStore.BeginWrite();
         var entries = new List<ClipboardFileEntry>();
@@ -83,7 +84,7 @@ internal static class ClipboardFiles
                 var source = entry.SourcePath
                              ?? throw new IOException("A file entry has no source path.");
 
-                var blob = BlobStore.Put(source);
+                var blob = await BlobStore.PutAsync(source, token);
                 entry.Hash = blob.Hash;
                 entry.Size = blob.Size;
                 total += blob.Size;
@@ -172,7 +173,7 @@ internal static class ClipboardFiles
     ///     Builds a folder with the manifest's names, hardlinking the blobs. The clipboard gets these
     ///     paths, so a received item can be pasted as ordinary files.
     /// </summary>
-    public static string Materialize(ClipboardRecord record)
+    public static async Task<string> MaterializeAsync(ClipboardRecord record, CancellationToken token = default)
     {
         if (record.Files is not { Count: > 0 } files)
             throw new IOException("The file item has no manifest.");
@@ -204,7 +205,7 @@ internal static class ClipboardFiles
                 Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 
                 if (!TryLink(blob, path))
-                    File.Copy(blob, path, true);
+                    await CopyFileAsync(blob, path, token);
             }
 
             var parent = Path.GetDirectoryName(folder)!;
@@ -218,12 +219,12 @@ internal static class ClipboardFiles
         }
         catch
         {
-            TryDeleteDirectory(staging);
+            await TryDeleteDirectoryAsync(staging);
             throw;
         }
     }
 
-    public static void DeleteView(string id) => TryDeleteDirectory(ViewFolder(id));
+    public static Task DeleteViewAsync(string id) => TryDeleteDirectoryAsync(ViewFolder(id));
 
     /// <summary>Maps a manifest path into <paramref name="folder" /> without allowing escapes.</summary>
     public static string? Resolve(string folder, string relative)
@@ -264,17 +265,27 @@ internal static class ClipboardFiles
         return false;
     }
 
-    private static void TryDeleteDirectory(string path)
+    private static Task TryDeleteDirectoryAsync(string path) =>
+        Task.Run(() =>
+        {
+            try
+            {
+                if (Directory.Exists(path))
+                    Directory.Delete(path, true);
+            }
+            catch (Exception ex)
+            {
+                Constants.Logger.Debug(ex, "Failed to delete the view folder {Path}", path);
+            }
+        });
+
+    private static async Task CopyFileAsync(string source, string destination, CancellationToken token)
     {
-        try
-        {
-            if (Directory.Exists(path))
-                Directory.Delete(path, true);
-        }
-        catch (Exception ex)
-        {
-            Constants.Logger.Debug(ex, "Failed to delete the view folder {Path}", path);
-        }
+        await using var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read,
+            81_920, FileOptions.Asynchronous | FileOptions.SequentialScan);
+        await using var output = new FileStream(destination, FileMode.Create, FileAccess.Write, FileShare.None,
+            81_920, FileOptions.Asynchronous | FileOptions.SequentialScan);
+        await input.CopyToAsync(output, token);
     }
 
     private static string SafeName(string name)

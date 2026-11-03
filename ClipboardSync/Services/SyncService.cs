@@ -231,7 +231,7 @@ internal sealed class SyncService : Singleton<SyncService>
 
         try
         {
-            snapshot = await Task.Run(() => ClipboardFiles.Snapshot(paths, ClipboardLimits.MaxFileBytes));
+            snapshot = await ClipboardFiles.SnapshotAsync(paths, ClipboardLimits.MaxFileBytes);
         }
         catch (ClipboardFiles.FileLimitException)
         {
@@ -645,7 +645,7 @@ internal sealed class SyncService : Singleton<SyncService>
 
                 if (entry.Size == 0)
                 {
-                    BlobStore.PutEmpty();
+                    await BlobStore.PutEmptyAsync();
                     continue;
                 }
 
@@ -657,12 +657,12 @@ internal sealed class SyncService : Singleton<SyncService>
                 }
 
                 if (BlobStore.Exists(entry.Hash))
-                    BlobStore.Delete(entry.Hash);
+                    await BlobStore.DeleteAsync(entry.Hash);
 
                 var offset = BlobStore.PartialLength(entry.Hash);
                 if (offset > entry.Size)
                 {
-                    BlobStore.DeletePartial(entry.Hash);
+                    await BlobStore.DeletePartialAsync(entry.Hash);
                     offset = 0;
                 }
 
@@ -701,7 +701,7 @@ internal sealed class SyncService : Singleton<SyncService>
                             if (bytes.Length is 0 or > PeerProtocol.FileChunkBytes)
                                 throw new PeerSecurityException("A blob chunk has an invalid size.");
 
-                            BlobStore.AppendPartial(entry.Hash, offset, bytes);
+                            await BlobStore.AppendPartialAsync(entry.Hash, offset, bytes, token);
                             offset += bytes.Length;
                             completed += bytes.Length;
                             _store.SetProgress(message.Id, completed);
@@ -717,16 +717,16 @@ internal sealed class SyncService : Singleton<SyncService>
                     }
                 }
 
-                if (!BlobStore.CompletePartial(entry.Hash, entry.Size))
+                if (!await BlobStore.CompletePartialAsync(entry.Hash, entry.Size, token))
                     throw new PeerSecurityException("A file arrived corrupted.");
             }
 
             var record = await _store.FindAsync(message.Id)
                          ?? throw new PeerSecurityException("The file item disappeared while receiving.");
 
-            ClipboardFiles.Materialize(record);
+            await ClipboardFiles.MaterializeAsync(record, token);
             await _store.CompleteFileAsync(message.Id);
-            ApplyRemoteFiles(record);
+            await ApplyRemoteFilesAsync(record);
             PublishBoard();
             _ = RelayAsync(record, session.PeerDeviceId);
             await AcknowledgeAsync(session, message.Id, true, null, token);
@@ -765,7 +765,7 @@ internal sealed class SyncService : Singleton<SyncService>
         _clipboard.WriteImage(png);
     }
 
-    private void ApplyRemoteFiles(ClipboardRecord record)
+    private async Task ApplyRemoteFilesAsync(ClipboardRecord record)
     {
         if (!_settings.Current.SyncEnabled || !_settings.Current.SyncFiles ||
             record.Roots is not { Count: > 0 } roots || record.Files is not { Count: > 0 })
@@ -774,7 +774,7 @@ internal sealed class SyncService : Singleton<SyncService>
         string folder;
         try
         {
-            folder = ClipboardFiles.Materialize(record);
+            folder = await ClipboardFiles.MaterializeAsync(record);
         }
         catch (Exception ex)
         {
@@ -928,7 +928,7 @@ internal sealed class SyncService : Singleton<SyncService>
         string folder;
         try
         {
-            folder = ClipboardFiles.Materialize(record);
+            folder = await ClipboardFiles.MaterializeAsync(record);
         }
         catch (Exception ex)
         {
@@ -955,7 +955,7 @@ internal sealed class SyncService : Singleton<SyncService>
         var id = context.Payload<DeviceRemoveRequest>()?.DeviceId;
         if (id is { Length: > 0 })
         {
-            _peers.Remove(id);
+            await _peers.RemoveAsync(id);
             await _store.ForgetPeerAsync(id);
             PublishBoard();
         }

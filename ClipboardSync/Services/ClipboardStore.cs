@@ -252,9 +252,9 @@ internal sealed class ClipboardStore : Singleton<ClipboardStore>
             }
 
             transaction.Commit();
-            DeleteRecordFiles(record);
+            await DeleteRecordFilesAsync(record);
             _progress.TryRemove(id, out _);
-            BlobStore.GarbageCollect(await ReadHashesAsync());
+            await BlobStore.GarbageCollectAsync(await ReadHashesAsync());
         }
         finally
         {
@@ -263,7 +263,8 @@ internal sealed class ClipboardStore : Singleton<ClipboardStore>
     }
 
     /// <summary>Drops blobs no item refers to, for example after a refused capture.</summary>
-    public async Task CollectGarbageAsync() => BlobStore.GarbageCollect(await ReadHashesAsync());
+    public async Task CollectGarbageAsync() =>
+        await BlobStore.GarbageCollectAsync(await ReadHashesAsync());
 
     private async Task UpdateDeliveryAsync(string id, string peerId, DeliveryState state)
     {
@@ -335,13 +336,13 @@ internal sealed class ClipboardStore : Singleton<ClipboardStore>
             delete.Parameters.AddWithValue("$id", id);
             await delete.ExecuteNonQueryAsync();
 
-            DeleteBinary(dataFile);
-            ClipboardFiles.DeleteView(id);
+            await DeleteBinaryAsync(dataFile);
+            await ClipboardFiles.DeleteViewAsync(id);
             _progress.TryRemove(id, out _);
         }
 
         if (removed.Count > 0)
-            BlobStore.GarbageCollect(await ReadHashesAsync(connection, transaction));
+            await BlobStore.GarbageCollectAsync(await ReadHashesAsync(connection, transaction));
     }
 
     private async Task MigrateLegacyAsync(SqliteConnection connection)
@@ -436,7 +437,7 @@ internal sealed class ClipboardStore : Singleton<ClipboardStore>
                     delete.Parameters.AddWithValue("$id", item.Id);
                     await delete.ExecuteNonQueryAsync();
 
-                    DeleteRecordFiles(item);
+                    await DeleteRecordFilesAsync(item);
                     items.Remove(item);
                 }
 
@@ -456,14 +457,14 @@ internal sealed class ClipboardStore : Singleton<ClipboardStore>
             {
                 foreach (var directory in Directory.EnumerateDirectories(views))
                     if (!ids.Contains(Path.GetFileName(directory)))
-                        ClipboardFiles.DeleteView(Path.GetFileName(directory));
+                        await ClipboardFiles.DeleteViewAsync(Path.GetFileName(directory));
             }
             catch (Exception ex)
             {
                 Constants.Logger.Debug(ex, "Failed to clean up clipboard views");
             }
 
-        BlobStore.GarbageCollect(items.SelectMany(item => item.Files ?? [])
+        await BlobStore.GarbageCollectAsync(items.SelectMany(item => item.Files ?? [])
             .Where(entry => !entry.Directory && entry.Hash.Length == 64)
             .Select(entry => entry.Hash));
     }
@@ -605,25 +606,28 @@ internal sealed class ClipboardStore : Singleton<ClipboardStore>
         return File.Exists(path) ? await File.ReadAllBytesAsync(path) : null;
     }
 
-    private static void DeleteRecordFiles(ClipboardRecord record)
+    private static async Task DeleteRecordFilesAsync(ClipboardRecord record)
     {
-        DeleteBinary(record.DataFile);
-        ClipboardFiles.DeleteView(record.Id);
+        await DeleteBinaryAsync(record.DataFile);
+        await ClipboardFiles.DeleteViewAsync(record.Id);
     }
 
-    private static void DeleteBinary(string? relativePath)
+    private static Task DeleteBinaryAsync(string? relativePath)
     {
         if (string.IsNullOrEmpty(relativePath))
-            return;
+            return Task.CompletedTask;
 
-        Try.Run(() =>
+        return Task.Run(() =>
         {
-            var path = Path.Combine(Constants.DataDirectory, relativePath);
-            if (Directory.Exists(path))
-                Directory.Delete(path, true);
-            else if (File.Exists(path))
-                File.Delete(path);
-        }).OnFailure(ex => Constants.Logger.Debug(ex, "Failed to delete {Path}", relativePath));
+            Try.Run(() =>
+            {
+                var path = Path.Combine(Constants.DataDirectory, relativePath);
+                if (Directory.Exists(path))
+                    Directory.Delete(path, true);
+                else if (File.Exists(path))
+                    File.Delete(path);
+            }).OnFailure(ex => Constants.Logger.Debug(ex, "Failed to delete {Path}", relativePath));
+        });
     }
 
     private async Task<SqliteConnection> OpenAsync()

@@ -95,7 +95,7 @@ internal sealed class PairingService : Singleton<PairingService>
                     return Task.CompletedTask;
                 }, cts.Token);
 
-            PeerStore.Instance.AddOrUpdate(peer);
+            await PeerStore.Instance.AddOrUpdateAsync(peer);
             Push("pair.result", new PairResultPayload(true, peer.Id, peer.Name, null));
             OnPeerPaired(peer);
         }

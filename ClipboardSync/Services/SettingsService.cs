@@ -24,17 +24,19 @@ internal sealed class SettingsService : Singleton<SettingsService>
     /// <summary>Raised after a save, so the sync services can follow the new switches.</summary>
     public static event Action<SettingsPayload>? Changed;
 
-    public void Load()
+    public async Task LoadAsync()
     {
         if (!File.Exists(FilePath))
             return;
 
-        var stored = Try.Run(() => JsonSerializer.Deserialize(File.ReadAllText(FilePath),
-                AppJsonContext.Default.AppSettings))
-            .OnFailure(ex => Log.Warning(ex, "Failed to read {File}", FilePath))
-            .GetOrNull();
+        try
+        {
+            var json = await File.ReadAllTextAsync(FilePath);
+            var stored = JsonSerializer.Deserialize(json, AppJsonContext.Default.AppSettings);
 
-        if (stored is not null)
+            if (stored is null)
+                return;
+
             Current = stored with
             {
                 DeviceName = stored.DeviceName is { Length: > 0 } name ? name.Trim() : Current.DeviceName,
@@ -46,6 +48,11 @@ internal sealed class SettingsService : Singleton<SettingsService>
                     : ClipboardLimits.DefaultFileMb,
                 BlobDirectory = stored.BlobDirectory?.Trim() ?? string.Empty
             };
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to read {File}", FilePath);
+        }
     }
 
     private static string NormalizeLanguage(string? language) =>

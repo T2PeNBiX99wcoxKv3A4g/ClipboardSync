@@ -31,7 +31,7 @@ internal static class Program
         NativeBridge.Initialize(AppJsonContext.Default);
 
         // The language lives in the settings; load them before anything asks for a string.
-        SettingsService.Instance.Load();
+        SettingsService.Instance.LoadAsync().GetAwaiter().GetResult();
         BlobStore.Configure(SettingsService.Instance.Current.BlobDirectory);
         Localization.Initialize(typeof(Program).Assembly, "ClipboardSync.Resources.i18n.",
             () => SettingsService.Instance.Language);
@@ -63,6 +63,7 @@ internal static class Program
             // needs a window; both have to be ready before a pairing or session can start.
             _ = DeviceIdentity.Instance;
             _ = PeerStore.Instance;
+            PeerStore.Instance.InitializeAsync().GetAwaiter().GetResult();
 
             // Only one instance may run; later launches forward their arguments to it and exit.
             using var singleInstance = new SingleInstance(Constants.Name);

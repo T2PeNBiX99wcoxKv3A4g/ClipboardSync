@@ -154,7 +154,7 @@ internal sealed class PeerServer : Singleton<PeerServer>
         if (peer is null)
             return;
 
-        PeerStore.Instance.AddOrUpdate(peer);
+        await PeerStore.Instance.AddOrUpdateAsync(peer);
         Log.Information("Paired with {Device} ({Id})", peer.Name, peer.Id);
         PairingService.Instance.OnPeerPaired(peer);
     }

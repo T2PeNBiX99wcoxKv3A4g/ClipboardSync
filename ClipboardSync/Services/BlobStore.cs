@@ -83,12 +83,12 @@ internal static class BlobStore
 
             Directory.CreateDirectory(next);
             Directory.CreateDirectory(Path.Combine(next, ".partial"));
-            CopyFiles(_root, next);
-            CopyFiles(Path.Combine(_root, ".partial"), Path.Combine(next, ".partial"));
+            await CopyFilesAsync(_root, next, token);
+            await CopyFilesAsync(Path.Combine(_root, ".partial"), Path.Combine(next, ".partial"), token);
             var previous = _root;
             _root = next;
-            DeleteFiles(previous);
-            DeleteFiles(Path.Combine(previous, ".partial"));
+            await DeleteFilesAsync(previous, token);
+            await DeleteFilesAsync(Path.Combine(previous, ".partial"), token);
         }
         finally
         {
@@ -129,7 +129,7 @@ internal static class BlobStore
     }
 
     /// <summary>Copies a file into the blob store, hashing it while it is copied.</summary>
-    public static BlobWrite Put(string sourcePath)
+    public static async Task<BlobWrite> PutAsync(string sourcePath, CancellationToken token = default)
     {
         Directory.CreateDirectory(Root);
         var temporary = Path.Combine(Root, $".{Guid.NewGuid():N}.tmp");
@@ -139,19 +139,19 @@ internal static class BlobStore
             string hash;
             long size = 0;
 
-            using (var input = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Read,
-                       BufferSize, FileOptions.SequentialScan))
-            using (var output = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None,
-                       BufferSize, FileOptions.SequentialScan))
+            await using (var input = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Read,
+                       BufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan))
+            await using (var output = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None,
+                       BufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan))
             using (var hasher = IncrementalHash.CreateHash(HashAlgorithmName.SHA256))
             {
                 var buffer = new byte[BufferSize];
                 int read;
 
-                while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
+                while ((read = await input.ReadAsync(buffer, token)) > 0)
                 {
                     hasher.AppendData(buffer, 0, read);
-                    output.Write(buffer, 0, read);
+                    await output.WriteAsync(buffer.AsMemory(0, read), token);
                     size += read;
                 }
 
@@ -180,13 +180,14 @@ internal static class BlobStore
     }
 
     /// <summary>Writes one range at <paramref name="offset" /> of the partial blob.</summary>
-    public static void AppendPartial(string hash, long offset, byte[] data)
+    public static async Task AppendPartialAsync(string hash, long offset, byte[] data,
+        CancellationToken token = default)
     {
         Directory.CreateDirectory(PartialRoot);
         var path = PartialPath(hash);
 
-        using var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None,
-            BufferSize, FileOptions.SequentialScan);
+        await using var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None,
+            BufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan);
 
         if (stream.Length != offset)
         {
@@ -197,25 +198,35 @@ internal static class BlobStore
         }
 
         stream.Seek(offset, SeekOrigin.Begin);
-        stream.Write(data);
-        stream.Flush(true);
+        await stream.WriteAsync(data, token);
+        await stream.FlushAsync(token);
     }
 
     /// <summary>Verifies the finished partial and moves it into the blob store.</summary>
-    public static bool CompletePartial(string hash, long expectedSize)
+    public static async Task<bool> CompletePartialAsync(string hash, long expectedSize,
+        CancellationToken token = default)
     {
         var partial = PartialPath(hash);
         if (!File.Exists(partial) || new FileInfo(partial).Length != expectedSize)
             return false;
 
-        using (var stream = File.OpenRead(partial))
+        string actual;
+        await using (var stream = new FileStream(partial, FileMode.Open, FileAccess.Read, FileShare.Read,
+                         BufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan))
+        using (var hasher = IncrementalHash.CreateHash(HashAlgorithmName.SHA256))
         {
-            var actual = Convert.ToHexString(SHA256.HashData(stream));
-            if (actual != hash)
-            {
-                TryDelete(partial);
-                return false;
-            }
+            var buffer = new byte[BufferSize];
+            int read;
+            while ((read = await stream.ReadAsync(buffer, token)) > 0)
+                hasher.AppendData(buffer, 0, read);
+
+            actual = Convert.ToHexString(hasher.GetHashAndReset());
+        }
+
+        if (actual != hash)
+        {
+            TryDelete(partial);
+            return false;
         }
 
         var final = PathFor(hash);
@@ -229,10 +240,14 @@ internal static class BlobStore
         return true;
     }
 
-    public static void DeletePartial(string hash) => TryDelete(PartialPath(hash));
+    public static Task DeletePartialAsync(string hash)
+    {
+        TryDelete(PartialPath(hash));
+        return Task.CompletedTask;
+    }
 
     /// <summary>Makes sure the single empty blob exists; zero-byte files still need a hash entry.</summary>
-    public static void PutEmpty()
+    public static async Task PutEmptyAsync()
     {
         var hash = Convert.ToHexString(SHA256.HashData([]));
         var path = PathFor(hash);
@@ -241,41 +256,45 @@ internal static class BlobStore
             return;
 
         Directory.CreateDirectory(Root);
-        File.WriteAllBytes(path, []);
+        await File.WriteAllBytesAsync(path, []);
     }
 
-    public static void Delete(string hash)
+    public static Task DeleteAsync(string hash)
     {
         TryDelete(PathFor(hash));
         TryDelete(PartialPath(hash));
+        return Task.CompletedTask;
     }
 
     /// <summary>Deletes blobs no record refers to, and partial uploads nobody resumed for a week.</summary>
-    public static void GarbageCollect(IEnumerable<string> referenced)
+    public static Task GarbageCollectAsync(IEnumerable<string> referenced, CancellationToken token = default)
     {
         if (Volatile.Read(ref _migrating) || Volatile.Read(ref _writers) > 0)
-            return;
+            return Task.CompletedTask;
 
         var keep = referenced
             .Where(hash => hash.Length == 64)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        try
+        return Task.Run(() =>
         {
-            if (Directory.Exists(Root))
-                foreach (var file in Directory.EnumerateFiles(Root))
-                    if (!keep.Contains(Path.GetFileName(file)))
-                        TryDelete(file);
+            try
+            {
+                if (Directory.Exists(Root))
+                    foreach (var file in Directory.EnumerateFiles(Root))
+                        if (!keep.Contains(Path.GetFileName(file)))
+                            TryDelete(file);
 
-            if (Directory.Exists(PartialRoot))
-                foreach (var file in Directory.EnumerateFiles(PartialRoot))
-                    if (DateTime.UtcNow - File.GetLastWriteTimeUtc(file) > TimeSpan.FromDays(7))
-                        TryDelete(file);
-        }
-        catch (Exception ex)
-        {
-            Constants.Logger.Debug(ex, "Failed to clean up the blob store");
-        }
+                if (Directory.Exists(PartialRoot))
+                    foreach (var file in Directory.EnumerateFiles(PartialRoot))
+                        if (DateTime.UtcNow - File.GetLastWriteTimeUtc(file) > TimeSpan.FromDays(7))
+                            TryDelete(file);
+            }
+            catch (Exception ex)
+            {
+                Constants.Logger.Debug(ex, "Failed to clean up the blob store");
+            }
+        }, token);
     }
 
     public static Stream OpenRead(string hash, long offset)
@@ -321,7 +340,7 @@ internal static class BlobStore
         return Path.GetFullPath(path).StartsWith(root, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static void CopyFiles(string source, string destination)
+    private static async Task CopyFilesAsync(string source, string destination, CancellationToken token)
     {
         if (!Directory.Exists(source))
             return;
@@ -331,18 +350,25 @@ internal static class BlobStore
         foreach (var file in Directory.EnumerateFiles(source))
         {
             var target = Path.Combine(destination, Path.GetFileName(file));
-            File.Copy(file, target, true);
+
+            await using var input = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read,
+                BufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan);
+            await using var output = new FileStream(target, FileMode.Create, FileAccess.Write, FileShare.None,
+                BufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan);
+
+            await input.CopyToAsync(output, token);
         }
     }
 
-    private static void DeleteFiles(string directory)
-    {
-        if (!Directory.Exists(directory))
-            return;
+    private static Task DeleteFilesAsync(string directory, CancellationToken token) =>
+        Task.Run(() =>
+        {
+            if (!Directory.Exists(directory))
+                return;
 
-        foreach (var file in Directory.EnumerateFiles(directory))
-            TryDelete(file);
-    }
+            foreach (var file in Directory.EnumerateFiles(directory))
+                TryDelete(file);
+        }, token);
 
     private sealed class WriteLease : IDisposable
     {
