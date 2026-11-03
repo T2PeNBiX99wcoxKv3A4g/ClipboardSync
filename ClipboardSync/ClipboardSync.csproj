@@ -10,7 +10,7 @@
         <!-- Generate embedded file manifest when using the shared static file server -->
         <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
         <RootNamespace>ClipboardSync</RootNamespace>
-        <Version>0.6.0</Version>
+        <Version>0.6.1</Version>
         <Description>Clipboard sharing across the devices on your desk.</Description>
         <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
     </PropertyGroup>
