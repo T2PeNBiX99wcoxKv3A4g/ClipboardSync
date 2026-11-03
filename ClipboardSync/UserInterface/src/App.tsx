@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import styled, {keyframes} from "styled-components";
 import {Native, ResizeHandles, useTranslation, useWindowCorners} from "@photino-net-utils/bridge";
-import {type AppInfo, getAppInfo} from "./api/system";
+import {type AppInfo, getAppInfo, getUpdateStatus, type UpdateCheck} from "./api/system";
 import {type ClipboardItem, copyFiles, copyImage} from "./api/peer";
 import {Sidebar} from "./components/Sidebar";
 import {TitleBar} from "./components/TitleBar";
@@ -37,10 +37,17 @@ export default function App() {
     const corners = useWindowCorners();
     const [page, setPage] = useState<Page>("devices");
     const [info, setInfo] = useState<AppInfo | null>(null);
+    const [update, setUpdate] = useState<UpdateCheck | null>(null);
+    const [settingsSection, setSettingsSection] = useState<string | null>(null);
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
     useEffect(() => {
         void getAppInfo().then(setInfo, () => setInfo(null));
+    }, []);
+
+    // The backend caches the published version, so this normally answers at once.
+    useEffect(() => {
+        void getUpdateStatus().then(setUpdate, () => undefined);
     }, []);
 
     // The host waits for this before pushing events; sending to a web view that is still loading
@@ -53,6 +60,11 @@ export default function App() {
     // The tray can ask for a page while the window is hidden.
     useEffect(() => {
         return Native.on((message) => {
+            if (message.type === "app.update") {
+                setUpdate((message.data as UpdateCheck | undefined) ?? null);
+                return;
+            }
+
             if (message.type !== "app.navigate")
                 return;
 
@@ -93,12 +105,31 @@ export default function App() {
                     <Content key={page}>
                         {page === "devices"
                             ? <DevicesPage copiedId={copiedId} onCopy={copy}/>
-                            : <SettingsPage info={info}/>}
+                            : (
+                                <SettingsPage
+                                    focusSection={settingsSection}
+                                    info={info}
+                                    onSectionFocused={() => setSettingsSection(null)}
+                                />
+                            )}
                     </Content>
 
                     <Footer>
                         <Version>
-                            {info ? `v${info.version} · ${info.platform}` : t("browser preview")}
+                            <VersionText>
+                                {info ? `v${info.version} · ${info.platform}` : t("browser preview")}
+                            </VersionText>
+                            {update?.available && (
+                                <UpdateDot
+                                    aria-label={t("Version {version} is available.", {version: update.latest})}
+                                    onClick={() => {
+                                        setPage("settings");
+                                        setSettingsSection("updates");
+                                    }}
+                                    title={t("Version {version} is available.", {version: update.latest})}
+                                    type="button"
+                                />
+                            )}
                         </Version>
                     </Footer>
                 </Main>
@@ -186,7 +217,38 @@ const Footer = styled.footer`
 `;
 
 const Version = styled.span`
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+`;
+
+const VersionText = styled.span`
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+`;
+
+/** Shown next to the version only when the published build is newer than this one. */
+const UpdateDot = styled.button`
+    width: 7px;
+    height: 7px;
+    flex-shrink: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(255, 138, 61, 0.14), 0 0 10px rgba(255, 138, 61, 0.55);
+    cursor: pointer;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+
+    &:hover {
+        transform: scale(1.25);
+        box-shadow: 0 0 0 4px rgba(255, 138, 61, 0.2), 0 0 14px rgba(255, 138, 61, 0.7);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--border-color-focus);
+        outline-offset: 3px;
+    }
 `;

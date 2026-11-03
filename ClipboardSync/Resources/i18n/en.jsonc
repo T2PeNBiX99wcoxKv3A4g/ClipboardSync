@@ -63,6 +63,8 @@
   "Check for updates": "Check for updates",
   "Checking…": "Checking…",
   "Open release page": "Open release page",
+  "Version {version} is available.": "Version {version} is available.",
+  "Check for a newer release and open its download page.": "Check for a newer release and open its download page.",
   "Logs": "Logs",
   "Only available in the desktop app.": "Only available in the desktop app.",
   "Open logs": "Open logs",

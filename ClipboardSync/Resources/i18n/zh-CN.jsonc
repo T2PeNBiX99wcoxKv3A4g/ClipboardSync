@@ -63,6 +63,8 @@
   "Check for updates": "检查更新",
   "Checking…": "检查中…",
   "Open release page": "打开发布页面",
+  "Version {version} is available.": "版本 {version} 已可用。",
+  "Check for a newer release and open its download page.": "检查是否有新版本，并打开发布页面。",
   "Logs": "日志",
   "Only available in the desktop app.": "仅在桌面应用中提供。",
   "Open logs": "打开日志",

@@ -10,14 +10,18 @@ import {CheckIcon, FolderIcon, InfoIcon} from "../components/Icons";
 
 interface SettingsPageProps {
     info: AppInfo | null;
+    /** A section the footer's update dot asked for: <c>updates</c>, <c>about</c>, etc. */
+    focusSection?: string | null;
+    onSectionFocused?: () => void;
 }
 
-type SectionId = "general" | "sync" | "history" | "about";
+type SectionId = "general" | "sync" | "history" | "updates" | "about";
 
 const sections: { id: SectionId; label: string }[] = [
     {id: "general", label: "General"},
     {id: "sync", label: "Sync"},
     {id: "history", label: "History"},
+    {id: "updates", label: "Updates"},
     {id: "about", label: "About"},
 ];
 
@@ -29,7 +33,7 @@ const languages = [
     {id: "zh-TW", label: "繁體中文"},
 ];
 
-export function SettingsPage({info}: SettingsPageProps) {
+export function SettingsPage({info, focusSection, onSectionFocused}: SettingsPageProps) {
     const t = useTranslation();
     const languageOptions = languages.map((language) => ({
         ...language,
@@ -51,6 +55,7 @@ export function SettingsPage({info}: SettingsPageProps) {
         general: null,
         sync: null,
         history: null,
+        updates: null,
         about: null,
     });
     const sectionNavReady = settings !== null;
@@ -191,6 +196,17 @@ export function SettingsPage({info}: SettingsPageProps) {
         setActiveSection(id);
         element.scrollIntoView({behavior: "smooth", block: "start"});
     };
+
+    // The footer's update dot opens Settings with a target section. Wait until the settings have
+    // loaded, because the sections do not exist during the loading state.
+    useEffect(() => {
+        if (!focusSection || !settings) return;
+
+        const target = sections.find((section) => section.id === focusSection);
+        if (target) jumpTo(target.id);
+
+        onSectionFocused?.();
+    }, [focusSection, settings]);
 
     const checkUpdate = () => {
         setUpdateBusy(true);
@@ -440,6 +456,42 @@ export function SettingsPage({info}: SettingsPageProps) {
                 </Card>
             </Section>
 
+            <Section id="settings-updates" ref={(node) => { sectionRefs.current.updates = node; }}>
+                <SectionHead>
+                    <h2>{t("Updates")}</h2>
+                    <p>{t("Check for a newer release and open its download page.")}</p>
+                </SectionHead>
+                <UpdateCard $available={updateState?.available ?? false}>
+                    <UpdateSummary>
+                        <UpdateStatus $available={updateState?.available ?? false}>
+                            <StatusDot $available={updateState?.available ?? false}/>
+                            <span>
+                                {updateError
+                                    ? t("The update check failed.")
+                                    : updateState
+                                        ? updateState.available
+                                            ? t("A newer version is available: v{version}", {version: updateState.latest})
+                                            : t("You are running the latest version.")
+                                        : t("Check the published version.")}
+                            </span>
+                        </UpdateStatus>
+                        <UpdateCurrent>
+                            {info ? `v${info.version} · ${info.platform}` : t("browser preview")}
+                        </UpdateCurrent>
+                    </UpdateSummary>
+                    <UpdateActions>
+                        <GhostButton disabled={updateBusy} onClick={checkUpdate} type="button">
+                            {updateBusy ? t("Checking…") : t("Check for updates")}
+                        </GhostButton>
+                        {updateState?.available && (
+                            <ReleaseButton onClick={() => void openReleasePage().catch(() => undefined)} type="button">
+                                {t("Open release page")}
+                            </ReleaseButton>
+                        )}
+                    </UpdateActions>
+                </UpdateCard>
+            </Section>
+
             <Section id="settings-about" ref={(node) => { sectionRefs.current.about = node; }}>
                 <SectionHead>
                     <h2>{t("About")}</h2>
@@ -452,30 +504,6 @@ export function SettingsPage({info}: SettingsPageProps) {
                             <p>{info ? `${info.version} · ${info.platform}` : t("browser preview")}</p>
                         </FieldText>
                         <InfoIcon size={15}/>
-                    </Field>
-                    <Field>
-                        <FieldText>
-                            <label>{t("Updates")}</label>
-                            <p>
-                                {updateError
-                                    ? t("The update check failed.")
-                                    : updateState
-                                        ? updateState.available
-                                            ? t("A newer version is available: v{version}", {version: updateState.latest})
-                                            : t("You are running the latest version.")
-                                        : t("Check the published version.")}
-                            </p>
-                        </FieldText>
-                        <UpdateActions>
-                            <GhostButton disabled={updateBusy} onClick={checkUpdate} type="button">
-                                {updateBusy ? t("Checking…") : t("Check for updates")}
-                            </GhostButton>
-                            {updateState?.available && (
-                                <GhostButton onClick={() => void openReleasePage().catch(() => undefined)} type="button">
-                                    {t("Open release page")}
-                                </GhostButton>
-                            )}
-                        </UpdateActions>
                     </Field>
                     <Field>
                         <FieldText>
@@ -732,6 +760,65 @@ const UpdateActions = styled.div`
     flex-shrink: 0;
 `;
 
+/** The dot breathes while a newer build is published, so the card reads as actionable. */
+const updatePulse = keyframes`
+    0%, 100% {
+        box-shadow: 0 0 0 3px rgba(255, 138, 61, 0.14), 0 0 8px rgba(255, 138, 61, 0.45);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(255, 138, 61, 0.22), 0 0 14px rgba(255, 138, 61, 0.7);
+    }
+`;
+
+/** The Updates card lifts out of the page when the published build is newer than this one. */
+const UpdateCard = styled.div<{ $available: boolean }>`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 16px;
+    border: 1px solid ${({$available}) => $available ? "rgba(255, 138, 61, 0.55)" : "var(--border-color)"};
+    border-radius: var(--radius-md);
+    background: ${({$available}) => $available
+        ? "linear-gradient(135deg, rgba(255, 138, 61, 0.12), rgba(255, 107, 107, 0.05))"
+        : "var(--bg-card)"};
+    box-shadow: ${({$available}) => $available
+        ? "0 0 0 1px rgba(255, 138, 61, 0.08), 0 8px 24px rgba(255, 138, 61, 0.08)"
+        : "none"};
+`;
+
+const UpdateSummary = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+`;
+
+const UpdateStatus = styled.div<{ $available: boolean }>`
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 12.5px;
+    font-weight: ${({$available}) => $available ? "600" : "500"};
+    color: ${({$available}) => $available ? "var(--text-primary)" : "var(--text-secondary)"};
+`;
+
+const StatusDot = styled.span<{ $available: boolean }>`
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: ${({$available}) => $available ? "var(--accent-primary)" : "var(--text-muted)"};
+    animation: ${({$available}) => $available ? updatePulse : "none"} 2s ease-in-out infinite;
+`;
+
+const UpdateCurrent = styled.span`
+    padding-left: 17px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--text-muted);
+`;
+
 const SizeRow = styled.div`
     display: flex;
     align-items: center;
@@ -761,6 +848,17 @@ const GhostButton = styled.button`
     &:hover {
         border-color: var(--border-color-hover);
         color: var(--text-primary);
+    }
+`;
+
+const ReleaseButton = styled(GhostButton)`
+    border-color: rgba(255, 138, 61, 0.5);
+    background: rgba(255, 138, 61, 0.14);
+    color: var(--text-primary);
+
+    &:hover:not(:disabled) {
+        border-color: var(--accent-primary);
+        background: rgba(255, 138, 61, 0.22);
     }
 `;
 
