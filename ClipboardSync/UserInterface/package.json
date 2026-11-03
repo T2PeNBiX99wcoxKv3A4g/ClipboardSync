@@ -10,7 +10,7 @@
     "upgrade": "node -e \"require('fs').rmSync('package-lock.json',{force:true})\" && npm-check-updates -u"
   },
   "dependencies": {
-    "@photino-net-utils/bridge": "file:../Libs/photino-net-utils-bridge-0.9.0.tgz",
+    "@photino-net-utils/bridge": "file:../Libs/photino-net-utils-bridge-0.11.0.tgz",
     "npm-check-updates": "^23.1.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
