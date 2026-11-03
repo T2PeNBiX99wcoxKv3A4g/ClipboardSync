@@ -13,10 +13,9 @@
   </p>
 </div>
 
-ClipboardSync 让已配对设备共用同一块剪贴板面板。在一台设备上复制文本、链接或图片，其他设备就会
-显示出来，可以直接粘贴。所有设备都通过加密会话直接通信，不需要账号，也没有中间服务器。
-
-文件同步是下一步。目前支持文本、URL 和 PNG 图片。
+ClipboardSync 让已配对设备共用同一块剪贴板面板。在一台设备上复制文本、链接、图片、文件或文件夹，
+其他设备就会显示出来，可以直接粘贴。所有设备都通过加密会话直接通信，不需要账号，也没有中间
+服务器。
 
 ## 为什么需要
 
@@ -31,6 +30,9 @@ ClipboardSync 只需把自己的设备配对一次，之后就在你自己的网
 - **文本与链接** — 复制文本或 URL 时会发送到其他设备，并应用到它们的剪贴板。
 - **图片** — 复制的图片会以 PNG 发送、在面板上预览，并自动应用到剪贴板。大小上限可在 1 到
   32 MB 之间设置（默认 10 MB）。
+- **文件和文件夹** — 复制的内容会递归遍历，每个文件保存为按 SHA-256 内容寻址的 blob。对端只拉取
+  缺少的范围，因此重新连接后会从停下的位置继续，相同内容只占一份 blob。收到的项目会用硬链接
+  （不支持时复制）还原，并以普通文件和文件夹放回剪贴板。
 - **直接连接** — 设备通过 UDP 在局域网内找到彼此，并通过 TCP 通信。不经过第三方，无法广播的
   网络可以手动填写地址。
 - **加密会话** — 每台设备都有长期的 Ed25519 身份密钥。每次连接使用新的 X25519 临时密钥，
@@ -168,6 +170,8 @@ VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/li
 | 设备身份   | `%APPDATA%\ClipboardSync\device.key`               | `~/.config/ClipboardSync/device.key`               |
 | 历史       | `%LOCALAPPDATA%\ClipboardSync\history.json`        | `~/.local/share/ClipboardSync/history.json`        |
 | 图片缓存   | `%LOCALAPPDATA%\ClipboardSync\clipboard`           | `~/.local/share/ClipboardSync/clipboard`           |
+| 文件 blob  | `%LOCALAPPDATA%\ClipboardSync\clipboard\blobs`     | `~/.local/share/ClipboardSync/clipboard/blobs`     |
+| 文件视图   | `%LOCALAPPDATA%\ClipboardSync\clipboard\items`     | `~/.local/share/ClipboardSync/clipboard/items`     |
 | 日志       | `%APPDATA%\ClipboardSync\logs\clipboardsync-*.log` | `~/.config/ClipboardSync/logs/clipboardsync-*.log` |
 
 身份密钥就是配对时对方记录的公钥，因此设置文件夹应只允许你的账户访问。历史记录的上限由 **设置 → 历史 → 保留项目数** 控制。
@@ -177,8 +181,9 @@ VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/li
 
 ## 注意
 
-- 文件尚未同步。在文件管理器中复制文件会被忽略；支持的内容是文本、URL 和 PNG 图片。超过设置
-  上限的图片会被跳过。
+- 文件和文件夹会递归复制；一次选择受 **设置 → 同步 → 文件大小上限**（默认 512 MB）和 1,000 个
+  条目限制。blob 按内容寻址并在项目间共享；还原的视图会在文件系统允许时使用硬链接。传输是加密
+  的，但磁盘上的 blob 存储仍是本地数据文件夹中的普通明文文件。
 - 设备网络依赖每台设备都能通过 TCP 45456 连接其他设备。UDP 45457 只是发现提示；如果广播被
   阻挡，请使用手动地址栏。
 - 关闭窗口会将应用放入托盘。如果希望启动时就隐藏，请打开 **启动时隐藏窗口**；没有托盘的环境会

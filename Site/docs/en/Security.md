@@ -25,8 +25,12 @@ A new session is created for every connection; compromising one session does not
 
 ## What is protected
 
-- Clipboard items — text, URLs and images — are encrypted on the wire.
+- Clipboard items — text, URLs, images, files and folders — are encrypted on the wire. File contents are split into
+  blob ranges before they are framed.
 - Pairing proofs and session frames are authenticated, so tampering is detected.
+
+The blob store on each device is plaintext on disk. Encryption protects the transfer, not the local copies; protect the
+user account and the data folder if the files are sensitive.
 
 Discovery is not secret: a UDP announcement carries the device name, id and port so other devices can find it. The
 network can see that two addresses are talking and how much data they exchange, but not the clipboard contents.

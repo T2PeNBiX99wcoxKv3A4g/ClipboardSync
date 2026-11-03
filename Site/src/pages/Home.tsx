@@ -3,6 +3,7 @@ import styled, {keyframes} from "styled-components";
 import {
     ClipboardList,
     Download,
+    FolderOpen,
     Image as ImageIcon,
     KeyRound,
     Lock,
@@ -282,7 +283,7 @@ const Disclaimer = styled.aside`
     }
 `;
 
-const featureIcons: LucideIcon[] = [ClipboardList, Type, ImageIcon, Network, Lock, KeyRound, RadioTower, Monitor];
+const featureIcons: LucideIcon[] = [ClipboardList, Type, ImageIcon, FolderOpen, Network, Lock, KeyRound, RadioTower, Monitor];
 
 /** simple-icons dropped the Windows mark, so the four squares are drawn here. */
 const windowsLogo = {path: "M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z"};

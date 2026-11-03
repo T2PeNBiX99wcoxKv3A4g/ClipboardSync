@@ -23,13 +23,15 @@
 ## Nothing is sent
 
 - **Settings → Sync → Enable syncing** is on.
-- **Text and links** or **Images** is on for the content you copied.
-- The item is under the **Image size limit**.
+- **Text and links**, **Images** or **Files and folders** is on for the content you copied.
+- The item is under the **Image size limit** or **File size limit**.
 
-## Images are not synced
+## Images or files are not synced
 
-- Images are sent as PNG. A copy that only exposes a file list is treated as files, which are not supported yet.
-- Check the size limit when a large screenshot is skipped.
+- Images are sent as PNG. Files and folders are copied recursively and stored by SHA-256.
+- A file selection larger than **Settings → Sync → File size limit** (512 MB by default) or with more than 1,000 entries
+  is skipped.
+- Check the log if a transfer stays on **Failed**; a partial blob is kept and the next attempt resumes it.
 
 ## The history is shorter than expected
 

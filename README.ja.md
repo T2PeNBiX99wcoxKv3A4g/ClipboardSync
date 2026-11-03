@@ -14,10 +14,9 @@
 </div>
 
 ClipboardSync は、ペアリングした端末の間で 1 つのクリップボードボードを共有します。ある端末で
-テキスト、リンク、画像をコピーすると、ほかの端末に表示され、そのまま貼り付けられます。すべての
-端末は暗号化されたセッションで直接通信し、アカウントも中央のサーバーもありません。
-
-ファイルは次の段階です。現在はテキスト、URL、PNG 画像が動作します。
+テキスト、リンク、画像、ファイル、フォルダーをコピーすると、ほかの端末に表示され、そのまま貼り
+付けられます。すべての端末は暗号化されたセッションで直接通信し、アカウントも中央のサーバーも
+ありません。
 
 ## なぜ必要か
 
@@ -35,6 +34,10 @@ ClipboardSync は自分の端末を一度ペアリングすれば、あとは自
   反映されます。
 - **画像** — コピーした画像は PNG として送られ、ボードにプレビュー表示され、自動的に反映されます。
   サイズ上限は 1〜32 MB（既定 10 MB）で変更できます。
+- **ファイルとフォルダー** — コピーした選択を再帰的に走査し、各ファイルを SHA-256 の内容定址 blob
+  として保存します。ピアは不足している範囲だけを取得するため、再接続時は止まった位置から再開でき、
+  同じ内容のファイルは 1 つの blob を共有します。受信した項目はハードリンク（不可ならコピー）で
+  実体化され、通常のファイルやフォルダーとしてクリップボードに戻ります。
 - **直接接続** — 端末はローカルネットワークで UDP を使って互いを見つけ、TCP で通信します。第三者を
   経由せず、ブロードキャストが使えないネットワークでは手動アドレスを指定できます。
 - **暗号化されたセッション** — 各端末は長期的な Ed25519 識別鍵を持ちます。接続ごとに新しい X25519
@@ -182,6 +185,8 @@ VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/li
 | 端末の識別情報     | `%APPDATA%\ClipboardSync\device.key`               | `~/.config/ClipboardSync/device.key`               |
 | 履歴               | `%LOCALAPPDATA%\ClipboardSync\history.json`        | `~/.local/share/ClipboardSync/history.json`        |
 | 画像キャッシュ     | `%LOCALAPPDATA%\ClipboardSync\clipboard`           | `~/.local/share/ClipboardSync/clipboard`           |
+| ファイル blob      | `%LOCALAPPDATA%\ClipboardSync\clipboard\blobs`     | `~/.local/share/ClipboardSync/clipboard/blobs`     |
+| ファイル表示       | `%LOCALAPPDATA%\ClipboardSync\clipboard\items`     | `~/.local/share/ClipboardSync/clipboard/items`     |
 | ログ               | `%APPDATA%\ClipboardSync\logs\clipboardsync-*.log` | `~/.config/ClipboardSync/logs/clipboardsync-*.log` |
 
 識別鍵はペアリング時に相手が記録するものです。設定フォルダは自分のアカウントだけが読めるように
@@ -192,8 +197,10 @@ VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/li
 
 ## 注意
 
-- ファイルの同期はまだです。ファイルマネージャーでファイルをコピーしても無視されます。対応して
-  いるのはテキスト、URL、PNG 画像です。設定した上限より大きい画像はスキップされます。
+- ファイルとフォルダーは再帰的にコピーされます。1 回の選択は **設定 → 同期 → ファイルサイズ上限**
+  （既定 512 MB）と 1,000 エントリーで制限されます。blob は内容定址で項目間で共有され、実体化した
+  表示はファイルシステムが許せばハードリンクを使います。転送は暗号化されますが、ディスク上の blob
+  ストアはローカルデータフォルダーにある通常の平文ファイルです。
 - メッシュは、各端末が TCP 45456 でほかの端末に到達できることが前提です。UDP 45457 は検出の
   ヒントにすぎません。ブロードキャストが使えないネットワークでは手動アドレス欄を使ってください。
 - ウィンドウを閉じるとアプリはトレイに移動します。トレイに入った状態で起動したい場合は **ウィンドウを隠して起動**

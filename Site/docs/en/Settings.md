@@ -16,9 +16,9 @@ The Settings page is split into four sections. The section list on the right fol
   discovery.
 - **Text and links** — share copied text, including URLs and code.
 - **Images** — share image copies as PNG.
+- **Files and folders** — share copied files and folders. Folders are walked recursively.
 - **Image size limit** — 1 to 32 MB, 10 MB by default. Larger images are ignored.
-
-Files are not shared yet.
+- **File size limit** — 1 to 4096 MB, 512 MB by default. One selection larger than this is skipped.
 
 ## History
 

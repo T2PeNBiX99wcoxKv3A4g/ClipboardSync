@@ -1,7 +1,8 @@
 # Getting started
 
-ClipboardSync keeps the clipboard of the devices you pair on the same page. Copy text, a link or an image on one
-machine, and the others get it as well. Everything travels directly between the devices over an encrypted session.
+ClipboardSync keeps the clipboard of the devices you pair on the same page. Copy text, a link, an image, a file or a
+folder on one machine, and the others get it as well. Everything travels directly between the devices over an encrypted
+session.
 
 ## What you need
 
@@ -23,17 +24,18 @@ both screens. See [Pairing](Pairing).
 
 ## Copy something
 
-Copy text, a URL or an image in any application. The item appears on the board under this device, is sent to the paired
-devices, and is applied to their clipboard. See [Syncing](Syncing) for what is shared and what happens when a device is
-offline.
+Copy text, a URL, an image, a file or a folder in any application. The item appears on the board under this device, is
+sent to the paired devices, and is applied to their clipboard. See [Syncing](Syncing) for what is shared and what
+happens when a device is offline.
 
 ## Where the data lives
 
-| What                               | Windows                        | Linux                          |
-|------------------------------------|--------------------------------|--------------------------------|
-| Settings, identity, paired devices | `%APPDATA%\ClipboardSync`      | `~/.config/ClipboardSync`      |
-| History and image cache            | `%LOCALAPPDATA%\ClipboardSync` | `~/.local/share/ClipboardSync` |
-| Logs                               | `%APPDATA%\ClipboardSync\logs` | `~/.config/ClipboardSync/logs` |
+| What                               | Windows                                     | Linux                                       |
+|------------------------------------|---------------------------------------------|---------------------------------------------|
+| Settings, identity, paired devices | `%APPDATA%\ClipboardSync`                   | `~/.config/ClipboardSync`                   |
+| History and image cache            | `%LOCALAPPDATA%\ClipboardSync`              | `~/.local/share/ClipboardSync`              |
+| File blobs and views               | `%LOCALAPPDATA%\ClipboardSync\clipboard`    | `~/.local/share/ClipboardSync/clipboard`    |
+| Logs                               | `%APPDATA%\ClipboardSync\logs`              | `~/.config/ClipboardSync/logs`              |
 
 The identity key is what other devices pin when they pair, so keep that folder private to your account.
 

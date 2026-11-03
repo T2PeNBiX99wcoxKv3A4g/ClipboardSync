@@ -7,12 +7,12 @@
   "footer": "ClipboardSync is under the MIT license.",
   "home": {
     "tagline": "Copy once, paste on every device you own.",
-    "noteTitle": "What is not here yet",
-    "noteText": "Files are not synced yet: copying a file in the file manager is ignored for now. Text, links and images work. Devices must be able to reach each other on TCP 45456; UDP 45457 is only discovery, so a network that blocks broadcast needs the other device's address.",
+    "noteTitle": "Files on disk",
+    "noteText": "Transfers are encrypted, but each device's blob store is ordinary plaintext files in its local data folder. Files are deduplicated by SHA-256, a reconnect resumes from the bytes already received, and one selection is capped by the file size limit in Settings.",
     "download": "Download",
     "documentation": "Documentation",
     "whatTitle": "What it does",
-    "whatText": "ClipboardSync keeps one clipboard board across the devices you pair. Copy text, a link or an image on one machine and it shows up on the others, ready to paste. Every device talks directly to the others over an encrypted session; there is no account and no server in the middle.",
+    "whatText": "ClipboardSync keeps one clipboard board across the devices you pair. Copy text, a link, an image, a file or a folder on one machine and it shows up on the others, ready to paste. Every device talks directly to the others over an encrypted session; there is no account and no server in the middle.",
     "featuresTitle": "Features",
     "features": [
       {
@@ -26,6 +26,10 @@
       {
         "name": "Images",
         "text": "Image copies are sent as PNG, previewed on the board and applied automatically. The size limit is yours to set."
+      },
+      {
+        "name": "Files and folders",
+        "text": "Copy files or folders recursively. Each file becomes a content-addressed blob, peers pull only the ranges they are missing, and a reconnect resumes where it stopped."
       },
       {
         "name": "Direct connections",

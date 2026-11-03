@@ -13,11 +13,9 @@
   </p>
 </div>
 
-ClipboardSync keeps one clipboard board across the devices you pair. Copy text, a link or an image on
-one machine and it shows up on the others, ready to paste. Every device talks directly to the others
-over an encrypted session; there is no account and no server in the middle.
-
-Files are the next step. Text, URLs and PNG images work today.
+ClipboardSync keeps one clipboard board across the devices you pair. Copy text, a link, an image, a file
+or a folder on one machine and it shows up on the others, ready to paste. Every device talks directly
+to the others over an encrypted session; there is no account and no server in the middle.
 
 ## Why
 
@@ -34,6 +32,10 @@ keeps them on the same board, on your own network, with the clipboard contents e
   clipboard.
 - **Images** — image copies are sent as PNG, previewed on the board and applied automatically. The
   size limit is configurable from 1 to 32 MB (10 MB by default).
+- **Files and folders** — a copied selection is walked recursively and each file becomes a
+  content-addressed SHA-256 blob. Peers pull only the ranges they are missing, so a reconnect resumes
+  where it stopped, and identical files share one blob. Received items are materialised with
+  hardlinks (or copies) and put back on the clipboard as ordinary files and folders.
 - **Direct connections** — devices find each other on the local network over UDP and talk over TCP.
   Nothing is relayed through a third party, and a manual address covers networks where broadcast is
   blocked.
@@ -180,6 +182,8 @@ The release workflow runs all four after the publish step.
 | Device identity | `%APPDATA%\ClipboardSync\device.key`               | `~/.config/ClipboardSync/device.key`               |
 | History         | `%LOCALAPPDATA%\ClipboardSync\history.json`        | `~/.local/share/ClipboardSync/history.json`        |
 | Image cache     | `%LOCALAPPDATA%\ClipboardSync\clipboard`           | `~/.local/share/ClipboardSync/clipboard`           |
+| File blobs      | `%LOCALAPPDATA%\ClipboardSync\clipboard\blobs`     | `~/.local/share/ClipboardSync/clipboard/blobs`     |
+| File views      | `%LOCALAPPDATA%\ClipboardSync\clipboard\items`     | `~/.local/share/ClipboardSync/clipboard/items`     |
 | Logs            | `%APPDATA%\ClipboardSync\logs\clipboardsync-*.log` | `~/.config/ClipboardSync/logs/clipboardsync-*.log` |
 
 The identity key is what other devices pin when they pair, so keep the settings folder private to
@@ -190,8 +194,10 @@ problem. They roll daily and the last seven are kept.
 
 ## Notes
 
-- Files are not synced yet. Copying a file in a file manager is ignored; text, URLs and PNG images
-  are the supported clipboard contents. Images larger than the configured limit are skipped.
+- Files and folders are copied recursively; one selection is capped by **Settings → Sync → File size
+  limit** (512 MB by default) and 1,000 entries. Blobs are content-addressed and shared between
+  items; materialised views use hardlinks where the filesystem allows it. Transfers are encrypted,
+  but the blob store on disk is ordinary plaintext files in the local data folder.
 - The mesh depends on each device being able to reach the others on TCP 45456. UDP 45457 is only the
   discovery hint; the manual address field covers networks where broadcast is blocked.
 - Closing the window sends the app to the tray. Turn on **Start with the window hidden** if you want

@@ -13,10 +13,9 @@
   </p>
 </div>
 
-ClipboardSync 讓已配對裝置共用同一塊剪貼簿看板。在一台裝置上複製文字、連結或圖片，其他裝置就會
-顯示出來，可以直接貼上。所有裝置都透過加密工作階段直接通訊，不需要帳號，也沒有中間伺服器。
-
-檔案同步是下一步。目前支援文字、URL 和 PNG 圖片。
+ClipboardSync 讓已配對裝置共用同一塊剪貼簿看板。在一台裝置上複製文字、連結、圖片、檔案或資料夾，
+其他裝置就會顯示出來，可以直接貼上。所有裝置都透過加密工作階段直接通訊，不需要帳號，也沒有中間
+伺服器。
 
 ## 為什麼需要
 
@@ -31,6 +30,9 @@ ClipboardSync 只需把自己的裝置配對一次，之後就在你自己的網
 - **文字與連結** — 複製文字或 URL 時會傳送到其他裝置，並套用到它們的剪貼簿。
 - **圖片** — 複製的圖片會以 PNG 傳送、在看板上預覽，並自動套用到剪貼簿。大小上限可在 1 到
   32 MB 之間設定（預設 10 MB）。
+- **檔案與資料夾** — 複製的內容會遞迴走訪，每個檔案存成以 SHA-256 內容定址的 blob。對端只拉取
+  缺少的範圍，因此重新連線後會從停下的位置繼續，相同內容只佔一份 blob。收到的項目會用硬連結
+  （不支援時複製）還原，並以一般檔案和資料夾放回剪貼簿。
 - **直接連線** — 裝置透過 UDP 在區域網路內找到彼此，並透過 TCP 通訊。不經過第三方，無法廣播的
   網路可以手動填寫位址。
 - **加密工作階段** — 每台裝置都有長期的 Ed25519 身分金鑰。每次連線使用新的 X25519 臨時金鑰，
@@ -171,6 +173,8 @@ VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/li
 | 裝置身分   | `%APPDATA%\ClipboardSync\device.key`               | `~/.config/ClipboardSync/device.key`               |
 | 歷史       | `%LOCALAPPDATA%\ClipboardSync\history.json`        | `~/.local/share/ClipboardSync/history.json`        |
 | 圖片快取   | `%LOCALAPPDATA%\ClipboardSync\clipboard`           | `~/.local/share/ClipboardSync/clipboard`           |
+| 檔案 blob  | `%LOCALAPPDATA%\ClipboardSync\clipboard\blobs`     | `~/.local/share/ClipboardSync/clipboard/blobs`     |
+| 檔案檢視   | `%LOCALAPPDATA%\ClipboardSync\clipboard\items`     | `~/.local/share/ClipboardSync/clipboard/items`     |
 | 日誌       | `%APPDATA%\ClipboardSync\logs\clipboardsync-*.log` | `~/.config/ClipboardSync/logs/clipboardsync-*.log` |
 
 身分金鑰就是配對時對方記錄的公鑰，因此設定資料夾應只允許你的帳戶存取。歷史記錄的上限由 **設定 → 歷史 → 保留項目數** 控制。
@@ -180,8 +184,9 @@ VERSION=0.1.0 PUBLISH_DIR=publish/linux-x64 OUTPUT_DIR=release bash installer/li
 
 ## 注意
 
-- 檔案尚未同步。在檔案管理員複製檔案會被忽略；支援的內容是文字、URL 和 PNG 圖片。超過設定
-  上限的圖片會被跳過。
+- 檔案與資料夾會遞迴複製；一次選擇受 **設定 → 同步 → 檔案大小上限**（預設 512 MB）和 1,000 個
+  項目限制。blob 依內容定址並在項目間共用；還原的檢視會在檔案系統允許時使用硬連結。傳輸是加密
+  的，但磁碟上的 blob 儲存仍是本機資料夾中的一般明文檔案。
 - 裝置網路依賴每台裝置都能透過 TCP 45456 連線其他裝置。UDP 45457 只是探索提示；如果廣播被
   阻擋，請使用手動位址欄。
 - 關閉視窗會將應用程式放入系統匣。如果希望啟動時就隱藏，請開啟 **啟動時隱藏視窗**；沒有系統匣

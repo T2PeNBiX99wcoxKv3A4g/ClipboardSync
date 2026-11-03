@@ -1,6 +1,6 @@
 # 入門
 
-ClipboardSync 讓已配對裝置的剪貼簿保持同步。在一台裝置上複製文字、連結或圖片，其他裝置也會收到。所有通訊都由裝置之間透過加密工作階段直接完成。
+ClipboardSync 讓已配對裝置的剪貼簿保持同步。在一台裝置上複製文字、連結、圖片、檔案或資料夾，其他裝置也會收到。所有通訊都由裝置之間透過加密工作階段直接完成。
 
 ## 需要什麼
 
@@ -18,8 +18,7 @@ ClipboardSync 讓已配對裝置的剪貼簿保持同步。在一台裝置上複
 
 ## 複製內容
 
-在任意應用程式中複製文字、URL
-或圖片。項目會出現在這台裝置下方，傳送到已配對裝置，並套用到它們的剪貼簿。共享內容和離線時的行為參見 [同步](Syncing)。
+在任意應用程式中複製文字、URL、圖片、檔案或資料夾。項目會出現在這台裝置下方，傳送到已配對裝置，並套用到它們的剪貼簿。共享內容和離線時的行為參見 [同步](Syncing)。
 
 ## 資料位置
 
@@ -27,6 +26,7 @@ ClipboardSync 讓已配對裝置的剪貼簿保持同步。在一台裝置上複
 |------------------------|--------------------------------|--------------------------------|
 | 設定、身分、已配對裝置 | `%APPDATA%\ClipboardSync`      | `~/.config/ClipboardSync`      |
 | 歷史與圖片快取         | `%LOCALAPPDATA%\ClipboardSync` | `~/.local/share/ClipboardSync` |
+| 檔案 blob 與檢視       | `%LOCALAPPDATA%\ClipboardSync\clipboard` | `~/.local/share/ClipboardSync/clipboard` |
 | 日誌                   | `%APPDATA%\ClipboardSync\logs` | `~/.config/ClipboardSync/logs` |
 
 身分金鑰就是配對時對方記錄的公鑰，因此該資料夾應只允許你的帳戶存取。
