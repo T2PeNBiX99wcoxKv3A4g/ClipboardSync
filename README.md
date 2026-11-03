@@ -145,14 +145,14 @@ Use `-r linux-x64` for Linux. That produces a single self-contained executable u
 
 ## Where things are stored
 
-|                   | Windows                                          | Linux                                            |
-|-------------------|--------------------------------------------------|--------------------------------------------------|
-| Settings          | `%APPDATA%\ClipboardSync\settings.json`          | `~/.config/ClipboardSync/settings.json`          |
-| Paired devices    | `%APPDATA%\ClipboardSync\peers.json`             | `~/.config/ClipboardSync/peers.json`             |
-| Device identity   | `%APPDATA%\ClipboardSync\device.key`             | `~/.config/ClipboardSync/device.key`             |
-| History           | `%LOCALAPPDATA%\ClipboardSync\history.json`      | `~/.local/share/ClipboardSync/history.json`      |
-| Image cache       | `%LOCALAPPDATA%\ClipboardSync\clipboard`         | `~/.local/share/ClipboardSync/clipboard`         |
-| Logs              | `%APPDATA%\ClipboardSync\logs\clipboardsync-*.log` | `~/.config/ClipboardSync/logs/clipboardsync-*.log` |
+|                 | Windows                                            | Linux                                              |
+|-----------------|----------------------------------------------------|----------------------------------------------------|
+| Settings        | `%APPDATA%\ClipboardSync\settings.json`            | `~/.config/ClipboardSync/settings.json`            |
+| Paired devices  | `%APPDATA%\ClipboardSync\peers.json`               | `~/.config/ClipboardSync/peers.json`               |
+| Device identity | `%APPDATA%\ClipboardSync\device.key`               | `~/.config/ClipboardSync/device.key`               |
+| History         | `%LOCALAPPDATA%\ClipboardSync\history.json`        | `~/.local/share/ClipboardSync/history.json`        |
+| Image cache     | `%LOCALAPPDATA%\ClipboardSync\clipboard`           | `~/.local/share/ClipboardSync/clipboard`           |
+| Logs            | `%APPDATA%\ClipboardSync\logs\clipboardsync-*.log` | `~/.config/ClipboardSync/logs/clipboardsync-*.log` |
 
 The identity key is what other devices pin when they pair, so keep the settings folder private to
 your account. History is capped by **Settings → History → Items to keep**.
