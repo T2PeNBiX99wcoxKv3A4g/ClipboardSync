@@ -12,8 +12,8 @@ namespace ClipboardSync.Services;
 /// </summary>
 internal sealed class PairingService : Singleton<PairingService>
 {
-    private readonly SemaphoreSlim _outgoing = new(1, 1);
     private readonly Lock _incomingLock = new();
+    private readonly SemaphoreSlim _outgoing = new(1, 1);
     private IncomingPairing? _incoming;
 
     public PairingService() => NativeBridge.MessageReceived += HandleMessageAsync;
@@ -36,7 +36,7 @@ internal sealed class PairingService : Singleton<PairingService>
             if (_incoming is not null)
                 return false;
 
-            _incoming = new IncomingPairing(requestId, prompt, decision);
+            _incoming = new(requestId, prompt, decision);
         }
 
         WindowManager.Instance.RunOnMainWindow(() => WindowManager.Instance.ShowMainWindow("devices"));

@@ -16,13 +16,13 @@ internal sealed class SettingsService : Singleton<SettingsService>
 
     public SettingsService() => NativeBridge.MessageReceived += HandleMessageAsync;
 
-    /// <summary>Raised after a save, so the sync services can follow the new switches.</summary>
-    public static event Action<SettingsPayload>? Changed;
-
     public AppSettings Current { get; private set; } = AppSettings.Default;
 
     /// <summary>The language both the backend and the interface use.</summary>
     public string Language => Current.Language;
+
+    /// <summary>Raised after a save, so the sync services can follow the new switches.</summary>
+    public static event Action<SettingsPayload>? Changed;
 
     public void Load()
     {

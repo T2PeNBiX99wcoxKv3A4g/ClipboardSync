@@ -5,13 +5,15 @@ The Settings page is split into four sections. The section list on the right fol
 ## General
 
 - **Device name** — the name other devices see. It is also used in discovery announcements.
-- **Language** — English, Japanese, Simplified Chinese or Traditional Chinese. It applies immediately, even before the rest of the form is saved.
+- **Language** — English, Japanese, Simplified Chinese or Traditional Chinese. It applies immediately, even before the
+  rest of the form is saved.
 - **Start with the window hidden** — launch into the tray.
 - **Launch at startup** — add a per-user autostart entry. The toggle is hidden or disabled on platforms without one.
 
 ## Sync
 
-- **Enable syncing** — the master switch. Off keeps the pairing but stops the clipboard watcher, the listener and discovery.
+- **Enable syncing** — the master switch. Off keeps the pairing but stops the clipboard watcher, the listener and
+  discovery.
 - **Text and links** — share copied text, including URLs and code.
 - **Images** — share image copies as PNG.
 - **Image size limit** — 1 to 32 MB, 10 MB by default. Larger images are ignored.

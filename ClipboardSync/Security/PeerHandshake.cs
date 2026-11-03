@@ -27,7 +27,7 @@ internal static class PeerHandshake
             ephemeralPublic, nonce));
 
         await FrameProtocol.WriteAsync(stream,
-            new SessionHelloMessage(PeerProtocol.SessionHello, identity.Id,
+            new(PeerProtocol.SessionHello, identity.Id,
                 ClipboardCrypto.ToBase64(ephemeralPublic), ClipboardCrypto.ToBase64(nonce),
                 ClipboardCrypto.ToBase64(helloSignature)),
             AppJsonContext.Default.SessionHelloMessage, token);
@@ -68,7 +68,7 @@ internal static class PeerHandshake
         var associatedData = ClipboardCrypto.Transcript("ClipboardSync.Session.Data.v1",
             ephemeralPublic, peerEphemeral, nonce, peerNonce);
 
-        return new SecureSession(stream, key, associatedData, peer.Id, true, owner);
+        return new(stream, key, associatedData, peer.Id, true, owner);
     }
 
     /// <summary>Accepts a session from a peer that is already paired.</summary>
@@ -107,7 +107,7 @@ internal static class PeerHandshake
             ephemeral, replyPublic, nonce, replyNonce));
 
         await FrameProtocol.WriteAsync(stream,
-            new SessionReplyMessage(PeerProtocol.SessionReply, ClipboardCrypto.ToBase64(replyPublic),
+            new(PeerProtocol.SessionReply, ClipboardCrypto.ToBase64(replyPublic),
                 ClipboardCrypto.ToBase64(replyNonce), ClipboardCrypto.ToBase64(replySignature)),
             AppJsonContext.Default.SessionReplyMessage, token);
 
@@ -116,7 +116,7 @@ internal static class PeerHandshake
         var associatedData = ClipboardCrypto.Transcript("ClipboardSync.Session.Data.v1",
             ephemeral, replyPublic, nonce, replyNonce);
 
-        return new SecureSession(stream, key, associatedData, peer.Id, false, owner);
+        return new(stream, key, associatedData, peer.Id, false, owner);
     }
 
     private static byte[] Utf8(string value) => Encoding.UTF8.GetBytes(value);

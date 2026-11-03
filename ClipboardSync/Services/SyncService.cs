@@ -17,18 +17,18 @@ namespace ClipboardSync.Services;
 internal sealed class SyncService : Singleton<SyncService>
 {
     private readonly ClipboardService _clipboard = ClipboardService.Instance;
-    private readonly ClipboardStore _store = ClipboardStore.Instance;
     private readonly DiscoveryService _discovery = DiscoveryService.Instance;
     private readonly DeviceIdentity _identity = DeviceIdentity.Instance;
     private readonly PeerStore _peers = PeerStore.Instance;
     private readonly PresenceService _presence = PresenceService.Instance;
-    private readonly SettingsService _settings = SettingsService.Instance;
-    private readonly PeerServer _server = PeerServer.Instance;
     private readonly SemaphoreSlim _receiveGate = new(1, 1);
-
-    private string? _suppressText;
+    private readonly PeerServer _server = PeerServer.Instance;
+    private readonly SettingsService _settings = SettingsService.Instance;
+    private readonly ClipboardStore _store = ClipboardStore.Instance;
     private long _lastImageAt;
     private long _suppressAt;
+
+    private string? _suppressText;
 
     public SyncService()
     {
@@ -297,7 +297,7 @@ internal sealed class SyncService : Singleton<SyncService>
                 return;
             }
 
-            record = new ClipboardRecord
+            record = new()
             {
                 Id = message.Id,
                 OriginDeviceId = originId,
@@ -351,7 +351,7 @@ internal sealed class SyncService : Singleton<SyncService>
                 return;
             }
 
-            record = new ClipboardRecord
+            record = new()
             {
                 Id = message.Id,
                 OriginDeviceId = originId,
@@ -381,9 +381,7 @@ internal sealed class SyncService : Singleton<SyncService>
                     ApplyRemoteImage(png);
             }
             else
-            {
                 ApplyRemoteText(record.Content);
-            }
 
             PublishBoard();
             _ = RelayAsync(record, session.PeerDeviceId);
@@ -394,7 +392,7 @@ internal sealed class SyncService : Singleton<SyncService>
 
     private static Task AcknowledgeAsync(SecureSession session, string id, bool ok, string? error,
         CancellationToken token) =>
-        session.SendJsonAsync(new ClipboardAckMessage(PeerProtocol.ClipboardAck, id, ok, error),
+        session.SendJsonAsync(new(PeerProtocol.ClipboardAck, id, ok, error),
             AppJsonContext.Default.ClipboardAckMessage, token);
 
     private void ApplyRemoteText(string text)
@@ -581,14 +579,14 @@ internal sealed class SyncService : Singleton<SyncService>
             .Select(device => new DiscoveredDevicePayload(device.Id, device.Name, device.Host, device.Port))
             .ToArray();
 
-        return new DevicesPayload(self, peers, discovered);
+        return new(self, peers, discovered);
     }
 
     private HistoryPayload BuildHistory()
     {
         var peers = _peers.All.Count;
         var items = _store.Snapshot().Select(record => ToPayload(record, peers)).ToArray();
-        return new HistoryPayload(items);
+        return new(items);
     }
 
     private ClipboardItemPayload ToPayload(ClipboardRecord record, int peers)
@@ -598,27 +596,17 @@ internal sealed class SyncService : Singleton<SyncService>
 
         string status;
         if (!local)
-        {
             status = "received";
-        }
         else if (record.FailedFor.Count > 0)
-        {
             status = "failed";
-        }
         else if (record.PendingFor.Count > 0)
-        {
             status = reached > 0 ? "transferring" : "waiting";
-        }
         else if (peers == 0 || reached >= peers)
-        {
             status = "synced";
-        }
         else
-        {
             status = "waiting";
-        }
 
-        return new ClipboardItemPayload(record.Id, record.OriginDeviceId, record.OriginDeviceName, record.Kind,
+        return new(record.Id, record.OriginDeviceId, record.OriginDeviceName, record.Kind,
             record.Content, record.Meta, record.At, local ? "out" : "in", status, reached, peers);
     }
 }

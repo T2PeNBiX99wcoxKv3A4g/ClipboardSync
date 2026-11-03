@@ -1,8 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
-using System.Text.Json;
 using ClipboardSync.Messaging;
-using ClipboardSync.Models;
 using ClipboardSync.Security;
 using PhotinoNetUtils.Extensions;
 using PhotinoNetUtils.Utils;
@@ -174,13 +172,13 @@ internal sealed class PeerServer : Singleton<PeerServer>
     {
         var identity = DeviceIdentity.Instance;
         return FrameProtocol.WriteAsync(stream,
-            new DiscoveryMessage(PeerProtocol.Announce, identity.Id, SettingsService.Instance.Current.DeviceName,
+            new(PeerProtocol.Announce, identity.Id, SettingsService.Instance.Current.DeviceName,
                 PeerProtocol.SyncPort, identity.PublicKeyBase64),
             AppJsonContext.Default.DiscoveryMessage, token);
     }
 
     private static Task WriteStatusAsync(NetworkStream stream, bool ok, string? error, CancellationToken token) =>
-        FrameProtocol.WriteAsync(stream, new SecureStatusMessage(PeerProtocol.Status, ok, error),
+        FrameProtocol.WriteAsync(stream, new(PeerProtocol.Status, ok, error),
             AppJsonContext.Default.SecureStatusMessage, token);
 
     private static string HostOf(TcpClient client)

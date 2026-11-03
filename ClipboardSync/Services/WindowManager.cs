@@ -20,13 +20,14 @@ internal sealed class WindowManager : Singleton<WindowManager>
     /// </summary>
     private static readonly string WebViewDataPath = Path.Combine(Constants.DataDirectory, "webview");
 
-    private bool _allowClose;
     private readonly Lock _gate = new();
-    private PhotinoWindow? _mainWindow;
-    private bool _hideWhenRendered;
 
     /// <summary>The newest event of each type, held until the page reports in.</summary>
     private readonly Dictionary<string, string> _pending = new();
+
+    private bool _allowClose;
+    private bool _hideWhenRendered;
+    private PhotinoWindow? _mainWindow;
 
     /// <summary>Whether the interface has reported in; before that, pushing an event to it crashes.</summary>
     private bool _mainWindowReady;

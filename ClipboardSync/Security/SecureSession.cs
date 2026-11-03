@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using ClipboardSync.Messaging;
 
@@ -30,6 +31,9 @@ internal sealed class SecureSession : IDisposable
 
     public bool IsInitiator { get; }
 
+    /// <summary>Closes the socket that produced this session, when the session owns one.</summary>
+    public void Dispose() => _owner?.Dispose();
+
     /// <summary>Encrypts one payload and writes it as a frame.</summary>
     public async Task SendAsync(byte[] plaintext, CancellationToken token)
     {
@@ -37,7 +41,7 @@ internal sealed class SecureSession : IDisposable
         var ciphertext = ClipboardCrypto.Encrypt(_key, nonce, plaintext, _associatedData);
 
         await FrameProtocol.WriteAsync(_stream,
-            new SecureDataMessage(PeerProtocol.SecureData, ClipboardCrypto.ToBase64(nonce),
+            new(PeerProtocol.SecureData, ClipboardCrypto.ToBase64(nonce),
                 ClipboardCrypto.ToBase64(ciphertext)),
             AppJsonContext.Default.SecureDataMessage, token);
     }
@@ -66,18 +70,15 @@ internal sealed class SecureSession : IDisposable
 
     public async Task SendJsonAsync<T>(T payload, JsonTypeInfo<T> typeInfo, CancellationToken token)
     {
-        var plaintext = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(payload, typeInfo);
+        var plaintext = JsonSerializer.SerializeToUtf8Bytes(payload, typeInfo);
         await SendAsync(plaintext, token);
     }
 
     public async Task<T?> ReceiveJsonAsync<T>(JsonTypeInfo<T> typeInfo, CancellationToken token) where T : class
     {
         var plaintext = await ReceiveAsync(token);
-        return plaintext is null ? null : System.Text.Json.JsonSerializer.Deserialize(plaintext, typeInfo);
+        return plaintext is null ? null : JsonSerializer.Deserialize(plaintext, typeInfo);
     }
-
-    /// <summary>Closes the socket that produced this session, when the session owns one.</summary>
-    public void Dispose() => _owner?.Dispose();
 }
 
 /// <summary>A peer sent something that did not authenticate or did not follow the protocol.</summary>

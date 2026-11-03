@@ -3,7 +3,7 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
-using ClipboardSync.Security;
+using System.Text;
 using PhotinoNetUtils.Extensions;
 using PhotinoNetUtils.Interop;
 using PhotinoNetUtils.Utils;
@@ -518,14 +518,14 @@ internal sealed class WindowsClipboardWatcher : Singleton<WindowsClipboardWatche
         if (!NativeMethods.OpenClipboard(IntPtr.Zero))
             return false;
 
-        IntPtr handle = IntPtr.Zero;
+        var handle = IntPtr.Zero;
 
         try
         {
             if (!EmptyClipboard())
                 return false;
 
-            var bytes = System.Text.Encoding.Unicode.GetBytes(text + '\0');
+            var bytes = Encoding.Unicode.GetBytes(text + '\0');
             handle = GlobalAlloc(GmemMoveable, (UIntPtr)bytes.Length);
             if (handle == IntPtr.Zero)
                 return false;

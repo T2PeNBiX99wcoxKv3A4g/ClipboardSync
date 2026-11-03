@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
-using ClipboardSync.Security;
 using PhotinoNetUtils.Extensions;
 using PhotinoNetUtils.Platform;
 using PhotinoNetUtils.Utils;
@@ -21,8 +20,8 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
 
     private readonly SemaphoreSlim _clipboardGate = new(1, 1);
     private CancellationTokenSource? _cancellation;
-    private CancellationTokenSource? _imageCancellation;
     private bool _imageBaselineSet;
+    private CancellationTokenSource? _imageCancellation;
     private string? _lastImageHash;
     private string? _lastText;
     private Process? _process;
@@ -145,7 +144,6 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
     private async Task ImageLoopAsync(CancellationToken token)
     {
         while (!token.IsCancellationRequested)
-        {
             try
             {
                 await _clipboardGate.WaitAsync(token);
@@ -189,7 +187,6 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
                 Log.Debug(ex, "The image clipboard watcher stopped");
                 break;
             }
-        }
     }
 
     private bool TryWatchWithKlipper()
@@ -243,10 +240,10 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
 
     private static bool HasKlipper() =>
         Run("gdbus",
-            [
-                "call", "--session", "--dest", "org.freedesktop.DBus", "--object-path",
-                "/org/freedesktop/DBus", "--method", "org.freedesktop.DBus.NameHasOwner", "org.kde.klipper"
-            ])?.Contains("true", StringComparison.Ordinal) == true;
+        [
+            "call", "--session", "--dest", "org.freedesktop.DBus", "--object-path",
+            "/org/freedesktop/DBus", "--method", "org.freedesktop.DBus.NameHasOwner", "org.kde.klipper"
+        ])?.Contains("true", StringComparison.Ordinal) == true;
 
     private static string? ReadWithKlipper() =>
         Unwrap(Run("gdbus",
@@ -363,13 +360,9 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
                         current.Clear();
                     }
                     else if (current.Count < MaxValueLength)
-                    {
                         current.Add(value);
-                    }
                     else
-                    {
                         current.Clear();
-                    }
                 }
             }
         }
@@ -493,7 +486,6 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
             return false;
 
         using (process)
-        {
             try
             {
                 process.StandardInput.Write(input);
@@ -504,7 +496,6 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
             {
                 return false;
             }
-        }
     }
 
     private static byte[]? RunBytes(string command, string[] arguments)
@@ -554,7 +545,6 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
             return false;
 
         using (process)
-        {
             try
             {
                 process.StandardInput.BaseStream.Write(input, 0, input.Length);
@@ -566,6 +556,5 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
             {
                 return false;
             }
-        }
     }
 }

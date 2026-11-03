@@ -21,7 +21,7 @@ internal static class PairingHandshake
             "ClipboardSync.Pair.Request.v1", identity.PublicKey, Utf8(identity.Id), nonce));
 
         await FrameProtocol.WriteAsync(stream,
-            new PairRequestMessage(PeerProtocol.PairRequest, identity.Id, localDeviceName, localPort,
+            new(PeerProtocol.PairRequest, identity.Id, localDeviceName, localPort,
                 identity.PublicKeyBase64, ClipboardCrypto.ToBase64(nonce),
                 ClipboardCrypto.ToBase64(requestSignature)),
             AppJsonContext.Default.PairRequestMessage, token);
@@ -129,7 +129,7 @@ internal static class PairingHandshake
             peerKey, Utf8(request.DeviceId), identity.PublicKey, Utf8(identity.Id), nonce);
 
         await FrameProtocol.WriteAsync(stream,
-            new PairChallengeMessage(PeerProtocol.PairChallenge, identity.Id, localDeviceName, localPort,
+            new(PeerProtocol.PairChallenge, identity.Id, localDeviceName, localPort,
                 identity.PublicKeyBase64),
             AppJsonContext.Default.PairChallengeMessage, token);
 
@@ -139,7 +139,7 @@ internal static class PairingHandshake
         if (!await approve(prompt, token))
         {
             await FrameProtocol.WriteAsync(stream,
-                new PairRejectMessage(PeerProtocol.PairReject, "The pairing was rejected."),
+                new(PeerProtocol.PairReject, "The pairing was rejected."),
                 AppJsonContext.Default.PairRejectMessage, token);
             return null;
         }
@@ -148,10 +148,10 @@ internal static class PairingHandshake
             ClipboardCrypto.Transcript("ClipboardSync.Pair.Accept.v1", transcript));
 
         await FrameProtocol.WriteAsync(stream,
-            new PairAcceptMessage(PeerProtocol.PairAccept, ClipboardCrypto.ToBase64(accept)),
+            new(PeerProtocol.PairAccept, ClipboardCrypto.ToBase64(accept)),
             AppJsonContext.Default.PairAcceptMessage, token);
 
-        return new PairedDevice
+        return new()
         {
             Id = request.DeviceId,
             Name = request.DeviceName,
@@ -162,7 +162,7 @@ internal static class PairingHandshake
     }
 
     private static Task WriteStatusAsync(Stream stream, bool ok, string? error, CancellationToken token) =>
-        FrameProtocol.WriteAsync(stream, new SecureStatusMessage(PeerProtocol.Status, ok, error),
+        FrameProtocol.WriteAsync(stream, new(PeerProtocol.Status, ok, error),
             AppJsonContext.Default.SecureStatusMessage, token);
 
     private static byte[] Utf8(string value) => Encoding.UTF8.GetBytes(value);

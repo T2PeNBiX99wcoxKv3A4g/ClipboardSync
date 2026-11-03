@@ -18,15 +18,16 @@ ClipboardSync 让已配对设备的剪贴板保持同步。在一台设备上复
 
 ## 复制内容
 
-在任意应用中复制文本、URL 或图片。项目会出现在这台设备下方，发送到已配对设备，并应用到它们的剪贴板。共享内容和离线时的行为参见 [同步](Syncing)。
+在任意应用中复制文本、URL
+或图片。项目会出现在这台设备下方，发送到已配对设备，并应用到它们的剪贴板。共享内容和离线时的行为参见 [同步](Syncing)。
 
 ## 数据位置
 
-| 内容 | Windows | Linux |
-| --- | --- | --- |
-| 设置、身份、已配对设备 | `%APPDATA%\ClipboardSync` | `~/.config/ClipboardSync` |
-| 历史和图片缓存 | `%LOCALAPPDATA%\ClipboardSync` | `~/.local/share/ClipboardSync` |
-| 日志 | `%APPDATA%\ClipboardSync\logs` | `~/.config/ClipboardSync/logs` |
+| 内容                   | Windows                        | Linux                          |
+|------------------------|--------------------------------|--------------------------------|
+| 设置、身份、已配对设备 | `%APPDATA%\ClipboardSync`      | `~/.config/ClipboardSync`      |
+| 历史和图片缓存         | `%LOCALAPPDATA%\ClipboardSync` | `~/.local/share/ClipboardSync` |
+| 日志                   | `%APPDATA%\ClipboardSync\logs` | `~/.config/ClipboardSync/logs` |
 
 身份密钥就是配对时对方记录的公钥，因此该文件夹应只允许你的账户访问。
 

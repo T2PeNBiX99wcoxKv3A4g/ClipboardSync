@@ -11,9 +11,9 @@ internal sealed class PresenceService : Singleton<PresenceService>
 {
     private static readonly TimeSpan Interval = TimeSpan.FromSeconds(15);
     private static readonly TimeSpan ProbeTimeout = TimeSpan.FromSeconds(2.5);
+    private readonly Lock _gate = new();
 
     private readonly ConcurrentDictionary<string, bool> _online = new(StringComparer.Ordinal);
-    private readonly Lock _gate = new();
     private CancellationTokenSource? _cancellation;
     private bool _checking;
     private string _published = "";
@@ -35,7 +35,7 @@ internal sealed class PresenceService : Singleton<PresenceService>
             if (_cancellation is not null)
                 return;
 
-            _cancellation = new CancellationTokenSource();
+            _cancellation = new();
             _ = Task.Run(() => LoopAsync(_cancellation.Token));
         }
     }

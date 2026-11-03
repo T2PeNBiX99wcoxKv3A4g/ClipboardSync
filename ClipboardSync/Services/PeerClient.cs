@@ -11,7 +11,10 @@ internal static class PeerClient
     public static async Task<PairedDevice> PairAsync(string host, int port, string deviceName,
         Func<string, PairedDevice, Task> onChallenge, CancellationToken token)
     {
-        using var client = new TcpClient { NoDelay = true };
+        using var client = new TcpClient
+        {
+            NoDelay = true
+        };
         await client.ConnectAsync(host, port, token);
 
         return await PairingHandshake.InitiateAsync(client.GetStream(), DeviceIdentity.Instance, deviceName,
@@ -25,7 +28,10 @@ internal static class PeerClient
 
         foreach (var address in peer.AllAddresses().Distinct(StringComparer.OrdinalIgnoreCase))
         {
-            var client = new TcpClient { NoDelay = true };
+            var client = new TcpClient
+            {
+                NoDelay = true
+            };
 
             try
             {
@@ -42,7 +48,8 @@ internal static class PeerClient
             {
                 client.Dispose();
                 failure = ex as PeerSecurityException
-                          ?? new PeerSecurityException($"The peer at {address}:{peer.Port} did not answer ({ex.Message}).");
+                          ?? new PeerSecurityException(
+                              $"The peer at {address}:{peer.Port} did not answer ({ex.Message}).");
             }
         }
 

@@ -44,9 +44,7 @@ internal sealed class PeerStore : Singleton<PeerStore>
                 string.Equals(candidate.Id, peer.Id, StringComparison.Ordinal));
 
             if (existing is null)
-            {
                 _peers.Add(peer);
-            }
             else
             {
                 existing.Name = peer.Name;

@@ -24,10 +24,10 @@ internal sealed class DiscoveryService : Singleton<DiscoveryService>
         new(StringComparer.Ordinal);
 
     private readonly Lock _gate = new();
-    private CancellationTokenSource? _queryCts;
-    private CancellationTokenSource? _receiveCts;
     private string _deviceName = "";
     private string _published = "";
+    private CancellationTokenSource? _queryCts;
+    private CancellationTokenSource? _receiveCts;
     private bool _searching;
     private UdpClient? _socket;
 
@@ -80,10 +80,13 @@ internal sealed class DiscoveryService : Singleton<DiscoveryService>
     {
         var cutoff = Environment.TickCount64 - (long)FreshFor.TotalMilliseconds;
 
-        return [.. _found.Values
-            .Where(entry => entry.SeenAt >= cutoff)
-            .Select(entry => entry.Device)
-            .OrderBy(device => device.Name, StringComparer.OrdinalIgnoreCase)];
+        return
+        [
+            .. _found.Values
+                .Where(entry => entry.SeenAt >= cutoff)
+                .Select(entry => entry.Device)
+                .OrderBy(device => device.Name, StringComparer.OrdinalIgnoreCase)
+        ];
     }
 
     private void StartSocket()
@@ -192,8 +195,8 @@ internal sealed class DiscoveryService : Singleton<DiscoveryService>
         if (_socket is not { } socket)
             return;
 
-        var frame = JsonSerializer.SerializeToUtf8Bytes(new DiscoveryMessage(PeerProtocol.Discover,
-            DeviceIdentity.Instance.Id, _deviceName, PeerProtocol.SyncPort, DeviceIdentity.Instance.PublicKeyBase64),
+        var frame = JsonSerializer.SerializeToUtf8Bytes(new(PeerProtocol.Discover,
+                DeviceIdentity.Instance.Id, _deviceName, PeerProtocol.SyncPort, DeviceIdentity.Instance.PublicKeyBase64),
             AppJsonContext.Default.DiscoveryMessage);
 
         TrySend(socket, frame, new(IPAddress.Broadcast, PeerProtocol.DiscoveryPort));
@@ -203,7 +206,7 @@ internal sealed class DiscoveryService : Singleton<DiscoveryService>
     }
 
     private static Task SendAnnounceAsync(UdpClient socket, IPEndPoint target, CancellationToken token) =>
-        socket.SendAsync(JsonSerializer.SerializeToUtf8Bytes(new DiscoveryMessage(PeerProtocol.Announce,
+        socket.SendAsync(JsonSerializer.SerializeToUtf8Bytes(new(PeerProtocol.Announce,
                 DeviceIdentity.Instance.Id, SettingsService.Instance.Current.DeviceName, PeerProtocol.SyncPort,
                 DeviceIdentity.Instance.PublicKeyBase64),
             AppJsonContext.Default.DiscoveryMessage), target, token).AsTask();
@@ -219,7 +222,8 @@ internal sealed class DiscoveryService : Singleton<DiscoveryService>
     private void Publish()
     {
         var devices = Snapshot();
-        var signature = string.Join('\n', devices.Select(device => $"{device.Id}|{device.Name}|{device.Host}|{device.Port}"));
+        var signature = string.Join('\n',
+            devices.Select(device => $"{device.Id}|{device.Name}|{device.Host}|{device.Port}"));
         if (signature == _published)
             return;
 
