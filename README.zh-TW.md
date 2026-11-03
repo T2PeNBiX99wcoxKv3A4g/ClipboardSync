@@ -1,0 +1,173 @@
+<div align="center">
+  <img src="icon.svg" alt="" width="120">
+  <h1>ClipboardSync</h1>
+  <p><strong>複製一次，貼到你的每一台裝置。</strong></p>
+  <p>
+    <a href="https://t2penbix99wcoxkv3a4g.github.io/ClipboardSync/">網站</a> ·
+    <a href="https://t2penbix99wcoxkv3a4g.github.io/ClipboardSync/#/docs/Getting-Started">文件</a>
+  </p>
+  <p>
+    <a href="README.md">English</a> ·
+    <a href="README.ja.md">日本語</a> ·
+    <a href="README.zh-CN.md">简体中文</a>
+  </p>
+</div>
+
+ClipboardSync 讓已配對裝置共用同一塊剪貼簿看板。在一台裝置上複製文字、連結或圖片，其他裝置就會
+顯示出來，可以直接貼上。所有裝置都透過加密工作階段直接通訊，不需要帳號，也沒有中間伺服器。
+
+檔案同步是下一步。目前支援文字、URL 和 PNG 圖片。
+
+## 為什麼需要
+
+在桌機和筆電之間傳遞連結或截圖，不應該需要寄給自己、開啟聊天軟體，或信任雲端剪貼簿。
+ClipboardSync 只需把自己的裝置配對一次，之後就在你自己的網路中保持同一塊看板，剪貼簿內容在
+裝置之間端對端加密。
+
+## 功能
+
+- **共用看板** — 所有已配對裝置顯示同一份歷史記錄，項目依來源裝置分組，也包括本機。新的複製會
+  傳送給所有對端；對端儲存項目、套用到自己的剪貼簿，並在其他對端仍缺少該項目時繼續轉發。
+- **文字與連結** — 複製文字或 URL 時會傳送到其他裝置，並套用到它們的剪貼簿。
+- **圖片** — 複製的圖片會以 PNG 傳送、在看板上預覽，並自動套用到剪貼簿。大小上限可在 1 到
+  32 MB 之間設定（預設 10 MB）。
+- **直接連線** — 裝置透過 UDP 在區域網路內找到彼此，並透過 TCP 通訊。不經過第三方，無法廣播的
+  網路可以手動填寫位址。
+- **加密工作階段** — 每台裝置都有長期的 Ed25519 身分金鑰。每次連線使用新的 X25519 臨時金鑰，
+  由 HKDF-SHA256 推導工作階段金鑰，每個訊框都用 ChaCha20-Poly1305 加密，並以握手記錄作為關聯
+  資料。
+- **配對碼** — 兩邊畫面會從握手推導出同一組短碼，讓你在信任裝置前先比對。配對碼不會當成密碼
+  傳送。
+- **每個項目的傳輸狀態** — 已同步、傳送中、接收中、等待中或失敗，並顯示有多少對端持有該項目。
+- **最終一致** — 定期核對會重送尚未被確認的項目；再次配對會把目前看板補發過去；曾經離線的裝置
+  在恢復後會自動補齊。
+- **系統匣與自動啟動** — 關閉後留在系統匣、可隱藏啟動、登入時自動啟動，並避免重複開啟。
+
+## 使用技術
+
+- **以 .NET 10 為基礎的 C#** — 剪貼簿監視與寫入、裝置探索、TCP 工作階段、配對、加密、歷史、
+  系統匣和設定。
+- **React 19 + TypeScript**，由 **Vite** 打包，使用 **styled-components** 撰寫樣式 — 介面。它只與
+  C# 端交換 JSON 訊息，自身不處理邏輯。
+- **Photino.NET** — 桌面外殼。它用作業系統自帶的 Web 檢視顯示介面，因此 Web 檢視是執行階段
+  相依：Windows 使用 WebView2，Linux 使用 WebKitGTK。
+- **BouncyCastle** — Ed25519、X25519 和 ChaCha20-Poly1305。
+
+## 執行
+
+已發佈的建置是 **自包含** 的：內建 .NET 執行階段，不需要另外安裝。作業系統仍需提供以下內容。
+
+### Windows
+
+1. Microsoft Edge **WebView2 執行階段**。Windows 10 和 11 通常已經內建；如果沒有，請使用
+   [Microsoft 的頁面](https://developer.microsoft.com/microsoft-edge/webview2/)。
+2. Windows 10 或更新版本，x64。
+3. 建置沒有程式碼簽章，第一次啟動時 Windows 可能會提示警告。
+
+### Linux
+
+1. 用於 GTK 的 Web 檢視。
+2. AppIndicator 函式庫，僅用於系統匣圖示。沒有它應用程式仍可執行，只是沒有系統匣，主視窗會
+   一直顯示。
+3. 自包含建置所需的 .NET 執行階段函式庫（ICU、OpenSSL、zlib、krb5、fontconfig、freetype）會由
+   套件帶入。普通壓縮檔則需要手動安裝。
+
+| 發行版          | 套件                                                                         |
+|-----------------|------------------------------------------------------------------------------|
+| Fedora          | `sudo dnf install webkit2gtk4.1 libayatana-appindicator-gtk3 libnotify`      |
+| Debian / Ubuntu | `sudo apt install libwebkit2gtk-4.1-0 libayatana-appindicator3-1 libnotify4` |
+| Arch Linux      | `sudo pacman -S webkit2gtk-4.1 libayatana-appindicator`                      |
+| 其他            | 尋找提供下列函式庫的套件                                                     |
+
+```
+libwebkit2gtk-4.1.so.0          libjavascriptcoregtk-4.1.so.0
+libgtk-3.so.0                   libglib-2.0.so.0
+libayatana-appindicator3.so.1   （或較舊的 libappindicator3.so.1）
+```
+
+缺少 Web 檢視函式庫時，啟動會顯示 `Unable to load shared library 'Photino.Native'`。要找出提供
+缺少 soname 的套件，可以詢問套件管理員，例如 `dnf provides 'libwebkit2gtk-4.1.so.0'`、
+`apt-file search libwebkit2gtk-4.1.so.0` 或 `pacman -F libwebkit2gtk-4.1.so.0`。
+
+## 首次執行
+
+1. **啟動兩台裝置**，確保它們在同一網路中能互相連線。TCP 45456 用於配對和剪貼簿通訊；UDP
+   45457 只用於探索提示。
+2. **配對它們**：開啟 **裝置 → 配對裝置**，選擇探索到的裝置或輸入位址，然後比對兩邊畫面顯示的
+   配對碼。配對會記錄彼此的公開金鑰，並證明雙方確實擁有該金鑰。
+3. **複製內容**。項目會出現在兩邊的看板上，並套用到對方的剪貼簿。
+
+完整指南見 [文件](https://t2penbix99wcoxkv3a4g.github.io/ClipboardSync/#/docs/Getting-Started)。
+
+## 建置
+
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- [Node.js](https://nodejs.org/) 20 或更新版本，用於建置介面
+- `ClipboardSync/Libs` 中的共用 DLL 和前端橋接套件，透過 `build-and-copy.ps1` 從獨立的
+  [PhotinoNETUtils](../PhotinoNETUtils) 專案複製
+
+## 建置與執行
+
+### 開發
+
+介面由 Vite 提供，因此需要同時啟動兩邊：
+
+```bash
+# 終端機 1 — 介面位於 http://127.0.0.1:3300
+cd ClipboardSync/UserInterface
+npm install
+npm run dev
+
+# 終端機 2 — 桌面應用程式
+dotnet run --project ClipboardSync
+```
+
+偵錯建置會從開發伺服器載入介面。`dotnet run --project ClipboardSync -- --identity` 會印出配對
+使用的穩定 ID、公開金鑰和指紋。
+
+### 發佈
+
+`npm run build` 會把介面複製到 `ClipboardSync/Resources/wwwroot`，專案再將它嵌入執行檔。
+因此發佈前需要先建置介面。
+
+```bash
+cd ClipboardSync/UserInterface && npm run build
+cd ../.. && dotnet publish ClipboardSync/ClipboardSync.csproj -c Release -r win-x64
+```
+
+Linux 請使用 `-r linux-x64`。輸出位於 `ClipboardSync/bin/Release/net10.0/<rid>/publish/`，
+是單一自包含執行檔。
+
+## 資料儲存位置
+
+|                  | Windows                                            | Linux                                              |
+|------------------|----------------------------------------------------|----------------------------------------------------|
+| 設定             | `%APPDATA%\ClipboardSync\settings.json`            | `~/.config/ClipboardSync/settings.json`            |
+| 已配對裝置       | `%APPDATA%\ClipboardSync\peers.json`               | `~/.config/ClipboardSync/peers.json`               |
+| 裝置身分         | `%APPDATA%\ClipboardSync\device.key`               | `~/.config/ClipboardSync/device.key`               |
+| 歷史             | `%LOCALAPPDATA%\ClipboardSync\history.json`        | `~/.local/share/ClipboardSync/history.json`        |
+| 圖片快取         | `%LOCALAPPDATA%\ClipboardSync\clipboard`           | `~/.local/share/ClipboardSync/clipboard`           |
+| 日誌             | `%APPDATA%\ClipboardSync\logs\clipboardsync-*.log` | `~/.config/ClipboardSync/logs/clipboardsync-*.log` |
+
+身分金鑰就是配對時對方記錄的公鑰，因此設定資料夾應只允許你的帳戶存取。歷史記錄的上限由
+**設定 → 歷史 → 保留項目數** 控制。
+
+日誌會寫入檔案，同時鏡像到主控台，因此回報問題時提供日誌檔就夠了。日誌每天輪替，保留最近
+7 天。
+
+## 注意
+
+- 檔案尚未同步。在檔案管理員複製檔案會被忽略；支援的內容是文字、URL 和 PNG 圖片。超過設定
+  上限的圖片會被跳過。
+- 裝置網路依賴每台裝置都能透過 TCP 45456 連線其他裝置。UDP 45457 只是探索提示；如果廣播被
+  阻擋，請使用手動位址欄。
+- 關閉視窗會將應用程式放入系統匣。如果希望啟動時就隱藏，請開啟 **啟動時隱藏視窗**；沒有系統匣
+  的環境會始終顯示視窗。
+- Linux 使用合成器的原生標題列。Windows 保留視窗邊框，並在內部繪製介面標題列，以避免強制使用
+  無邊框視窗時 KWin 留下重複標題列。
+- `PhotinoNETUtils` 以 DLL/NPM tarball 的形式從 `Libs/` 引用。更新該函式庫後請重新執行
+  `build-and-copy` 腳本；`ClipboardSync` 已經在目標清單中。
+
+## 授權
+
+MIT — 見 [LICENSE](LICENSE)。

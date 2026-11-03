@@ -6,6 +6,11 @@
     <a href="https://t2penbix99wcoxkv3a4g.github.io/ClipboardSync/">Website</a> ·
     <a href="https://t2penbix99wcoxkv3a4g.github.io/ClipboardSync/#/docs/Getting-Started">Documentation</a>
   </p>
+  <p>
+    <a href="README.ja.md">日本語</a> ·
+    <a href="README.zh-CN.md">简体中文</a> ·
+    <a href="README.zh-TW.md">繁體中文</a>
+  </p>
 </div>
 
 ClipboardSync keeps one clipboard board across the devices you pair. Copy text, a link or an image on
