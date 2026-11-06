@@ -93,7 +93,7 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
     public void Dispose() => Stop();
 
     public string? ReadText() =>
-        Try.Run(() => ReadWithKlipper() ?? ReadWithCommand()).GetOrElse(ex =>
+        Try.Run(() => ReadWithCommand() ?? ReadWithKlipper()).GetOrElse(ex =>
         {
             Log.Debug(ex, "Could not read the clipboard");
             return null;
@@ -311,7 +311,7 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
                     break;
 
                 if (line.Contains("clipboardHistoryUpdated", StringComparison.Ordinal))
-                    Report(ReadWithKlipper());
+                    Report(ReadWithCommand() ?? ReadWithKlipper());
             }
         }
         catch (OperationCanceledException)
@@ -341,8 +341,13 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
     private static string? Unwrap(string? output)
     {
         var text = output?.Trim();
-        if (text is not { Length: >= 4 } || !text.StartsWith("('", StringComparison.Ordinal) ||
-            !text.EndsWith("',)", StringComparison.Ordinal))
+        if (text is not { Length: >= 4 } || text[0] != '(' || text[^1] != ')' || text[^2] != ',')
+            return null;
+
+        // gdbus picks the quote that needs fewer escapes, so a string containing ' comes back as
+        // ("...",) instead of ('...',). Both forms carry the same text.
+        var quote = text[1];
+        if (quote is not ('\'' or '"') || text[^3] != quote)
             return null;
 
         return Unescape(text[2..^3]);
