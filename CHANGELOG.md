@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.7.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.6.1..v0.7.0) - 2026-11-06
+
+### ⛰️  Features
+
+- Recover blank WebView and add tray reload - ([9b5d6f6](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/9b5d6f6d3662215eb6059861ba056e80614d0ec5))
+
+### ⚙️ Miscellaneous Tasks
+
+- Sync shared WebView recovery library - ([2902836](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/290283633dd1c5db8156c221e6c5cf95fdb4b0c5))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([3e41159](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/3e41159b310c851d5147e370734a49824cdd2bef))
+
+
 ## [0.6.1](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.6.0..v0.6.1) - 2026-11-03
 
 ### ⚙️ Miscellaneous Tasks
