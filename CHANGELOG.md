@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.7.1](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.7.0..v0.7.1) - 2026-11-06
+
+### 🐛 Bug Fixes
+
+- *(linux)* Read clipboard text with quotes from Klipper - ([38dba48](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/38dba48a7e0e56af07acae62be7f59f9f97bc14d))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([d8f5eb5](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/d8f5eb5d17fad67019bfbb604699dad9e7ddbf51))
+
+
 ## [0.7.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.6.1..v0.7.0) - 2026-11-06
 
 ### ⛰️  Features
