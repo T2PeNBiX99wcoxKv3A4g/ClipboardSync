@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.7.3](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.7.2..v0.7.3) - 2026-11-09
+
+### ⚙️ Miscellaneous Tasks
+
+- Update shared PhotinoNETUtils to 0.13.0 - ([f01aac8](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/f01aac8e535a514a993d89dce45503be9367ec73))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([4eae725](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/4eae7256412b6399ec75ce28d08d20035678c941))
+
+
 ## [0.7.2](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.7.1..v0.7.2) - 2026-11-06
 
 ### ⚙️ Miscellaneous Tasks
