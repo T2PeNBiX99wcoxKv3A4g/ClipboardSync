@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.7.6](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.7.5..v0.7.6) - 2026-11-10
+
+### ⚙️ Miscellaneous Tasks
+
+- Upgrade NuGet packages - ([b977ddf](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/b977ddf89a25c85339c5c8b3ad583cabaa8c3dc6))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([da7f444](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/da7f44411c6089dde9b24403f1fa3c5399f6494b))
+
+
 ## [0.7.5](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.7.4..v0.7.5) - 2026-11-10
 
 ### 📚 Documentation
