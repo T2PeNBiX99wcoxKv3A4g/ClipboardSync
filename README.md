@@ -17,12 +17,6 @@ ClipboardSync keeps one clipboard board across the devices you pair. Copy text, 
 or a folder on one machine and it shows up on the others, ready to paste. Every device talks directly
 to the others over an encrypted session; there is no account and no server in the middle.
 
-## Why
-
-Moving a link or a screenshot between a desktop and a laptop should not mean sending it to yourself,
-opening a chat app, or trusting a cloud clipboard. ClipboardSync pairs your own devices once and then
-keeps them on the same board, on your own network, with the clipboard contents encrypted end to end.
-
 ## Features
 
 - **One shared board** — every paired device shows the same history, grouped by the device an item
@@ -52,19 +46,16 @@ keeps them on the same board, on your own network, with the clipboard contents e
 
 ## Built with
 
-- **C# on .NET 10** — the clipboard watcher and writer, peer discovery, TCP sessions, pairing,
-  encryption, history, the tray and the settings.
-- **React 19 + TypeScript**, bundled by **Vite** and styled with **styled-components** — the
-  interface. It exchanges JSON messages with the C# side and does no work of its own.
-- **Photino.NET** — the desktop shell. It shows the interface in the operating system's own web
-  view, which is why the web view is a runtime dependency: WebView2 on Windows, WebKitGTK on Linux.
+- **C# on .NET 10** — clipboard, networking, encryption, history, tray and settings.
+- **React 19 + TypeScript**, bundled by **Vite** and styled with **styled-components** — the interface.
+- **Photino.NET** — the desktop shell.
 - **BouncyCastle** — Ed25519, X25519 and ChaCha20-Poly1305.
-- **SQLite** — the clipboard history, delivery state and file manifests.
+- **SQLite** — history, delivery state and file manifests.
 
 ## Running
 
-The published builds are **self-contained** — they bundle the .NET runtime, so nothing needs to be
-installed for them. What the operating system still has to provide is listed below.
+The published builds are **self-contained** and need no separate .NET install. The operating system
+still has to provide:
 
 Four package formats are published beside the plain archives:
 
@@ -178,9 +169,6 @@ problem. They roll daily and the last seven are kept.
   discovery hint; the manual address field covers networks where broadcast is blocked.
 - Closing the window sends the app to the tray. Turn on **Start with the window hidden** if you want
   it to start there; without a tray it always shows its window.
-- Linux uses the compositor's native title bar. Windows keeps its frame and draws the interface title
-  bar inside it, which avoids the duplicate title bar KWin leaves when an undecorated window is
-  forced.
 - `PhotinoNETUtils` is referenced as a DLL/NPM tarball from `Libs/`. Re-run its `build-and-copy`
   script after updating the library; `ClipboardSync` is already listed as a target.
 
