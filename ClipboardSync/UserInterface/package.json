@@ -7,10 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build && node scripts/copy-build.mjs",
     "preview": "vite preview",
-    "upgrade": "node -e \"require('fs').rmSync('package-lock.json',{force:true})\" && npm-check-updates -u"
+    "upgrade": "node -e \"require('fs').rmSync('package-lock.json',{force:true})\" && npx npm-check-updates -u"
   },
   "dependencies": {
-    "@photino-net-utils/bridge": "file:../Libs/photino-net-utils-bridge-0.14.0.tgz",
+    "@photino-net-utils/bridge": "file:../Libs/photino-net-utils-bridge-0.15.2.tgz",
     "npm-check-updates": "^23.1.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
@@ -23,9 +23,9 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.2.1",
-    "sass": "^1.107.1",
+    "sass": "^1.108.1",
     "typescript": "^7.0.2",
-    "vite": "^8.3.5",
+    "vite": "^8.3.7",
     "vite-plugin-svgr": "^5.2.0"
   }
 }
