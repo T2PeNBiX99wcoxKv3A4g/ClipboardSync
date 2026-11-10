@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.7.5](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.7.4..v0.7.5) - 2026-11-10
+
+### 📚 Documentation
+
+- Trim README fluff and drop the OS list - ([ce9c494](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/ce9c494b6ba5834f7426cb4c512e6fc29eff7636))
+
+### ⚙️ Miscellaneous Tasks
+
+- Refresh node dependencies and shared library - ([7d6f674](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/7d6f674c6ebea8a42cc195da881b6e4f853d0a70))
+- Bump Microsoft.Extensions.FileProviders.Embedded and System.Drawing.Common - ([9da17b6](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/9da17b6dab66acea0f1d42f49686c3c35e46b818))
+- Bump Microsoft.Data.Sqlite from 10.0.14 to 11.0.0 - ([f7876b6](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/f7876b60156dada61a97bb3ad4ca9b1b33edac5b))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([81f30da](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/81f30da8983b0eb52b6b578696521b26a137400f))
+
+
 ## [0.7.4](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.7.3..v0.7.4) - 2026-11-10
 
 ### ⚙️ Miscellaneous Tasks
