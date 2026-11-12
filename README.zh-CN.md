@@ -39,7 +39,7 @@ ClipboardSync 让已配对设备共用同一块剪贴板面板。在一台设备
 
 ## 技术栈
 
-- **基于 .NET 10 的 C#** — 剪贴板、网络、加密、历史、托盘和设置。
+- **基于 .NET 11 的 C#** — 剪贴板、网络、加密、历史、托盘和设置。
 - **React 19 + TypeScript**，由 **Vite** 打包，使用 **styled-components** 编写样式 — 界面。
 - **Photino.NET** — 桌面外壳。
 - **BouncyCastle** — Ed25519、X25519 和 ChaCha20-Poly1305。
@@ -101,7 +101,7 @@ soname 的软件包，可以询问包管理器，例如 `dnf provides 'libwebkit
 
 ## 构建
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- [.NET 11 SDK](https://dotnet.microsoft.com/download)
 - [Node.js](https://nodejs.org/) 20 或更高版本，用于构建界面
 - `ClipboardSync/Libs` 中的共享 DLL 和前端桥接包，通过 `build-and-copy.ps1` 从单独的
   [PhotinoNETUtils](../PhotinoNETUtils) 项目复制

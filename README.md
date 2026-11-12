@@ -46,7 +46,7 @@ to the others over an encrypted session; there is no account and no server in th
 
 ## Built with
 
-- **C# on .NET 10** — clipboard, networking, encryption, history, tray and settings.
+- **C# on .NET 11** — clipboard, networking, encryption, history, tray and settings.
 - **React 19 + TypeScript**, bundled by **Vite** and styled with **styled-components** — the interface.
 - **Photino.NET** — the desktop shell.
 - **BouncyCastle** — Ed25519, X25519 and ChaCha20-Poly1305.
@@ -112,7 +112,7 @@ The full guide is in the [documentation](https://t2penbix99wcoxkv3a4g.github.io/
 
 ## Building
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- [.NET 11 SDK](https://dotnet.microsoft.com/download)
 - [Node.js](https://nodejs.org/) 20 or newer, to build the interface
 - The shared DLL and front-end bridge package in `ClipboardSync/Libs`, copied from the separate
   [PhotinoNETUtils](../PhotinoNETUtils) project with its `build-and-copy.ps1`

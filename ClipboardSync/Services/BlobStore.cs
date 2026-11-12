@@ -13,7 +13,7 @@ internal static class BlobStore
 {
     private const int BufferSize = 1024 * 1024;
     private static readonly string DefaultRoot = Path.Combine(Constants.DataDirectory, "clipboard", "blobs");
-    private static readonly object WriteSync = new();
+    private static readonly Lock WriteSync = new();
     private static string _root = DefaultRoot;
     private static int _writers;
     private static bool _migrating;

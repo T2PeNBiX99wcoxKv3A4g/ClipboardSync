@@ -569,7 +569,7 @@ internal sealed class WindowsClipboardWatcher : Singleton<WindowsClipboardWatche
 
     private static bool TryWriteImage(byte[] png)
     {
-        using var stream = new MemoryStream(png);
+        using var stream = new ReadOnlyMemoryStream(png);
         using var source = Image.FromStream(stream);
         using var bitmap = new Bitmap(source);
 

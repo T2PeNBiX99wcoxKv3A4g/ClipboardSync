@@ -40,7 +40,7 @@ ClipboardSync 讓已配對裝置共用同一塊剪貼簿看板。在一台裝置
 
 ## 使用技術
 
-- **以 .NET 10 為基礎的 C#** — 剪貼簿、網路、加密、歷史、系統匣和設定。
+- **以 .NET 11 為基礎的 C#** — 剪貼簿、網路、加密、歷史、系統匣和設定。
 - **React 19 + TypeScript**，由 **Vite** 打包，使用 **styled-components** 撰寫樣式 — 介面。
 - **Photino.NET** — 桌面外殼。
 - **BouncyCastle** — Ed25519、X25519 和 ChaCha20-Poly1305。
@@ -103,7 +103,7 @@ libayatana-appindicator3.so.1   （或較舊的 libappindicator3.so.1）
 
 ## 建置
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- [.NET 11 SDK](https://dotnet.microsoft.com/download)
 - [Node.js](https://nodejs.org/) 20 或更新版本，用於建置介面
 - `ClipboardSync/Libs` 中的共用 DLL 和前端橋接套件，透過 `build-and-copy.ps1` 從獨立的
   [PhotinoNETUtils](../PhotinoNETUtils) 專案複製

@@ -45,7 +45,7 @@ ClipboardSync は、ペアリングした端末の間で 1 つのクリップボ
 
 ## 使用技術
 
-- **.NET 10 上の C#** — クリップボード、ネットワーク、暗号化、履歴、トレイ、設定。
+- **.NET 11 上の C#** — クリップボード、ネットワーク、暗号化、履歴、トレイ、設定。
 - **React 19 + TypeScript**、**Vite** でバンドルし **styled-components** でスタイル — インターフェース。
 - **Photino.NET** — デスクトップシェル。
 - **BouncyCastle** — Ed25519、X25519、ChaCha20-Poly1305。
@@ -113,7 +113,7 @@ Web ビューのライブラリがない場合は、起動時に `Unable to load
 
 ## ビルド
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- [.NET 11 SDK](https://dotnet.microsoft.com/download)
 - インターフェースをビルドするための [Node.js](https://nodejs.org/) 20 以降
 - `ClipboardSync/Libs` にある共有 DLL とフロントエンドブリッジのパッケージ。別プロジェクトの
   [PhotinoNETUtils](../PhotinoNETUtils) から `build-and-copy.ps1` でコピーします。

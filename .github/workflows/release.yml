@@ -25,6 +25,7 @@ jobs:
   build:
     uses: T2PeNBiX99wcoxKv3A4g/Release-Workflows/.github/workflows/csharp_release.yml@main
     with:
+      dotnet_version: '11.0.x'
       project_path: './ClipboardSync/ClipboardSync.csproj'
       filename: 'ClipboardSync'
       runtimes: '["win-x64", "linux-x64"]'
