@@ -2,8 +2,6 @@ using System.Net;
 using System.Net.Sockets;
 using ClipboardSync.Messaging;
 using ClipboardSync.Security;
-using PhotinoNetUtils.Extensions;
-using PhotinoNetUtils.Utils;
 
 namespace ClipboardSync.Services;
 

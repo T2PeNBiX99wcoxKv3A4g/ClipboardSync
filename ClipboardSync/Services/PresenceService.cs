@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using PhotinoNetUtils.Utils;
 
 namespace ClipboardSync.Services;
 

@@ -2,10 +2,8 @@ using System.Text.Json;
 using ClipboardSync.Messaging;
 using ClipboardSync.Models;
 using ClipboardSync.Platform;
-using PhotinoNetUtils.Extensions;
 using PhotinoNetUtils.Localization;
 using PhotinoNetUtils.Messaging;
-using PhotinoNetUtils.Utils;
 
 namespace ClipboardSync.Services;
 

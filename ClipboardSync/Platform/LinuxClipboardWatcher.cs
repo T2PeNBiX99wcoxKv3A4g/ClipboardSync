@@ -2,9 +2,7 @@ using System.Diagnostics;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
-using PhotinoNetUtils.Extensions;
 using PhotinoNetUtils.Platform;
-using PhotinoNetUtils.Utils;
 
 namespace ClipboardSync.Platform;
 
@@ -20,12 +18,12 @@ internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, 
 
     private readonly SemaphoreSlim _clipboardGate = new(1, 1);
     private CancellationTokenSource? _cancellation;
-    private bool _imageBaselineSet;
-    private CancellationTokenSource? _imageCancellation;
     private bool _fileBaselineSet;
     private CancellationTokenSource? _fileCancellation;
-    private string? _lastImageHash;
+    private bool _imageBaselineSet;
+    private CancellationTokenSource? _imageCancellation;
     private string? _lastFiles;
+    private string? _lastImageHash;
     private string? _lastText;
     private Process? _process;
     private bool _started;

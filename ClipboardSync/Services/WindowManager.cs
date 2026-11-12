@@ -1,10 +1,9 @@
 using ClipboardSync.Messaging;
 using Photino.NET;
-using PhotinoNetUtils.Extensions;
 using PhotinoNetUtils.Interop;
 using PhotinoNetUtils.Messaging;
 using PhotinoNetUtils.Platform;
-using PhotinoNetUtils.Utils;
+using PhotinoNetUtils.Services;
 
 namespace ClipboardSync.Services;
 
@@ -28,10 +27,11 @@ internal sealed class WindowManager : Singleton<WindowManager>
     private bool _allowClose;
     private bool _hideWhenRendered;
     private PhotinoWindow? _mainWindow;
-    private PhotinoNetUtils.Services.WebViewRecovery? _webViewRecovery;
 
     /// <summary>Whether the interface has reported in; before that, pushing an event to it crashes.</summary>
     private bool _mainWindowReady;
+
+    private WebViewRecovery? _webViewRecovery;
 
     public WindowManager() => NativeBridge.MessageReceived += HandleMessageAsync;
 
@@ -125,7 +125,7 @@ internal sealed class WindowManager : Singleton<WindowManager>
             MainWindowCreated?.Invoke();
         });
 
-        _webViewRecovery = PhotinoNetUtils.Services.WebViewRecovery.Attach(window, AppUrl);
+        _webViewRecovery = WebViewRecovery.Attach(window, AppUrl);
         window.Load(AppUrl);
         _mainWindow = window;
     }

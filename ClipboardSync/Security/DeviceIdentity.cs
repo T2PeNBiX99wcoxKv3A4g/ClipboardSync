@@ -1,7 +1,5 @@
 using System.Security.Cryptography;
 using Org.BouncyCastle.Crypto.Parameters;
-using PhotinoNetUtils.Extensions;
-using PhotinoNetUtils.Utils;
 
 namespace ClipboardSync.Security;
 

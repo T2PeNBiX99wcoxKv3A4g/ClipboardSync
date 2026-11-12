@@ -4,7 +4,6 @@ using PhotinoNetUtils;
 using PhotinoNetUtils.Localization;
 using PhotinoNetUtils.Messaging;
 using PhotinoNetUtils.Platform;
-using PhotinoNetUtils.Utils;
 
 namespace ClipboardSync.Services;
 

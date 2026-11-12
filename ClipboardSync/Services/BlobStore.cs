@@ -12,19 +12,17 @@ internal sealed record BlobWrite(string Hash, long Size);
 internal static class BlobStore
 {
     private const int BufferSize = 1024 * 1024;
-    private static readonly string DefaultRoot = Path.Combine(Constants.DataDirectory, "clipboard", "blobs");
     private static readonly Lock WriteSync = new();
-    private static string _root = DefaultRoot;
     private static int _writers;
     private static bool _migrating;
 
-    public static string Root => _root;
+    public static string Root { get; private set; } = DefaultDirectory;
 
-    public static string DefaultDirectory => DefaultRoot;
+    public static string DefaultDirectory { get; } = Path.Combine(Constants.DataDirectory, "clipboard", "blobs");
 
-    private static string PartialRoot => Path.Combine(_root, ".partial");
+    private static string PartialRoot => Path.Combine(Root, ".partial");
 
-    public static string PathFor(string hash) => Path.Combine(_root, hash);
+    public static string PathFor(string hash) => Path.Combine(Root, hash);
 
     public static string PartialPath(string hash) => Path.Combine(PartialRoot, hash + ".part");
 
@@ -40,20 +38,20 @@ internal static class BlobStore
         catch (Exception ex)
         {
             Constants.Logger.Warning(ex, "Invalid blob folder {Directory}; using the default", directory);
-            _root = DefaultRoot;
+            Root = DefaultDirectory;
             return;
         }
 
         try
         {
             Directory.CreateDirectory(next);
-            _root = next;
+            Root = next;
         }
         catch (Exception ex)
         {
             Constants.Logger.Warning(ex, "Could not use the blob folder {Directory}; using the default",
                 next);
-            _root = DefaultRoot;
+            Root = DefaultDirectory;
         }
     }
 
@@ -62,10 +60,10 @@ internal static class BlobStore
     {
         var next = Resolve(directory);
 
-        if (string.Equals(next, _root, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(next, Root, StringComparison.OrdinalIgnoreCase))
             return;
 
-        if (IsUnder(next, _root) || IsUnder(_root, next))
+        if (IsUnder(next, Root) || IsUnder(Root, next))
             throw new ArgumentException("The blob folder cannot contain the current one.", nameof(directory));
 
         lock (WriteSync)
@@ -83,10 +81,10 @@ internal static class BlobStore
 
             Directory.CreateDirectory(next);
             Directory.CreateDirectory(Path.Combine(next, ".partial"));
-            await CopyFilesAsync(_root, next, token);
-            await CopyFilesAsync(Path.Combine(_root, ".partial"), Path.Combine(next, ".partial"), token);
-            var previous = _root;
-            _root = next;
+            await CopyFilesAsync(Root, next, token);
+            await CopyFilesAsync(Path.Combine(Root, ".partial"), Path.Combine(next, ".partial"), token);
+            var previous = Root;
+            Root = next;
             await DeleteFilesAsync(previous, token);
             await DeleteFilesAsync(Path.Combine(previous, ".partial"), token);
         }
@@ -103,7 +101,6 @@ internal static class BlobStore
         while (true)
         {
             lock (WriteSync)
-            {
                 if (_migrating)
                 {
                     // The folder is being moved; wait for it to finish.
@@ -113,7 +110,6 @@ internal static class BlobStore
                     _writers++;
                     return new WriteLease();
                 }
-            }
 
             Thread.Sleep(20);
         }
@@ -140,9 +136,9 @@ internal static class BlobStore
             long size = 0;
 
             await using (var input = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Read,
-                       BufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan))
+                             BufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan))
             await using (var output = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None,
-                       BufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan))
+                             BufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan))
             using (var hasher = IncrementalHash.CreateHash(HashAlgorithmName.SHA256))
             {
                 var buffer = new byte[BufferSize];
@@ -320,7 +316,7 @@ internal static class BlobStore
 
     private static string Resolve(string? directory) =>
         string.IsNullOrWhiteSpace(directory)
-            ? DefaultRoot
+            ? DefaultDirectory
             : Path.GetFullPath(Expand(directory.Trim()));
 
     private static string Expand(string value)

@@ -27,9 +27,6 @@ internal static class PeerProtocol
     /// <summary>One copied file selection is capped here; the settings expose the byte limit.</summary>
     public const int MaxFiles = 1_000;
 
-    /// <summary>How long a large file transfer may take before the session is abandoned.</summary>
-    public static readonly TimeSpan TransferTimeout = TimeSpan.FromHours(12);
-
     public const string Discover = "discover";
     public const string Announce = "announce";
     public const string ClipboardItem = "clipboard.item";
@@ -48,6 +45,9 @@ internal static class PeerProtocol
     public const string SessionReply = "session.reply";
     public const string SecureData = "secure.data";
     public const string Status = "status";
+
+    /// <summary>How long a large file transfer may take before the session is abandoned.</summary>
+    public static readonly TimeSpan TransferTimeout = TimeSpan.FromHours(12);
 
     /// <summary>How long a pairing request waits for the local user to confirm it.</summary>
     public static readonly TimeSpan PairTimeout = TimeSpan.FromMinutes(2);

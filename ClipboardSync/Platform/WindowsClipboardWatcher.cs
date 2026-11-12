@@ -4,9 +4,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
-using PhotinoNetUtils.Extensions;
 using PhotinoNetUtils.Interop;
-using PhotinoNetUtils.Utils;
 
 namespace ClipboardSync.Platform;
 
@@ -27,8 +25,8 @@ internal sealed class WindowsClipboardWatcher : Singleton<WindowsClipboardWatche
     private readonly SemaphoreSlim _clipboardGate = new(1, 1);
     private readonly ManualResetEventSlim _ready = new();
     private IntPtr _hwnd = IntPtr.Zero;
-    private string? _lastImageHash;
     private string? _lastFiles;
+    private string? _lastImageHash;
     private string? _lastText;
     private bool _listening;
 
@@ -754,6 +752,9 @@ internal sealed class WindowsClipboardWatcher : Singleton<WindowsClipboardWatche
     [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern uint DragQueryFile(IntPtr drop, uint fileIndex, StringBuilder? fileName, uint length);
 
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern UIntPtr GlobalSize(IntPtr memory);
+
     [StructLayout(LayoutKind.Sequential)]
     private struct DropFiles
     {
@@ -763,7 +764,4 @@ internal sealed class WindowsClipboardWatcher : Singleton<WindowsClipboardWatche
         public int fNC;
         public int fWide;
     }
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern UIntPtr GlobalSize(IntPtr memory);
 }

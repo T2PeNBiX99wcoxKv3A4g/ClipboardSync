@@ -4,8 +4,6 @@ using ClipboardSync.Messaging;
 using ClipboardSync.Models;
 using ClipboardSync.Security;
 using Microsoft.Data.Sqlite;
-using PhotinoNetUtils.Extensions;
-using PhotinoNetUtils.Utils;
 
 namespace ClipboardSync.Services;
 
@@ -54,9 +52,6 @@ internal sealed class ClipboardStore : Singleton<ClipboardStore>
     private readonly ConcurrentDictionary<string, long> _progress = new(StringComparer.Ordinal);
     private readonly SemaphoreSlim _writeGate = new(1, 1);
 
-    /// <summary>Items at or before this time were cleared and must not come back.</summary>
-    public long ClearAt { get; private set; }
-
     public ClipboardStore()
     {
         Directory.CreateDirectory(Constants.DataDirectory);
@@ -67,6 +62,9 @@ internal sealed class ClipboardStore : Singleton<ClipboardStore>
             Pooling = true
         }.ToString();
     }
+
+    /// <summary>Items at or before this time were cleared and must not come back.</summary>
+    public long ClearAt { get; private set; }
 
     /// <summary>
     ///     Creates the schema, imports an older history.json once, and removes interrupted incoming

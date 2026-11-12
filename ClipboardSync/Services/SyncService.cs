@@ -5,7 +5,6 @@ using ClipboardSync.Models;
 using ClipboardSync.Platform;
 using ClipboardSync.Security;
 using PhotinoNetUtils.Messaging;
-using PhotinoNetUtils.Utils;
 
 namespace ClipboardSync.Services;
 
@@ -25,13 +24,13 @@ internal sealed class SyncService : Singleton<SyncService>
     private readonly PeerServer _server = PeerServer.Instance;
     private readonly SettingsService _settings = SettingsService.Instance;
     private readonly ClipboardStore _store = ClipboardStore.Instance;
-    private long _lastFileAt;
     private long _lastClearBroadcast;
+    private long _lastFileAt;
+
+    private string? _lastFileSignature;
     private long _lastImageAt;
     private long _lastProgressPublish;
     private long _suppressAt;
-
-    private string? _lastFileSignature;
     private string? _suppressText;
 
     public SyncService()
@@ -359,7 +358,7 @@ internal sealed class SyncService : Singleton<SyncService>
     }
 
     private Task SendClearAsync(SecureSession session, CancellationToken token) =>
-        session.SendJsonAsync(new HistoryClearMessage(PeerProtocol.HistoryClear, _store.ClearAt),
+        session.SendJsonAsync(new(PeerProtocol.HistoryClear, _store.ClearAt),
             AppJsonContext.Default.HistoryClearMessage, token);
 
     private async Task<ClipboardAckMessage?> ReceiveAckAsync(SecureSession session, CancellationToken token)
@@ -452,7 +451,7 @@ internal sealed class SyncService : Singleton<SyncService>
                     }
 
                     await session.SendJsonAsync(
-                        new FileBlobChunkMessage(PeerProtocol.FileBlobChunk, record.Id, request.Hash,
+                        new(PeerProtocol.FileBlobChunk, record.Id, request.Hash,
                             request.Offset, Convert.ToBase64String(data)),
                         AppJsonContext.Default.FileBlobChunkMessage, token);
                     break;
@@ -465,7 +464,7 @@ internal sealed class SyncService : Singleton<SyncService>
 
     private static Task SendBlobErrorAsync(SecureSession session, string id, string hash, string error,
         CancellationToken token) =>
-        session.SendJsonAsync(new FileBlobErrorMessage(PeerProtocol.FileBlobError, id, hash, error),
+        session.SendJsonAsync(new(PeerProtocol.FileBlobError, id, hash, error),
             AppJsonContext.Default.FileBlobErrorMessage, token);
 
     private async Task ReceiveItemAsync(SecureSession session, ClipboardItemMessage message, CancellationToken token)
@@ -640,7 +639,7 @@ internal sealed class SyncService : Singleton<SyncService>
             if (entry.Path.Length == 0 || !seen.Add(entry.Path) ||
                 ClipboardFiles.Resolve(Constants.DataDirectory, entry.Path) is null ||
                 entry.Size < 0 ||
-                (!entry.Directory && (entry.Hash.Length != 64 || !entry.Hash.All(Uri.IsHexDigit))))
+                !entry.Directory && (entry.Hash.Length != 64 || !entry.Hash.All(Uri.IsHexDigit)))
                 throw new PeerSecurityException("The file item contains an unsafe path or hash.");
 
             total += entry.Size;
@@ -724,7 +723,7 @@ internal sealed class SyncService : Singleton<SyncService>
                 {
                     var length = (int)Math.Min(PeerProtocol.FileChunkBytes, entry.Size - offset);
                     await session.SendJsonAsync(
-                        new FileBlobRequestMessage(PeerProtocol.FileBlobRequest, message.Id, entry.Hash, offset,
+                        new(PeerProtocol.FileBlobRequest, message.Id, entry.Hash, offset,
                             length), AppJsonContext.Default.FileBlobRequestMessage, token);
 
                     var frame = await session.ReceiveAsync(token)
@@ -1045,7 +1044,7 @@ internal sealed class SyncService : Singleton<SyncService>
             {
                 using var cts = new CancellationTokenSource(PeerProtocol.ConnectionTimeout);
                 using var session = await PeerClient.ConnectAsync(peer, cts.Token);
-                await session.SendJsonAsync(new HistoryClearMessage(PeerProtocol.HistoryClear, at),
+                await session.SendJsonAsync(new(PeerProtocol.HistoryClear, at),
                     AppJsonContext.Default.HistoryClearMessage, cts.Token);
             }
             catch (Exception ex)

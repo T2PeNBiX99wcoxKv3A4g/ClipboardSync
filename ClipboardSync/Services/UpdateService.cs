@@ -1,10 +1,7 @@
-using System.Net.Http;
 using ClipboardSync.Messaging;
-using PhotinoNetUtils.Extensions;
 using PhotinoNetUtils.Localization;
 using PhotinoNetUtils.Messaging;
 using PhotinoNetUtils.Platform;
-using PhotinoNetUtils.Utils;
 
 namespace ClipboardSync.Services;
 

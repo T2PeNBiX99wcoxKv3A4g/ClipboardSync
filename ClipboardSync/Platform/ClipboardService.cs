@@ -1,5 +1,3 @@
-using PhotinoNetUtils.Utils;
-
 namespace ClipboardSync.Platform;
 
 /// <summary>Picks the platform clipboard implementation and exposes it as one service.</summary>

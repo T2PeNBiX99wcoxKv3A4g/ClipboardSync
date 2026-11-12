@@ -1,3 +1,5 @@
+global using PhotinoNetUtils.Extensions;
+global using PhotinoNetUtils.Utils;
 using JetBrains.Annotations;
 using PhotinoNetUtils;
 using Serilog;

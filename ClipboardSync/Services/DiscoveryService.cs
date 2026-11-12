@@ -6,8 +6,6 @@ using System.Text.Json;
 using ClipboardSync.Messaging;
 using ClipboardSync.Models;
 using ClipboardSync.Security;
-using PhotinoNetUtils.Extensions;
-using PhotinoNetUtils.Utils;
 
 namespace ClipboardSync.Services;
 

@@ -1,8 +1,6 @@
 using ClipboardSync.Messaging;
-using PhotinoNetUtils.Extensions;
 using PhotinoNetUtils.Messaging;
 using PhotinoNetUtils.Platform;
-using PhotinoNetUtils.Utils;
 
 namespace ClipboardSync.Services;
 
