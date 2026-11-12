@@ -1,19 +1,8 @@
 import {Native} from "@photino-net-utils/bridge";
+import type {AppSettingsGenerated} from "./settings.generated";
 
-/** Mirrors `ClipboardSync.Models.AppSettings`; the shape crosses the bridge unchanged. */
-export interface Settings {
-    deviceName: string;
-    language: string;
-    startHidden: boolean;
-    syncEnabled: boolean;
-    syncText: boolean;
-    syncImages: boolean;
-    syncFiles: boolean;
-    historyLimit: number;
-    maxImageMb: number;
-    maxFileMb: number;
-    blobDirectory: string;
-}
+/** Mirrors `ClipboardSync.Models.AppSettings`; generated from the C# model. */
+export type Settings = AppSettingsGenerated;
 
 /** Used in a browser preview, where there is no settings file to read. */
 export const PREVIEW_SETTINGS: Settings = {

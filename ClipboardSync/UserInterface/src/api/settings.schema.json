@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AppSettings",
+  "type": "object",
+  "properties": {
+    "deviceName": {
+      "type": "string",
+      "description": "The name the other devices see."
+    },
+    "language": {
+      "type": "string",
+      "description": "Interface and backend language: system, en, ja, zh-CN or zh-TW."
+    },
+    "startHidden": {
+      "type": "boolean",
+      "description": "Start with the window hidden in the tray."
+    },
+    "syncEnabled": {
+      "type": "boolean",
+      "description": "Turn syncing on or off."
+    },
+    "syncText": {
+      "type": "boolean",
+      "description": "Share copied text and links."
+    },
+    "syncImages": {
+      "type": "boolean",
+      "description": "Share copied images."
+    },
+    "syncFiles": {
+      "type": "boolean",
+      "description": "Share copied files and folders."
+    },
+    "historyLimit": {
+      "type": "integer",
+      "description": "How many items the local history keeps.",
+      "minimum": 10,
+      "maximum": 5000
+    },
+    "maxImageMb": {
+      "type": "integer",
+      "description": "Images larger than this are skipped, in megabytes.",
+      "minimum": 1,
+      "maximum": 32
+    },
+    "maxFileMb": {
+      "type": "integer",
+      "description": "One copied selection larger than this is skipped, in megabytes.",
+      "minimum": 1,
+      "maximum": 4096
+    },
+    "blobDirectory": {
+      "type": "string",
+      "description": "Where file blobs live; empty uses the app data folder."
+    }
+  },
+  "additionalProperties": false
+}

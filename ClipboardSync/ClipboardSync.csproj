@@ -48,9 +48,17 @@
         <AdditionalFiles Include="Resources\i18n\*.jsonc" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Analyzer Include="Libs\PhotinoNETUtils.Generators.dll" />
-    </ItemGroup>
+    <PropertyGroup>
+        <!-- The generator is native AOT: one executable, no .dll/.deps.json/.runtimeconfig.json. -->
+        <SettingsCodeGenPath>$(MSBuildProjectDirectory)\Libs\CodeGen\PhotinoNETUtils.CodeGen</SettingsCodeGenPath>
+        <SettingsCodeGenPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">$(SettingsCodeGenPath).exe</SettingsCodeGenPath>
+    </PropertyGroup>
+
+    <Target Name="GenerateSettingsTypes"
+            BeforeTargets="BeforeBuild"
+            Condition="Exists('$(SettingsCodeGenPath)')">
+        <Exec Command="&quot;$(SettingsCodeGenPath)&quot; --model &quot;$(MSBuildProjectDirectory)\Models\AppSettings.cs&quot; --out &quot;$(MSBuildProjectDirectory)\UserInterface\src\api\settings.generated.ts&quot; --schema &quot;$(MSBuildProjectDirectory)\UserInterface\src\api\settings.schema.json&quot; --i18n &quot;$(MSBuildProjectDirectory)\Resources\i18n\en.jsonc&quot; --i18n-out &quot;$(MSBuildProjectDirectory)\UserInterface\src\api\i18n.generated.ts&quot;"/>
+    </Target>
 
     <ItemGroup>
         <Reference Include="PhotinoNETUtils">
