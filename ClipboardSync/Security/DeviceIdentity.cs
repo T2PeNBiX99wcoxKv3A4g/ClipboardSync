@@ -8,12 +8,13 @@ namespace ClipboardSync.Security;
 ///     public key when they pair, and every handshake is signed with the private key. Both files live
 ///     beside the settings so replacing the settings never exposes the key.
 /// </summary>
-internal sealed class DeviceIdentity : Singleton<DeviceIdentity>
+[Singleton]
+internal partial class DeviceIdentity
 {
     private const string KeyFileName = "device.key";
     private const string IdFileName = "device.id";
 
-    public DeviceIdentity()
+    private DeviceIdentity()
     {
         var directory = Constants.SettingsDirectory;
         var keyPath = Path.Combine(directory, KeyFileName);

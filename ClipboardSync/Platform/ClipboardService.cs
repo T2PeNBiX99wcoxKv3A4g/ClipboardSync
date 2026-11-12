@@ -1,11 +1,12 @@
 namespace ClipboardSync.Platform;
 
 /// <summary>Picks the platform clipboard implementation and exposes it as one service.</summary>
-internal sealed class ClipboardService : Singleton<ClipboardService>
+[Singleton]
+internal partial class ClipboardService
 {
     private readonly IClipboardWatcher _watcher;
 
-    public ClipboardService()
+    private ClipboardService()
     {
         if (OperatingSystem.IsWindows())
             _watcher = WindowsClipboardWatcher.Instance;

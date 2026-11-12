@@ -8,11 +8,12 @@ using PhotinoNetUtils.Messaging;
 namespace ClipboardSync.Services;
 
 /// <summary>Loads and stores the settings file. The defaults apply until the user saves something.</summary>
-internal sealed class SettingsService : Singleton<SettingsService>
+[Singleton]
+internal partial class SettingsService
 {
     private static readonly string FilePath = Path.Combine(Constants.SettingsDirectory, "settings.json");
 
-    public SettingsService() => NativeBridge.MessageReceived += HandleMessageAsync;
+    private SettingsService() => NativeBridge.MessageReceived += HandleMessageAsync;
 
     public AppSettings Current { get; private set; } = AppSettings.Default;
 

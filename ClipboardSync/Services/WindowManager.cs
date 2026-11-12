@@ -11,7 +11,8 @@ namespace ClipboardSync.Services;
 ///     Owns the Photino window and the message loop: creation, hiding to the tray and bringing it
 ///     back.
 /// </summary>
-internal sealed class WindowManager : Singleton<WindowManager>
+[Singleton]
+internal partial class WindowManager
 {
     /// <summary>
     ///     Per-app web view data folder. On Windows, Photino defaults to a WebView2 folder shared by
@@ -33,7 +34,7 @@ internal sealed class WindowManager : Singleton<WindowManager>
 
     private WebViewRecovery? _webViewRecovery;
 
-    public WindowManager() => NativeBridge.MessageReceived += HandleMessageAsync;
+    private WindowManager() => NativeBridge.MessageReceived += HandleMessageAsync;
 
     /// <summary>
     ///     Whether the interface has to paint the window's rounded corners, because the platform leaves
@@ -341,14 +342,14 @@ internal sealed class WindowManager : Singleton<WindowManager>
 
         Try.Run(() =>
         {
-            if (File.Exists(marker) && File.ReadAllText(marker) != AppInfoService.BuildToken)
+            if (File.Exists(marker) && File.ReadAllText(marker) != AppBuild.Token)
             {
                 Log.Information("This is a different build; clearing the web view's cache");
                 if (Directory.Exists(WebViewDataPath))
                     Directory.Delete(WebViewDataPath, true);
             }
 
-            File.WriteAllText(marker, AppInfoService.BuildToken);
+            File.WriteAllText(marker, AppBuild.Token);
         }).OnFailure(ex => Log.Warning(ex, "Failed to prepare the web view's data folder"));
     }
 }

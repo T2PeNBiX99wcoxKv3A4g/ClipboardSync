@@ -14,7 +14,8 @@ namespace ClipboardSync.Platform;
 ///     retried a couple of times and then skipped.
 /// </summary>
 [SupportedOSPlatform("windows")]
-internal sealed class WindowsClipboardWatcher : Singleton<WindowsClipboardWatcher>, IClipboardWatcher
+[Singleton]
+internal partial class WindowsClipboardWatcher : IClipboardWatcher
 {
     private const uint WmDestroy = 0x0002;
     private const uint GmemMoveable = 0x0002;

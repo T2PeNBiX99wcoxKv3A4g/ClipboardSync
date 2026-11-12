@@ -6,7 +6,8 @@ namespace ClipboardSync.Services;
 ///     Tracks which paired devices answer right now. A check performs a real authenticated handshake,
 ///     so a stale address that now belongs to another device counts as offline.
 /// </summary>
-internal sealed class PresenceService : Singleton<PresenceService>
+[Singleton]
+internal partial class PresenceService
 {
     private static readonly TimeSpan Interval = TimeSpan.FromSeconds(15);
     private static readonly TimeSpan ProbeTimeout = TimeSpan.FromSeconds(2.5);

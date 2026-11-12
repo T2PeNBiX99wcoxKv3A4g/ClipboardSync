@@ -49,6 +49,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Analyzer Include="Libs\PhotinoNETUtils.Generators.dll" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Reference Include="PhotinoNETUtils">
             <HintPath>Libs\PhotinoNETUtils.dll</HintPath>
             <Private>true</Private>

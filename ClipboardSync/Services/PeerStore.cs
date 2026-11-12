@@ -9,7 +9,8 @@ namespace ClipboardSync.Services;
 ///     after its pairing handshake completes, and its pinned public key is what every later session
 ///     is checked against. Reads use the in-memory list; writes serialize and persist asynchronously.
 /// </summary>
-internal sealed class PeerStore : Singleton<PeerStore>
+[Singleton]
+internal partial class PeerStore
 {
     private static readonly string FilePath = Path.Combine(Constants.SettingsDirectory, "peers.json");
 

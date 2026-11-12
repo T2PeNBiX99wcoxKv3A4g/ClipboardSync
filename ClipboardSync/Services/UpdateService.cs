@@ -10,7 +10,8 @@ namespace ClipboardSync.Services;
 ///     release workflow publishes. It is a plain text download, so checking never touches the GitHub
 ///     API rate limit.
 /// </summary>
-internal sealed class UpdateService : Singleton<UpdateService>
+[Singleton]
+internal partial class UpdateService
 {
     /// <summary>Written by the release workflow and updated with every tagged build.</summary>
     private const string VersionUrl =
@@ -31,7 +32,7 @@ internal sealed class UpdateService : Singleton<UpdateService>
     private UpdateCheckPayload? _cached;
     private DateTime _cachedAt;
 
-    public UpdateService() => NativeBridge.MessageReceived += HandleMessageAsync;
+    private UpdateService() => NativeBridge.MessageReceived += HandleMessageAsync;
 
     private Task<NativeResponse?> HandleMessageAsync(NativeContext context) => context.Request.Type switch
     {
@@ -68,7 +69,7 @@ internal sealed class UpdateService : Singleton<UpdateService>
             if (published.Value is not { Length: > 0 } latest)
                 return null;
 
-            var current = AppInfoService.Version;
+            var current = AppBuild.Version;
             _cachedAt = DateTime.UtcNow;
             _cached = new(current, latest, IsNewer(latest, current));
 

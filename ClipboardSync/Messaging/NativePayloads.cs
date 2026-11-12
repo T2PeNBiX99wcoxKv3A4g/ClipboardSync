@@ -6,9 +6,6 @@ namespace ClipboardSync.Messaging;
 /// <summary>Body for a bare <c>{ "ok": true }</c> acknowledgement.</summary>
 internal sealed record OkPayload(bool Ok = true);
 
-/// <summary>Body for <c>app.info</c>: the build, the platform, and where the app writes its logs.</summary>
-internal sealed record AppInfoPayload(string Version, string Platform, string LogDirectory, bool Rounded, bool Debug);
-
 /// <summary>Body for <c>settings.get</c> and for the <c>settings.changed</c> event.</summary>
 internal sealed record SettingsPayload(
     string DeviceName,
@@ -23,20 +20,8 @@ internal sealed record SettingsPayload(
     int MaxFileMb,
     string BlobDirectory);
 
-/// <summary>Payload for <c>app.setStartup</c>: whether the startup entry should exist.</summary>
-internal sealed record StartupRequest(bool Enabled);
-
 /// <summary>Body for <c>app.updateStatus</c> and <c>app.checkUpdate</c>.</summary>
 internal sealed record UpdateCheckPayload(string Current, string Latest, bool Available);
-
-/// <summary>Body for <c>app.startup</c>; keep this near the other app responses.</summary>
-internal sealed record StartupPayload(bool Supported, bool Enabled);
-
-/// <summary>Body for the <c>window.state</c> event.</summary>
-internal sealed record WindowStatePayload(bool Maximized);
-
-/// <summary>Payload for <c>window.resize</c>: the edge being dragged.</summary>
-internal sealed record WindowResizeRequest(string Direction);
 
 /// <summary>Payload for <c>app.navigate</c>: the page the tray asked the interface to open.</summary>
 internal sealed record AppNavigatePayload(string Page);

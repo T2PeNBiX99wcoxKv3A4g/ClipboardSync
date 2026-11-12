@@ -9,13 +9,14 @@ namespace ClipboardSync.Services;
 ///     Runs the pairing flow in both directions. The initiator shows the code the peer's challenge
 ///     produced; the target raises a prompt and only pins the peer after the local user accepts.
 /// </summary>
-internal sealed class PairingService : Singleton<PairingService>
+[Singleton]
+internal partial class PairingService
 {
     private readonly Lock _incomingLock = new();
     private readonly SemaphoreSlim _outgoing = new(1, 1);
     private IncomingPairing? _incoming;
 
-    public PairingService() => NativeBridge.MessageReceived += HandleMessageAsync;
+    private PairingService() => NativeBridge.MessageReceived += HandleMessageAsync;
 
     private Task<NativeResponse?> HandleMessageAsync(NativeContext context) => context.Request.Type switch
     {

@@ -16,9 +16,9 @@ internal static class BlobStore
     private static int _writers;
     private static bool _migrating;
 
-    public static string Root { get; private set; } = DefaultDirectory;
-
     public static string DefaultDirectory { get; } = Path.Combine(Constants.DataDirectory, "clipboard", "blobs");
+
+    public static string Root { get; private set; } = DefaultDirectory;
 
     private static string PartialRoot => Path.Combine(Root, ".partial");
 

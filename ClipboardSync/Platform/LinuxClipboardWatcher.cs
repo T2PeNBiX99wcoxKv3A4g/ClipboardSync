@@ -11,7 +11,8 @@ namespace ClipboardSync.Platform;
 ///     signal. None of the paths blocks the UI thread. Writing uses the matching command-line tool.
 /// </summary>
 [SupportedOSPlatform("linux")]
-internal sealed class LinuxClipboardWatcher : Singleton<LinuxClipboardWatcher>, IClipboardWatcher
+[Singleton]
+internal partial class LinuxClipboardWatcher : IClipboardWatcher
 {
     private const byte Separator = 0x01;
     private const int MaxValueLength = 1024 * 1024;

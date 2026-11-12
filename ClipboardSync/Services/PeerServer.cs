@@ -10,7 +10,8 @@ namespace ClipboardSync.Services;
 ///     answers TCP discovery probes. A session hands its stream to <see cref="SyncService" /> for the
 ///     lifetime of the connection.
 /// </summary>
-internal sealed class PeerServer : Singleton<PeerServer>
+[Singleton]
+internal partial class PeerServer
 {
     private CancellationTokenSource? _cancellation;
     private TcpListener? _listener;

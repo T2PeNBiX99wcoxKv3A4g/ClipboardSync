@@ -13,7 +13,8 @@ namespace ClipboardSync.Services;
 ///     Finds ClipboardSync devices on the local network over UDP broadcast. Discovery is only a
 ///     convenience: the pairing handshake still pins the public key before anything is trusted.
 /// </summary>
-internal sealed class DiscoveryService : Singleton<DiscoveryService>
+[Singleton]
+internal partial class DiscoveryService
 {
     private static readonly TimeSpan QueryInterval = TimeSpan.FromMilliseconds(1_500);
     private static readonly TimeSpan FreshFor = TimeSpan.FromSeconds(8);

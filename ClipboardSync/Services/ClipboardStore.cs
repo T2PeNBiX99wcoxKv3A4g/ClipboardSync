@@ -13,7 +13,8 @@ namespace ClipboardSync.Services;
 ///     the write methods are serialized. Delivery state and file manifests are stored as JSON columns;
 ///     the rows themselves remain easy to inspect with any SQLite client.
 /// </summary>
-internal sealed class ClipboardStore : Singleton<ClipboardStore>
+[Singleton]
+internal partial class ClipboardStore
 {
     private const string CreateSchema =
         """
@@ -52,7 +53,7 @@ internal sealed class ClipboardStore : Singleton<ClipboardStore>
     private readonly ConcurrentDictionary<string, long> _progress = new(StringComparer.Ordinal);
     private readonly SemaphoreSlim _writeGate = new(1, 1);
 
-    public ClipboardStore()
+    private ClipboardStore()
     {
         Directory.CreateDirectory(Constants.DataDirectory);
         _connectionString = new SqliteConnectionStringBuilder

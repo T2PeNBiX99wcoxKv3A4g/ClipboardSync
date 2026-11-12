@@ -13,7 +13,8 @@ namespace ClipboardSync.Services;
 ///     items to paired devices over encrypted sessions, and accepts items from them. The board is
 ///     grouped by origin device, so every device can show the same list.
 /// </summary>
-internal sealed class SyncService : Singleton<SyncService>
+[Singleton]
+internal partial class SyncService
 {
     private readonly ClipboardService _clipboard = ClipboardService.Instance;
     private readonly DiscoveryService _discovery = DiscoveryService.Instance;
@@ -33,7 +34,7 @@ internal sealed class SyncService : Singleton<SyncService>
     private long _suppressAt;
     private string? _suppressText;
 
-    public SyncService()
+    private SyncService()
     {
         NativeBridge.MessageReceived += HandleMessageAsync;
         _clipboard.TextCopied += OnTextCopied;

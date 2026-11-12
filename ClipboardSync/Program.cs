@@ -77,7 +77,7 @@ internal static class Program
 #if !DEBUG
             // Kestrel binds to an OS-assigned port, so several Photino apps can run side by side.
             using var staticServer = StaticServer.Start(Constants.DataDirectory);
-            var appUrl = $"{staticServer.BaseUrl}/index.html?v={AppInfoService.BuildToken}";
+            var appUrl = $"{staticServer.BaseUrl}/index.html?v={AppBuild.Token}";
 #else
             // A Debug build always talks to the Vite dev server, which is where hot reload lives.
             const string appUrl = "http://127.0.0.1:3300";
@@ -85,10 +85,16 @@ internal static class Program
 
             Log.Information("Serving React app at {AppUrl}", appUrl);
 
+            using var appInfo = new AppInfoService(new AppInfoOptions(
+                typeof(Program).Assembly, Constants.LogDirectory, AppBuild.Debug,
+                () => WindowManager.Instance.DrawsWindowCorners));
+            using var startup = new StartupService(new StartupRegistration(
+                typeof(Program).Assembly, Constants.Name, "edit-paste",
+                "Clipboard sharing across your devices"));
+
             // Touching each singleton constructs it, which is what registers its message handlers.
-            _ = AppInfoService.Instance;
+            _ = AppLogsService.Instance;
             _ = UpdateService.Instance;
-            _ = StartupService.Instance;
 
             var manager = WindowManager.Instance;
             manager.AppUrl = appUrl;
