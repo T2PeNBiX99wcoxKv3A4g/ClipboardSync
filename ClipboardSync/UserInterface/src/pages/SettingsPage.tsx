@@ -1,8 +1,17 @@
 import {useEffect, useRef, useState} from "react";
 import styled, {css, keyframes} from "styled-components";
 import {useTranslation} from "@photino-net-utils/bridge";
-import {type AppInfo, checkForUpdates, getUpdateStatus, openLogsFolder, openReleasePage, setStartup, startupStatus, type UpdateCheck} from "../api/system";
-import {getSettings, type Settings, saveSettings} from "../api/settings";
+import {
+    type AppInfo,
+    checkForUpdates,
+    getUpdateStatus,
+    openLogsFolder,
+    openReleasePage,
+    setStartup,
+    startupStatus,
+    type UpdateCheck
+} from "../api/system";
+import {getSettings, saveSettings, type Settings} from "../api/settings";
 import {clearHistory} from "../api/peer";
 import {Toggle} from "../components/Toggle";
 import {Dropdown} from "../components/Dropdown";
@@ -240,232 +249,241 @@ export function SettingsPage({info, focusSection, onSectionFocused}: SettingsPag
     return (
         <Page ref={pageRef}>
             <Main>
-                <Section id="settings-general" ref={(node) => { sectionRefs.current.general = node; }}>
-                <SectionHead>
-                    <h2>{t("General")}</h2>
-                    <p>{t("How ClipboardSync looks and starts.")}</p>
-                </SectionHead>
-                <Card>
-                    <Field>
-                        <FieldText>
-                            <label htmlFor="device-name">{t("Device name")}</label>
-                            <p>{t("The name the other devices see.")}</p>
-                        </FieldText>
-                        <TextInput
-                            id="device-name"
-                            maxLength={48}
-                            onChange={(event) => update("deviceName", event.target.value)}
-                            value={settings.deviceName}
-                        />
-                    </Field>
-
-                    <Field>
-                        <FieldText>
-                            <label htmlFor="language">{t("Language")}</label>
-                            <p>{t("Applies to the interface and the tray menu.")}</p>
-                        </FieldText>
-                        <Dropdown
-                            label={t("Language")}
-                            onChange={changeLanguage}
-                            options={languageOptions}
-                            value={settings.language}
-                        />
-                    </Field>
-
-                    <Field>
-                        <FieldText>
-                            <label>{t("Start with the window hidden")}</label>
-                            <p>{t("Keep ClipboardSync in the tray when it launches.")}</p>
-                        </FieldText>
-                        <Toggle
-                            checked={settings.startHidden}
-                            label={t("Start with the window hidden")}
-                            onChange={(value) => update("startHidden", value)}
-                        />
-                    </Field>
-
-                    <Field>
-                        <FieldText>
-                            <label>{t("Launch at startup")}</label>
-                            <p>
-                                {startup?.supported === false
-                                    ? t("This platform has no per-user startup entry.")
-                                    : t("Start ClipboardSync when you sign in.")}
-                            </p>
-                        </FieldText>
-                        <Toggle
-                            checked={startup?.enabled ?? false}
-                            disabled={!startup?.supported}
-                            label={t("Launch at startup")}
-                            onChange={toggleStartup}
-                        />
-                    </Field>
-                </Card>
-            </Section>
-
-            <Section id="settings-sync" ref={(node) => { sectionRefs.current.sync = node; }}>
-                <SectionHead>
-                    <h2>{t("Sync")}</h2>
-                    <p>{t("What this device shares with its paired devices.")}</p>
-                </SectionHead>
-                <Card>
-                    <Field>
-                        <FieldText>
-                            <label>{t("Enable syncing")}</label>
-                            <p>{t("Turn off to stay paired but stop sending and receiving.")}</p>
-                        </FieldText>
-                        <Toggle
-                            checked={settings.syncEnabled}
-                            label={t("Enable syncing")}
-                            onChange={(value) => update("syncEnabled", value)}
-                        />
-                    </Field>
-                    <Field>
-                        <FieldText>
-                            <label>{t("Text and links")}</label>
-                            <p>{t("Copying text or a URL sends it to the other devices.")}</p>
-                        </FieldText>
-                        <Toggle
-                            checked={settings.syncText}
-                            disabled={!settings.syncEnabled}
-                            label={t("Text and links")}
-                            onChange={(value) => update("syncText", value)}
-                        />
-                    </Field>
-                    <Field>
-                        <FieldText>
-                            <label>{t("Images")}</label>
-                            <p>{t("Copying an image sends it to the other devices.")}</p>
-                        </FieldText>
-                        <Toggle
-                            checked={settings.syncImages}
-                            disabled={!settings.syncEnabled}
-                            label={t("Images")}
-                            onChange={(value) => update("syncImages", value)}
-                        />
-                    </Field>
-                    <Field>
-                        <FieldText>
-                            <label>{t("Files and folders")}</label>
-                            <p>{t("Copying files or folders sends them to the other devices.")}</p>
-                        </FieldText>
-                        <Toggle
-                            checked={settings.syncFiles}
-                            disabled={!settings.syncEnabled}
-                            label={t("Files and folders")}
-                            onChange={(value) => update("syncFiles", value)}
-                        />
-                    </Field>
-                    <Field>
-                        <FieldText>
-                            <label htmlFor="image-limit">{t("Image size limit")}</label>
-                            <p>{t("Images larger than this are skipped.")}</p>
-                        </FieldText>
-                        <SizeRow>
-                            <NumberInput
-                                id="image-limit"
-                                max={32}
-                                min={1}
-                                onChange={(event) => update("maxImageMb", Number(event.target.value) || 1)}
-                                type="number"
-                                value={settings.maxImageMb}
+                <Section id="settings-general" ref={(node) => {
+                    sectionRefs.current.general = node;
+                }}>
+                    <SectionHead>
+                        <h2>{t("General")}</h2>
+                        <p>{t("How ClipboardSync looks and starts.")}</p>
+                    </SectionHead>
+                    <Card>
+                        <Field>
+                            <FieldText>
+                                <label htmlFor="device-name">{t("Device name")}</label>
+                                <p>{t("The name the other devices see.")}</p>
+                            </FieldText>
+                            <TextInput
+                                id="device-name"
+                                maxLength={48}
+                                onChange={(event) => update("deviceName", event.target.value)}
+                                value={settings.deviceName}
                             />
-                            <Unit>MB</Unit>
-                        </SizeRow>
-                    </Field>
-                    <Field>
-                        <FieldText>
-                            <label htmlFor="file-limit">{t("File size limit")}</label>
-                            <p>{t("One copied selection larger than this is skipped.")}</p>
-                        </FieldText>
-                        <SizeRow>
-                            <NumberInput
-                                id="file-limit"
-                                max={4096}
-                                min={1}
-                                onChange={(event) => update("maxFileMb", Number(event.target.value) || 1)}
-                                type="number"
-                                value={settings.maxFileMb}
-                            />
-                            <Unit>MB</Unit>
-                        </SizeRow>
-                    </Field>
-                    <Field>
-                        <FieldText>
-                            <label htmlFor="blob-directory">{t("Blob storage folder")}</label>
-                            <p>{t("Leave empty to use the app data folder. Changing it moves existing blobs.")}</p>
-                        </FieldText>
-                        <PathInput
-                            id="blob-directory"
-                            onChange={(event) => update("blobDirectory", event.target.value)}
-                            placeholder={t("Default")}
-                            value={settings.blobDirectory}
-                        />
-                    </Field>
-                </Card>
-                <Note>{t("Images are shared as PNG; files and folders are copied recursively.")}</Note>
-            </Section>
+                        </Field>
 
-            <Section id="settings-history" ref={(node) => { sectionRefs.current.history = node; }}>
-                <SectionHead>
-                    <h2>{t("History")}</h2>
-                    <p>{t("The local record of clipboard items.")}</p>
-                </SectionHead>
-                <Card>
-                    <Field>
-                        <FieldText>
-                            <label>{t("Clear history")}</label>
-                            <p>{t("This only clears history; the system clipboard is not changed.")}</p>
-                        </FieldText>
-                        {!confirmClear ? (
-                            <GhostButton disabled={clearing} onClick={() => setConfirmClear(true)} type="button">
-                                {t("Clear history")}
-                            </GhostButton>
-                        ) : (
-                            <Actions>
-                                <GhostButton disabled={clearing} onClick={() => setConfirmClear(false)} type="button">
-                                    {t("Cancel")}
+                        <Field>
+                            <FieldText>
+                                <label htmlFor="language">{t("Language")}</label>
+                                <p>{t("Applies to the interface and the tray menu.")}</p>
+                            </FieldText>
+                            <Dropdown
+                                label={t("Language")}
+                                onChange={changeLanguage}
+                                options={languageOptions}
+                                value={settings.language}
+                            />
+                        </Field>
+
+                        <Field>
+                            <FieldText>
+                                <label>{t("Start with the window hidden")}</label>
+                                <p>{t("Keep ClipboardSync in the tray when it launches.")}</p>
+                            </FieldText>
+                            <Toggle
+                                checked={settings.startHidden}
+                                label={t("Start with the window hidden")}
+                                onChange={(value) => update("startHidden", value)}
+                            />
+                        </Field>
+
+                        <Field>
+                            <FieldText>
+                                <label>{t("Launch at startup")}</label>
+                                <p>
+                                    {startup?.supported === false
+                                        ? t("This platform has no per-user startup entry.")
+                                        : t("Start ClipboardSync when you sign in.")}
+                                </p>
+                            </FieldText>
+                            <Toggle
+                                checked={startup?.enabled ?? false}
+                                disabled={!startup?.supported}
+                                label={t("Launch at startup")}
+                                onChange={toggleStartup}
+                            />
+                        </Field>
+                    </Card>
+                </Section>
+
+                <Section id="settings-sync" ref={(node) => {
+                    sectionRefs.current.sync = node;
+                }}>
+                    <SectionHead>
+                        <h2>{t("Sync")}</h2>
+                        <p>{t("What this device shares with its paired devices.")}</p>
+                    </SectionHead>
+                    <Card>
+                        <Field>
+                            <FieldText>
+                                <label>{t("Enable syncing")}</label>
+                                <p>{t("Turn off to stay paired but stop sending and receiving.")}</p>
+                            </FieldText>
+                            <Toggle
+                                checked={settings.syncEnabled}
+                                label={t("Enable syncing")}
+                                onChange={(value) => update("syncEnabled", value)}
+                            />
+                        </Field>
+                        <Field>
+                            <FieldText>
+                                <label>{t("Text and links")}</label>
+                                <p>{t("Copying text or a URL sends it to the other devices.")}</p>
+                            </FieldText>
+                            <Toggle
+                                checked={settings.syncText}
+                                disabled={!settings.syncEnabled}
+                                label={t("Text and links")}
+                                onChange={(value) => update("syncText", value)}
+                            />
+                        </Field>
+                        <Field>
+                            <FieldText>
+                                <label>{t("Images")}</label>
+                                <p>{t("Copying an image sends it to the other devices.")}</p>
+                            </FieldText>
+                            <Toggle
+                                checked={settings.syncImages}
+                                disabled={!settings.syncEnabled}
+                                label={t("Images")}
+                                onChange={(value) => update("syncImages", value)}
+                            />
+                        </Field>
+                        <Field>
+                            <FieldText>
+                                <label>{t("Files and folders")}</label>
+                                <p>{t("Copying files or folders sends them to the other devices.")}</p>
+                            </FieldText>
+                            <Toggle
+                                checked={settings.syncFiles}
+                                disabled={!settings.syncEnabled}
+                                label={t("Files and folders")}
+                                onChange={(value) => update("syncFiles", value)}
+                            />
+                        </Field>
+                        <Field>
+                            <FieldText>
+                                <label htmlFor="image-limit">{t("Image size limit")}</label>
+                                <p>{t("Images larger than this are skipped.")}</p>
+                            </FieldText>
+                            <SizeRow>
+                                <NumberInput
+                                    id="image-limit"
+                                    max={32}
+                                    min={1}
+                                    onChange={(event) => update("maxImageMb", Number(event.target.value) || 1)}
+                                    type="number"
+                                    value={settings.maxImageMb}
+                                />
+                                <Unit>MB</Unit>
+                            </SizeRow>
+                        </Field>
+                        <Field>
+                            <FieldText>
+                                <label htmlFor="file-limit">{t("File size limit")}</label>
+                                <p>{t("One copied selection larger than this is skipped.")}</p>
+                            </FieldText>
+                            <SizeRow>
+                                <NumberInput
+                                    id="file-limit"
+                                    max={4096}
+                                    min={1}
+                                    onChange={(event) => update("maxFileMb", Number(event.target.value) || 1)}
+                                    type="number"
+                                    value={settings.maxFileMb}
+                                />
+                                <Unit>MB</Unit>
+                            </SizeRow>
+                        </Field>
+                        <Field>
+                            <FieldText>
+                                <label htmlFor="blob-directory">{t("Blob storage folder")}</label>
+                                <p>{t("Leave empty to use the app data folder. Changing it moves existing blobs.")}</p>
+                            </FieldText>
+                            <PathInput
+                                id="blob-directory"
+                                onChange={(event) => update("blobDirectory", event.target.value)}
+                                placeholder={t("Default")}
+                                value={settings.blobDirectory}
+                            />
+                        </Field>
+                    </Card>
+                    <Note>{t("Images are shared as PNG; files and folders are copied recursively.")}</Note>
+                </Section>
+
+                <Section id="settings-history" ref={(node) => {
+                    sectionRefs.current.history = node;
+                }}>
+                    <SectionHead>
+                        <h2>{t("History")}</h2>
+                        <p>{t("The local record of clipboard items.")}</p>
+                    </SectionHead>
+                    <Card>
+                        <Field>
+                            <FieldText>
+                                <label>{t("Clear history")}</label>
+                                <p>{t("This only clears history; the system clipboard is not changed.")}</p>
+                            </FieldText>
+                            {!confirmClear ? (
+                                <GhostButton disabled={clearing} onClick={() => setConfirmClear(true)} type="button">
+                                    {t("Clear history")}
                                 </GhostButton>
-                                <DangerButton disabled={clearing} onClick={clear} type="button">
-                                    {clearing ? t("Clearing…") : t("Clear")}
-                                </DangerButton>
-                            </Actions>
+                            ) : (
+                                <Actions>
+                                    <GhostButton disabled={clearing} onClick={() => setConfirmClear(false)}
+                                                 type="button">
+                                        {t("Cancel")}
+                                    </GhostButton>
+                                    <DangerButton disabled={clearing} onClick={clear} type="button">
+                                        {clearing ? t("Clearing…") : t("Clear")}
+                                    </DangerButton>
+                                </Actions>
+                            )}
+                        </Field>
+                        {confirmClear && (
+                            <ClearConfirm>
+                                <ClearText>
+                                    <strong>{t("Clear history on all paired devices?")}</strong>
+                                </ClearText>
+                            </ClearConfirm>
                         )}
-                    </Field>
-                    {confirmClear && (
-                        <ClearConfirm>
-                            <ClearText>
-                                <strong>{t("Clear history on all paired devices?")}</strong>
-                            </ClearText>
-                        </ClearConfirm>
-                    )}
-                    <Field>
-                        <FieldText>
-                            <label htmlFor="history-limit">{t("Items to keep")}</label>
-                            <p>{t("Older items are removed once the limit is reached.")}</p>
-                        </FieldText>
-                        <NumberInput
-                            id="history-limit"
-                            max={5000}
-                            min={10}
-                            onChange={(event) => update("historyLimit", Number(event.target.value) || 10)}
-                            type="number"
-                            value={settings.historyLimit}
-                        />
-                    </Field>
-                </Card>
-            </Section>
+                        <Field>
+                            <FieldText>
+                                <label htmlFor="history-limit">{t("Items to keep")}</label>
+                                <p>{t("Older items are removed once the limit is reached.")}</p>
+                            </FieldText>
+                            <NumberInput
+                                id="history-limit"
+                                max={5000}
+                                min={10}
+                                onChange={(event) => update("historyLimit", Number(event.target.value) || 10)}
+                                type="number"
+                                value={settings.historyLimit}
+                            />
+                        </Field>
+                    </Card>
+                </Section>
 
-            <Section id="settings-updates" ref={(node) => { sectionRefs.current.updates = node; }}>
-                <SectionHead>
-                    <h2>{t("Updates")}</h2>
-                    <p>{t("Check for a newer release and open its download page.")}</p>
-                </SectionHead>
-                <UpdateCard $available={updateState?.available ?? false}>
-                    <UpdateSummary>
-                        <UpdateStatus $available={updateState?.available ?? false}>
-                            <StatusDot $available={updateState?.available ?? false}/>
-                            <span>
+                <Section id="settings-updates" ref={(node) => {
+                    sectionRefs.current.updates = node;
+                }}>
+                    <SectionHead>
+                        <h2>{t("Updates")}</h2>
+                        <p>{t("Check for a newer release and open its download page.")}</p>
+                    </SectionHead>
+                    <UpdateCard $available={updateState?.available ?? false}>
+                        <UpdateSummary>
+                            <UpdateStatus $available={updateState?.available ?? false}>
+                                <StatusDot $available={updateState?.available ?? false}/>
+                                <span>
                                 {updateError
                                     ? t("The update check failed.")
                                     : updateState
@@ -474,74 +492,77 @@ export function SettingsPage({info, focusSection, onSectionFocused}: SettingsPag
                                             : t("You are running the latest version.")
                                         : t("Check the published version.")}
                             </span>
-                        </UpdateStatus>
-                        <UpdateCurrent>
-                            {info ? `v${info.version} · ${info.platform}` : t("browser preview")}
-                        </UpdateCurrent>
-                    </UpdateSummary>
-                    <UpdateActions>
-                        <GhostButton disabled={updateBusy} onClick={checkUpdate} type="button">
-                            {updateBusy ? t("Checking…") : t("Check for updates")}
-                        </GhostButton>
-                        {updateState?.available && (
-                            <ReleaseButton onClick={() => void openReleasePage().catch(() => undefined)} type="button">
-                                {t("Open release page")}
-                            </ReleaseButton>
+                            </UpdateStatus>
+                            <UpdateCurrent>
+                                {info ? `v${info.version} · ${info.platform}` : t("browser preview")}
+                            </UpdateCurrent>
+                        </UpdateSummary>
+                        <UpdateActions>
+                            <GhostButton disabled={updateBusy} onClick={checkUpdate} type="button">
+                                {updateBusy ? t("Checking…") : t("Check for updates")}
+                            </GhostButton>
+                            {updateState?.available && (
+                                <ReleaseButton onClick={() => void openReleasePage().catch(() => undefined)}
+                                               type="button">
+                                    {t("Open release page")}
+                                </ReleaseButton>
+                            )}
+                        </UpdateActions>
+                    </UpdateCard>
+                </Section>
+
+                <Section id="settings-about" ref={(node) => {
+                    sectionRefs.current.about = node;
+                }}>
+                    <SectionHead>
+                        <h2>{t("About")}</h2>
+                        <p>{t("The build running on this device.")}</p>
+                    </SectionHead>
+                    <Card>
+                        <Field>
+                            <FieldText>
+                                <label>{t("Version")}</label>
+                                <p>{info ? `${info.version} · ${info.platform}` : t("browser preview")}</p>
+                            </FieldText>
+                            <InfoIcon size={15}/>
+                        </Field>
+                        <Field>
+                            <FieldText>
+                                <label>{t("Logs")}</label>
+                                <p>{info?.logDirectory || t("Only available in the desktop app.")}</p>
+                            </FieldText>
+                            <GhostButton onClick={() => void openLogsFolder().catch(() => undefined)} type="button">
+                                <FolderIcon size={13}/>
+                                {t("Open logs")}
+                            </GhostButton>
+                        </Field>
+                    </Card>
+                </Section>
+
+                <SaveBar>
+                    <Status>
+                        {notice && (
+                            <Notice $ok={notice.ok}>
+                                {notice.ok && <CheckIcon size={12}/>}
+                                {notice.text}
+                            </Notice>
                         )}
-                    </UpdateActions>
-                </UpdateCard>
-            </Section>
-
-            <Section id="settings-about" ref={(node) => { sectionRefs.current.about = node; }}>
-                <SectionHead>
-                    <h2>{t("About")}</h2>
-                    <p>{t("The build running on this device.")}</p>
-                </SectionHead>
-                <Card>
-                    <Field>
-                        <FieldText>
-                            <label>{t("Version")}</label>
-                            <p>{info ? `${info.version} · ${info.platform}` : t("browser preview")}</p>
-                        </FieldText>
-                        <InfoIcon size={15}/>
-                    </Field>
-                    <Field>
-                        <FieldText>
-                            <label>{t("Logs")}</label>
-                            <p>{info?.logDirectory || t("Only available in the desktop app.")}</p>
-                        </FieldText>
-                        <GhostButton onClick={() => void openLogsFolder().catch(() => undefined)} type="button">
-                            <FolderIcon size={13}/>
-                            {t("Open logs")}
-                        </GhostButton>
-                    </Field>
-                </Card>
-            </Section>
-
-            <SaveBar>
-                <Status>
-                    {notice && (
-                        <Notice $ok={notice.ok}>
-                            {notice.ok && <CheckIcon size={12}/>}
-                            {notice.text}
-                        </Notice>
-                    )}
-                    {!notice && (dirty ? t("Unsaved changes") : t("All changes saved"))}
-                </Status>
-                <Actions>
-                    <GhostAction disabled={saving} onClick={restoreDefaults} type="button">
-                        {t("Restore defaults")}
-                    </GhostAction>
-                    {dirty && (
-                        <DiscardAction disabled={saving} onClick={discard} type="button">
-                            {t("Discard changes")}
-                        </DiscardAction>
-                    )}
-                    <SaveButton disabled={!dirty || saving} onClick={save} type="button">
-                        {saving ? t("Saving…") : t("Save changes")}
-                    </SaveButton>
-                </Actions>
-            </SaveBar>
+                        {!notice && (dirty ? t("Unsaved changes") : t("All changes saved"))}
+                    </Status>
+                    <Actions>
+                        <GhostAction disabled={saving} onClick={restoreDefaults} type="button">
+                            {t("Restore defaults")}
+                        </GhostAction>
+                        {dirty && (
+                            <DiscardAction disabled={saving} onClick={discard} type="button">
+                                {t("Discard changes")}
+                            </DiscardAction>
+                        )}
+                        <SaveButton disabled={!dirty || saving} onClick={save} type="button">
+                            {saving ? t("Saving…") : t("Save changes")}
+                        </SaveButton>
+                    </Actions>
+                </SaveBar>
             </Main>
 
             <Toc aria-label={t("Sections")}>
@@ -658,7 +679,6 @@ const TocItem = styled.button<{ $active: boolean }>`
             box-shadow: 0 0 0 3px rgba(255, 138, 61, 0.16);
         }
     `}
-
     &:hover {
         background: var(--bg-card-hover);
         color: var(--text-primary);
@@ -780,11 +800,11 @@ const UpdateCard = styled.div<{ $available: boolean }>`
     border: 1px solid ${({$available}) => $available ? "rgba(255, 138, 61, 0.55)" : "var(--border-color)"};
     border-radius: var(--radius-md);
     background: ${({$available}) => $available
-        ? "linear-gradient(135deg, rgba(255, 138, 61, 0.12), rgba(255, 107, 107, 0.05))"
-        : "var(--bg-card)"};
+            ? "linear-gradient(135deg, rgba(255, 138, 61, 0.12), rgba(255, 107, 107, 0.05))"
+            : "var(--bg-card)"};
     box-shadow: ${({$available}) => $available
-        ? "0 0 0 1px rgba(255, 138, 61, 0.08), 0 8px 24px rgba(255, 138, 61, 0.08)"
-        : "none"};
+            ? "0 0 0 1px rgba(255, 138, 61, 0.08), 0 8px 24px rgba(255, 138, 61, 0.08)"
+            : "none"};
 `;
 
 const UpdateSummary = styled.div`
@@ -997,9 +1017,8 @@ const DiscardAction = styled(GhostAction)`
     color: var(--danger);
     transform-origin: right center;
     will-change: transform, opacity;
-    animation:
-        ${discardIn} 260ms cubic-bezier(0.34, 1.56, 0.64, 1),
-        ${discardGlow} 650ms ease-out 80ms;
+    animation: ${discardIn} 260ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    ${discardGlow} 650ms ease-out 80ms;
 
     &:hover:not(:disabled) {
         border-color: rgba(255, 107, 107, 0.6);

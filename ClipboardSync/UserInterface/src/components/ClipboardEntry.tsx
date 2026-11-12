@@ -1,8 +1,8 @@
 import styled from "styled-components";
 import {useEffect, useState} from "react";
 import {useLocale, useTranslation} from "@photino-net-utils/bridge";
-import {getImagePreview, type ClipboardItem, type ClipboardKind, type TransferStatus} from "../api/peer";
-import {relativeTime, formatSize} from "../utils/format";
+import {type ClipboardItem, type ClipboardKind, getImagePreview, type TransferStatus} from "../api/peer";
+import {formatSize, relativeTime} from "../utils/format";
 import {
     CheckIcon,
     CopyIcon,

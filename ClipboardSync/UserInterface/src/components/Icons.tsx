@@ -16,7 +16,8 @@ const base = (size: number) => ({
 export function HomeIcon({size = 18}: IconProps) {
     return (
         <svg {...base(size)}>
-            <path fillRule="evenodd" d="M12 2.4 2.6 10.2a1 1 0 0 0-.6.9V21a1 1 0 0 0 1 1h7v-7h4v7h7a1 1 0 0 0 1-1v-9.9a1 1 0 0 0-.6-.9zM11 15h2v7h-2z"/>
+            <path fillRule="evenodd"
+                  d="M12 2.4 2.6 10.2a1 1 0 0 0-.6.9V21a1 1 0 0 0 1 1h7v-7h4v7h7a1 1 0 0 0 1-1v-9.9a1 1 0 0 0-.6-.9zM11 15h2v7h-2z"/>
         </svg>
     );
 }
@@ -25,7 +26,8 @@ export function ClipboardIcon({size = 18}: IconProps) {
     return (
         <svg {...base(size)}>
             <path d="M9 2h6a1 1 0 0 1 1 1v2H8V3a1 1 0 0 1 1-1z"/>
-            <path fillRule="evenodd" d="M6 4h4v2h4V4h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm2 8v2h8v-2zm0 4v2h5v-2z"/>
+            <path fillRule="evenodd"
+                  d="M6 4h4v2h4V4h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm2 8v2h8v-2zm0 4v2h5v-2z"/>
         </svg>
     );
 }
@@ -35,7 +37,8 @@ export function DevicesIcon({size = 18}: IconProps) {
         <svg {...base(size)}>
             <path d="M2 4h15a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>
             <path d="M6 18h7v2H6zM9 15h1v3H9z"/>
-            <path fillRule="evenodd" d="M17 10h5a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2zm1 2v7h3v-7z"/>
+            <path fillRule="evenodd"
+                  d="M17 10h5a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2zm1 2v7h3v-7z"/>
         </svg>
     );
 }
@@ -52,7 +55,8 @@ export function SlidersIcon({size = 18}: IconProps) {
 export function SearchIcon({size = 16}: IconProps) {
     return (
         <svg {...base(size)}>
-            <path fillRule="evenodd" d="M10.5 2a8.5 8.5 0 1 0 5.3 15.1l4.1 4.1 2.1-2.1-4.1-4.1A8.5 8.5 0 0 0 10.5 2zm0 3a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11z"/>
+            <path fillRule="evenodd"
+                  d="M10.5 2a8.5 8.5 0 1 0 5.3 15.1l4.1 4.1 2.1-2.1-4.1-4.1A8.5 8.5 0 0 0 10.5 2zm0 3a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11z"/>
         </svg>
     );
 }
@@ -61,7 +65,8 @@ export function CopyIcon({size = 16}: IconProps) {
     return (
         <svg {...base(size)}>
             <path d="M8 2h9a2 2 0 0 1 2 2v12h-3V5H8z"/>
-            <path fillRule="evenodd" d="M5 6h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zm2 4v2h6v-2zm0 4v2h4v-2z"/>
+            <path fillRule="evenodd"
+                  d="M5 6h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zm2 4v2h6v-2zm0 4v2h4v-2z"/>
         </svg>
     );
 }
@@ -69,7 +74,8 @@ export function CopyIcon({size = 16}: IconProps) {
 export function CheckIcon({size = 16}: IconProps) {
     return (
         <svg {...base(size)}>
-            <path fillRule="evenodd" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm4.7 7.3-5.7 5.7-3.3-3.3 1.4-1.4 1.9 1.9 4.3-4.3z"/>
+            <path fillRule="evenodd"
+                  d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm4.7 7.3-5.7 5.7-3.3-3.3 1.4-1.4 1.9 1.9 4.3-4.3z"/>
         </svg>
     );
 }
@@ -78,7 +84,8 @@ export function TrashIcon({size = 16}: IconProps) {
     return (
         <svg {...base(size)}>
             <path d="M9 2h6v2H9z"/>
-            <path fillRule="evenodd" d="M4 5h16v2H4zM6 8h12l-1 13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2zm4 3v8h2v-8zm4 0v8h2v-8z"/>
+            <path fillRule="evenodd"
+                  d="M4 5h16v2H4zM6 8h12l-1 13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2zm4 3v8h2v-8zm4 0v8h2v-8z"/>
         </svg>
     );
 }
@@ -94,7 +101,8 @@ export function PinIcon({size = 16}: IconProps) {
 export function LinkIcon({size = 16}: IconProps) {
     return (
         <svg {...base(size)}>
-            <path d="M9 6h3V4H9a5 5 0 0 0 0 10h3v-2H9a3 3 0 0 1 0-6zM12 10h3v2h-3zM12 6h3a5 5 0 0 1 0 10h-3v-2h3a3 3 0 0 0 0-6h-3z"/>
+            <path
+                d="M9 6h3V4H9a5 5 0 0 0 0 10h3v-2H9a3 3 0 0 1 0-6zM12 10h3v2h-3zM12 6h3a5 5 0 0 1 0 10h-3v-2h3a3 3 0 0 0 0-6h-3z"/>
         </svg>
     );
 }
@@ -102,7 +110,8 @@ export function LinkIcon({size = 16}: IconProps) {
 export function ImageIcon({size = 16}: IconProps) {
     return (
         <svg {...base(size)}>
-            <path fillRule="evenodd" d="M3 3h18a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm2 4v10h14V7zm2 2h3v3H7zm2 7 3-4 2 2.5 2-2.5 3 4z"/>
+            <path fillRule="evenodd"
+                  d="M3 3h18a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm2 4v10h14V7zm2 2h3v3H7zm2 7 3-4 2 2.5 2-2.5 3 4z"/>
         </svg>
     );
 }
@@ -110,7 +119,8 @@ export function ImageIcon({size = 16}: IconProps) {
 export function FileIcon({size = 16}: IconProps) {
     return (
         <svg {...base(size)}>
-            <path fillRule="evenodd" d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm7 2v5h5zM8 12v2h8v-2zm0 4v2h5v-2z"/>
+            <path fillRule="evenodd"
+                  d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm7 2v5h5zM8 12v2h8v-2zm0 4v2h5v-2z"/>
         </svg>
     );
 }
@@ -118,7 +128,8 @@ export function FileIcon({size = 16}: IconProps) {
 export function TextIcon({size = 16}: IconProps) {
     return (
         <svg {...base(size)}>
-            <path fillRule="evenodd" d="M4 3h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm3 4v2h10V7zm0 4v2h10v-2zm0 4v2h6v-2z"/>
+            <path fillRule="evenodd"
+                  d="M4 3h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm3 4v2h10V7zm0 4v2h10v-2zm0 4v2h6v-2z"/>
         </svg>
     );
 }
@@ -143,7 +154,8 @@ export function RefreshIcon({size = 16}: IconProps) {
 export function LaptopIcon({size = 16}: IconProps) {
     return (
         <svg {...base(size)}>
-            <path fillRule="evenodd" d="M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm1 3v7h14V7zM2 19h20v2H2z"/>
+            <path fillRule="evenodd"
+                  d="M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm1 3v7h14V7zM2 19h20v2H2z"/>
         </svg>
     );
 }
@@ -151,7 +163,8 @@ export function LaptopIcon({size = 16}: IconProps) {
 export function MonitorIcon({size = 16}: IconProps) {
     return (
         <svg {...base(size)}>
-            <path fillRule="evenodd" d="M3 3h18a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm1 3v9h16V6zM8 20h8v2H8z"/>
+            <path fillRule="evenodd"
+                  d="M3 3h18a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm1 3v9h16V6zM8 20h8v2H8z"/>
         </svg>
     );
 }
@@ -159,7 +172,8 @@ export function MonitorIcon({size = 16}: IconProps) {
 export function PhoneIcon({size = 16}: IconProps) {
     return (
         <svg {...base(size)}>
-            <path fillRule="evenodd" d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm1 3v12h8V5zM10 19h4v2h-4z"/>
+            <path fillRule="evenodd"
+                  d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm1 3v12h8V5zM10 19h4v2h-4z"/>
         </svg>
     );
 }
@@ -210,7 +224,8 @@ export function LockIcon({size = 14}: IconProps) {
 export function ShieldIcon({size = 16}: IconProps) {
     return (
         <svg {...base(size)}>
-            <path fillRule="evenodd" d="M12 2 21 5v6c0 5-3.4 9-9 11C6.4 20 3 16 3 11V5zm-1 7-3.5 3.5 4.5 4.5 6-7-1.6-1.4-4.4 5.1-2.8-2.8z"/>
+            <path fillRule="evenodd"
+                  d="M12 2 21 5v6c0 5-3.4 9-9 11C6.4 20 3 16 3 11V5zm-1 7-3.5 3.5 4.5 4.5 6-7-1.6-1.4-4.4 5.1-2.8-2.8z"/>
         </svg>
     );
 }
