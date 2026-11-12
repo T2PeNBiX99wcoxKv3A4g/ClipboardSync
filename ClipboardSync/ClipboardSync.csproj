@@ -45,7 +45,7 @@
 
     <ItemGroup>
         <Analyzer Include="Libs\PhotinoNETUtils.Generators.dll" />
-        <AdditionalFiles Include="Resources\i18n\en.jsonc" />
+        <AdditionalFiles Include="Resources\i18n\*.jsonc" />
     </ItemGroup>
 
     <ItemGroup>

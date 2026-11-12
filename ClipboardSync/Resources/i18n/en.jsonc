@@ -1,5 +1,8 @@
 // The key is the English text, so a missing translation still reads naturally.
 {
+  // Keys are case-insensitive and must be unique inside one file. A second spelling of the same
+  // key is a build error (PNU2102); fix it by renaming or removing that key - never by deleting
+  // or disabling the check, because the loader would otherwise read only the first one.
   "ClipboardSync": "ClipboardSync",
   "Minimize": "Minimize",
   "Maximize": "Maximize",
