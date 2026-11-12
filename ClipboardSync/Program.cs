@@ -62,7 +62,6 @@ internal static class Program
             // Creates the long-term identity on first launch and loads the pinned peers. Neither
             // needs a window; both have to be ready before a pairing or session can start.
             _ = DeviceIdentity.Instance;
-            _ = PeerStore.Instance;
             PeerStore.Instance.InitializeAsync().GetAwaiter().GetResult();
 
             // Only one instance may run; later launches forward their arguments to it and exit.
@@ -103,7 +102,6 @@ internal static class Program
             // Touching these starts the clipboard watcher, peer listener and discovery. They queue
             // their first events until the interface reports in.
             _ = PairingService.Instance;
-            _ = ClipboardStore.Instance;
             ClipboardStore.Instance.InitializeAsync().GetAwaiter().GetResult();
             _ = SyncService.Instance;
 
