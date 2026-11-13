@@ -23,7 +23,11 @@ export function UpdateDialog({progress, changelog, error, onCancel, onClose}: Up
     const failed = error ?? (phase === "error" ? progress?.error ?? null : null);
     const installing = phase === "ready";
     const downloading = !failed && !installing;
-    const percent = progress && progress.percent >= 0 ? progress.percent : null;
+    const percent = phase === "ready"
+        ? 100
+        : phase === "downloading" && progress && progress.percent >= 0
+            ? progress.percent
+            : null;
     const indeterminate = downloading && percent === null;
 
     return (
@@ -50,18 +54,24 @@ export function UpdateDialog({progress, changelog, error, onCancel, onClose}: Up
 
                 {!failed && (
                     <>
-                        <Track>
+                        <Track
+                            aria-label={t("Downloading...")}
+                            aria-valuemax={100}
+                            aria-valuemin={0}
+                            aria-valuenow={percent ?? undefined}
+                            role="progressbar"
+                        >
                             <Fill
                                 $indeterminate={indeterminate}
                                 style={percent === null ? undefined : {width: `${percent}%`}}
                             />
                         </Track>
                         <Meta>
-                            <span>{percent === null ? t("Starting...") : `${percent}%`}</span>
+                            <Percent>{percent === null ? "…" : `${percent}%`}</Percent>
                             {progress && progress.total > 0 && (
-                                <span>
+                                <Bytes>
                                     {formatBytes(progress.downloaded)} / {formatBytes(progress.total)}
-                                </span>
+                                </Bytes>
                             )}
                         </Meta>
                     </>
@@ -162,27 +172,42 @@ const Status = styled.span<{ $failed: boolean; $installing: boolean }>`
 
 const Track = styled.div`
     position: relative;
-    height: 6px;
+    height: 12px;
     overflow: hidden;
+    border: 1px solid var(--border-color);
     border-radius: 999px;
-    background: var(--bg-secondary);
+    background: var(--bg-input-strong);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
 `;
 
 const Fill = styled.div<{ $indeterminate: boolean }>`
     height: 100%;
-    width: ${({$indeterminate}) => $indeterminate ? "30%" : "0"};
+    min-width: 10px;
+    width: ${({$indeterminate}) => $indeterminate ? "32%" : "0"};
     border-radius: inherit;
-    background: var(--accent-primary);
-    transition: width 140ms linear;
+    background: var(--accent-gradient);
+    box-shadow: var(--accent-glow);
+    transition: width 160ms ease-out;
     animation: ${({$indeterminate}) => $indeterminate ? slide : "none"} 1.1s ease-in-out infinite;
 `;
 
 const Meta = styled.div`
     display: flex;
+    align-items: baseline;
     justify-content: space-between;
     gap: 12px;
+`;
+
+const Percent = styled.span`
     font-family: var(--font-mono);
-    font-size: 9.5px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-primary);
+`;
+
+const Bytes = styled.span`
+    font-family: var(--font-mono);
+    font-size: 10px;
     color: var(--text-muted);
 `;
 
