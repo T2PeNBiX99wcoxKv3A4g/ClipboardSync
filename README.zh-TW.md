@@ -131,7 +131,7 @@ dotnet run --project ClipboardSync
 
 |            | Windows                                            | Linux                                              |
 |------------|----------------------------------------------------|----------------------------------------------------|
-| 設定       | `%APPDATA%\ClipboardSync\settings.json`            | `~/.config/ClipboardSync/settings.json`            |
+| 設定       | `%APPDATA%\ClipboardSync\settings.toml`            | `~/.config/ClipboardSync/settings.toml`            |
 | 已配對裝置 | `%APPDATA%\ClipboardSync\peers.json`               | `~/.config/ClipboardSync/peers.json`               |
 | 裝置身分   | `%APPDATA%\ClipboardSync\device.key`               | `~/.config/ClipboardSync/device.key`               |
 | 歷史       | `%LOCALAPPDATA%\ClipboardSync\history.db`          | `~/.local/share/ClipboardSync/history.db`          |
@@ -140,7 +140,7 @@ dotnet run --project ClipboardSync
 | 檔案檢視   | `%LOCALAPPDATA%\ClipboardSync\clipboard\items`     | `~/.local/share/ClipboardSync/clipboard/items`     |
 | 日誌       | `%APPDATA%\ClipboardSync\logs\clipboardsync-*.log` | `~/.config/ClipboardSync/logs/clipboardsync-*.log` |
 
-身分金鑰就是配對時對方記錄的公鑰，因此設定資料夾應只允許你的帳戶存取。歷史記錄的上限由 **設定 → 歷史 → 保留項目數** 控制。
+身分金鑰就是配對時對方記錄的公鑰，因此設定資料夾應只允許你的帳戶存取。升級後第一次啟動時，既有的 `settings.json` 會轉換成 `settings.toml`。歷史記錄的上限由 **設定 → 歷史 → 保留項目數** 控制。
 
 日誌會寫入檔案，同時鏡像到主控台，因此回報問題時提供日誌檔就夠了。日誌每天輪替，保留最近
 7 天。

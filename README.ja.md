@@ -142,7 +142,7 @@ dotnet run --project ClipboardSync
 
 |                    | Windows                                            | Linux                                              |
 |--------------------|----------------------------------------------------|----------------------------------------------------|
-| 設定               | `%APPDATA%\ClipboardSync\settings.json`            | `~/.config/ClipboardSync/settings.json`            |
+| 設定               | `%APPDATA%\ClipboardSync\settings.toml`            | `~/.config/ClipboardSync/settings.toml`            |
 | ペアリング済み端末 | `%APPDATA%\ClipboardSync\peers.json`               | `~/.config/ClipboardSync/peers.json`               |
 | 端末の識別情報     | `%APPDATA%\ClipboardSync\device.key`               | `~/.config/ClipboardSync/device.key`               |
 | 履歴               | `%LOCALAPPDATA%\ClipboardSync\history.db`          | `~/.local/share/ClipboardSync/history.db`          |
@@ -152,7 +152,8 @@ dotnet run --project ClipboardSync
 | ログ               | `%APPDATA%\ClipboardSync\logs\clipboardsync-*.log` | `~/.config/ClipboardSync/logs/clipboardsync-*.log` |
 
 識別鍵はペアリング時に相手が記録するものです。設定フォルダは自分のアカウントだけが読めるように
-してください。履歴は **設定 → 履歴 → 保持する項目数** で上限が決まります。
+してください。アップグレード後の初回起動時に、既存の `settings.json` は `settings.toml` に変換されます。
+履歴は **設定 → 履歴 → 保持する項目数** で上限が決まります。
 
 ログはファイルに書き込まれ、コンソールにも複製されます。問題を報告するときはログファイルだけで
 十分です。ログは毎日ローテーションし、直近 7 日分を保持します。

@@ -140,7 +140,7 @@ Debug builds load the interface from the dev server. `dotnet run --project Clipb
 
 |                 | Windows                                            | Linux                                              |
 |-----------------|----------------------------------------------------|----------------------------------------------------|
-| Settings        | `%APPDATA%\ClipboardSync\settings.json`            | `~/.config/ClipboardSync/settings.json`            |
+| Settings        | `%APPDATA%\ClipboardSync\settings.toml`            | `~/.config/ClipboardSync/settings.toml`            |
 | Paired devices  | `%APPDATA%\ClipboardSync\peers.json`               | `~/.config/ClipboardSync/peers.json`               |
 | Device identity | `%APPDATA%\ClipboardSync\device.key`               | `~/.config/ClipboardSync/device.key`               |
 | History         | `%LOCALAPPDATA%\ClipboardSync\history.db`          | `~/.local/share/ClipboardSync/history.db`          |
@@ -150,7 +150,8 @@ Debug builds load the interface from the dev server. `dotnet run --project Clipb
 | Logs            | `%APPDATA%\ClipboardSync\logs\clipboardsync-*.log` | `~/.config/ClipboardSync/logs/clipboardsync-*.log` |
 
 The identity key is what other devices pin when they pair, so keep the settings folder private to
-your account. History is capped by **Settings → History → Items to keep**.
+your account. An existing `settings.json` is converted to `settings.toml` on the first launch after
+upgrading. History is capped by **Settings → History → Items to keep**.
 
 Logs are written to the file and mirrored to the console, so a log file is enough to report a
 problem. They roll daily and the last seven are kept.

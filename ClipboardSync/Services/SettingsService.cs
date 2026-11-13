@@ -4,14 +4,24 @@ using ClipboardSync.Models;
 using ClipboardSync.Platform;
 using PhotinoNetUtils.Localization;
 using PhotinoNetUtils.Messaging;
+using PhotinoNetUtils.Services;
 
 namespace ClipboardSync.Services;
 
-/// <summary>Loads and stores the settings file. The defaults apply until the user saves something.</summary>
+/// <summary>Loads and stores the TOML settings file. The defaults apply until the user saves something.</summary>
 [Singleton]
 internal partial class SettingsService
 {
-    private static readonly string FilePath = Path.Combine(Constants.SettingsDirectory, "settings.json");
+    private const string Header =
+        "# ClipboardSync settings. Rewritten when settings are saved; comments are not preserved.";
+
+    private static readonly TomlSettingsStore<AppSettings> Store = new(
+        Path.Combine(Constants.SettingsDirectory, "settings.toml"),
+        AppSettings.Default,
+        AppTomlContext.Default.AppSettings,
+        json => JsonSerializer.Deserialize(json, AppJsonContext.Default.AppSettings),
+        Path.Combine(Constants.SettingsDirectory, "settings.json"),
+        Header);
 
     private SettingsService() => NativeBridge.MessageReceived += HandleMessageAsync;
 
@@ -23,36 +33,19 @@ internal partial class SettingsService
     /// <summary>Raised after a save, so the sync services can follow the new switches.</summary>
     public static event Action<SettingsPayload>? Changed;
 
-    public async Task LoadAsync()
+    public async Task LoadAsync() => Current = Normalize(await Store.LoadAsync());
+
+    private static AppSettings Normalize(AppSettings stored) => stored with
     {
-        if (!File.Exists(FilePath))
-            return;
-
-        try
-        {
-            var json = await File.ReadAllTextAsync(FilePath);
-            var stored = JsonSerializer.Deserialize(json, AppJsonContext.Default.AppSettings);
-
-            if (stored is null)
-                return;
-
-            Current = stored with
-            {
-                DeviceName = stored.DeviceName is { Length: > 0 } name ? name.Trim() : Current.DeviceName,
-                Language = NormalizeLanguage(stored.Language),
-                HistoryLimit = Math.Clamp(stored.HistoryLimit, 10, 5000),
-                MaxImageMb = Math.Clamp(stored.MaxImageMb, ClipboardLimits.MinImageMb, ClipboardLimits.MaxImageMb),
-                MaxFileMb = stored.MaxFileMb > 0
-                    ? Math.Clamp(stored.MaxFileMb, ClipboardLimits.MinFileMb, ClipboardLimits.MaxFileMb)
-                    : ClipboardLimits.DefaultFileMb,
-                BlobDirectory = stored.BlobDirectory?.Trim() ?? string.Empty
-            };
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "Failed to read {File}", FilePath);
-        }
-    }
+        DeviceName = stored.DeviceName is { Length: > 0 } name ? name.Trim() : AppSettings.Default.DeviceName,
+        Language = NormalizeLanguage(stored.Language),
+        HistoryLimit = Math.Clamp(stored.HistoryLimit, 10, 5000),
+        MaxImageMb = Math.Clamp(stored.MaxImageMb, ClipboardLimits.MinImageMb, ClipboardLimits.MaxImageMb),
+        MaxFileMb = stored.MaxFileMb > 0
+            ? Math.Clamp(stored.MaxFileMb, ClipboardLimits.MinFileMb, ClipboardLimits.MaxFileMb)
+            : ClipboardLimits.DefaultFileMb,
+        BlobDirectory = stored.BlobDirectory?.Trim() ?? string.Empty
+    };
 
     private static string NormalizeLanguage(string? language) =>
         language is "system" or "en" or "ja" or "zh-CN" or "zh-TW" ? language : "system";
@@ -74,7 +67,7 @@ internal partial class SettingsService
         if (context.Payload<AppSettings>() is not { } settings)
             return context.Fail("settings.save.result", Localization.Get("error.invalidSettings"));
 
-        if (settings.DeviceName.Trim() is not { Length: > 0 } deviceName)
+        if (settings.DeviceName?.Trim() is not { Length: > 0 } deviceName)
             return context.Fail("settings.save.result", Localization.Get("error.invalidDeviceName"));
 
         var blobDirectory = settings.BlobDirectory?.Trim() ?? string.Empty;
@@ -89,28 +82,17 @@ internal partial class SettingsService
             return context.Fail("settings.save.result", Localization.Get("error.blobDirectory"));
         }
 
-        Current = new()
+        Current = Normalize(settings with
         {
             DeviceName = deviceName,
-            Language = NormalizeLanguage(settings.Language),
-            StartHidden = settings.StartHidden,
-            SyncEnabled = settings.SyncEnabled,
-            SyncText = settings.SyncText,
-            SyncImages = settings.SyncImages,
-            SyncFiles = settings.SyncFiles,
-            HistoryLimit = Math.Clamp(settings.HistoryLimit, 10, 5000),
-            MaxImageMb = Math.Clamp(settings.MaxImageMb, ClipboardLimits.MinImageMb, ClipboardLimits.MaxImageMb),
-            MaxFileMb = Math.Clamp(settings.MaxFileMb, ClipboardLimits.MinFileMb, ClipboardLimits.MaxFileMb),
             BlobDirectory = blobDirectory.Length == 0 ? string.Empty : Path.GetFullPath(blobDirectory)
-        };
+        });
 
         Log.Information("Settings saved for {DeviceName}; sync {State}", Current.DeviceName,
             Current.SyncEnabled ? "on" : "off");
 
-        var attempt = await Try.Run(() => File.WriteAllTextAsync(FilePath,
-            JsonSerializer.Serialize(Current, AppJsonContext.Default.AppSettings)));
-
-        attempt.OnFailure(ex => Log.Warning(ex, "Failed to write {File}", FilePath));
+        if (!await Store.SaveAsync(Current))
+            Log.Warning("The settings were not written to {File}", Store.FilePath);
 
         var payload = Payload();
         WindowManager.Instance.NotifyMainWindow("settings.changed", payload);
