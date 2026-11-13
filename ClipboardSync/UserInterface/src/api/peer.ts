@@ -69,7 +69,7 @@ export interface PairResult {
 }
 
 const EMPTY_DEVICES: DevicesState = {
-    self: {id: "", name: "This device", self: true, online: true, itemCount: 0},
+    self: {id: "", name: "this_device", self: true, online: true, itemCount: 0},
     peers: [],
     discovered: [],
 };

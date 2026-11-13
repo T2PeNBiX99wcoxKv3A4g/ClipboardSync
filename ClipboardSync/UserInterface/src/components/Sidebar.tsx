@@ -9,8 +9,8 @@ interface SidebarProps {
 }
 
 const items: { id: Page; label: LocalizationKey; icon: typeof DevicesIcon }[] = [
-    {id: "devices", label: "Devices", icon: DevicesIcon},
-    {id: "settings", label: "Settings", icon: SlidersIcon},
+    {id: "devices", label: "devices", icon: DevicesIcon},
+    {id: "settings", label: "settings", icon: SlidersIcon},
 ];
 
 export function Sidebar({page, onNavigate}: SidebarProps) {

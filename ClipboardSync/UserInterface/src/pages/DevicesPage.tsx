@@ -96,7 +96,7 @@ export function DevicesPage({copiedId, onCopy}: DevicesPageProps) {
             }
 
             setPairCode(null);
-            setPairError(result.error ?? t("Pairing failed."));
+            setPairError(result.error ?? t("pairing_failed"));
         });
 
         return () => {
@@ -132,7 +132,7 @@ export function DevicesPage({copiedId, onCopy}: DevicesPageProps) {
         setPairCode(null);
         void startPairing(host, port).catch(() => {
             setPairing(false);
-            setPairError(t("Pairing failed."));
+            setPairError(t("pairing_failed"));
         });
     };
 
@@ -173,7 +173,7 @@ export function DevicesPage({copiedId, onCopy}: DevicesPageProps) {
             <Top>
                 <PairButton onClick={openPairing} type="button">
                     <PlusIcon size={14}/>
-                    {t("Pair a device")}
+                    {t("pair_a_device")}
                 </PairButton>
             </Top>
 
@@ -192,19 +192,19 @@ export function DevicesPage({copiedId, onCopy}: DevicesPageProps) {
                                 <DeviceInfo>
                                     <NameRow>
                                         <strong>{device.name}</strong>
-                                        {device.self && <SelfBadge>{t("This device")}</SelfBadge>}
+                                        {device.self && <SelfBadge>{t("this_device")}</SelfBadge>}
                                     </NameRow>
                                     <StateLine>
                                         <Dot $online={device.online}/>
-                                        {device.online ? t("Online") : t("Offline")}
+                                        {device.online ? t("online") : t("offline")}
                                         <span>·</span>
-                                        {t("{count} items", {count: items.length})}
+                                        {t("count_items", {count: items.length})}
                                     </StateLine>
                                 </DeviceInfo>
                                 {!device.self && (
                                     <RemoveButton
                                         onClick={() => void removeDevice(device.id).catch(() => undefined)}
-                                        title={t("Unpair")}
+                                        title={t("unpair")}
                                         type="button"
                                     >
                                         <XIcon size={12}/>
@@ -214,7 +214,7 @@ export function DevicesPage({copiedId, onCopy}: DevicesPageProps) {
 
                             <ColumnBody>
                                 {items.length === 0 ? (
-                                    <Empty>{t("No clipboard items from this device yet.")}</Empty>
+                                    <Empty>{t("no_clipboard_items_from_this_device_yet")}</Empty>
                                 ) : items.map((item) => (
                                     <ClipboardEntry
                                         copied={copiedId === item.id}
@@ -226,7 +226,7 @@ export function DevicesPage({copiedId, onCopy}: DevicesPageProps) {
 
                                 {!device.online && (
                                     <OfflineNote>
-                                        {t("This device is offline. New items wait here until it reconnects.")}
+                                        {t("this_device_is_offline_new_items_wait_here_until_it_reconnects")}
                                     </OfflineNote>
                                 )}
                             </ColumnBody>
@@ -238,10 +238,10 @@ export function DevicesPage({copiedId, onCopy}: DevicesPageProps) {
             {devices && devices.peers.length === 0 && (
                 <EmptyBoard>
                     <PlusIcon size={20}/>
-                    <p>{t("No other devices are paired yet. Pair one to share the clipboard.")}</p>
+                    <p>{t("no_other_devices_are_paired_yet_pair_one_to_share_the_clipboard")}</p>
                     <PairButton onClick={openPairing} type="button">
                         <PlusIcon size={14}/>
-                        {t("Pair a device")}
+                        {t("pair_a_device")}
                     </PairButton>
                 </EmptyBoard>
             )}
@@ -249,57 +249,57 @@ export function DevicesPage({copiedId, onCopy}: DevicesPageProps) {
             {pairOpen && (
                 <Backdrop onMouseDown={closePairing}>
                     <Dialog
-                        aria-label={t("Pair a device")}
+                        aria-label={t("pair_a_device")}
                         aria-modal="true"
                         onMouseDown={(event) => event.stopPropagation()}
                         role="dialog"
                     >
                         <DialogHead>
                             <div>
-                                <h3>{t("Pair a device")}</h3>
-                                <p>{t("Both devices show the same code, so you can check the connection.")}</p>
+                                <h3>{t("pair_a_device")}</h3>
+                                <p>{t("both_devices_show_the_same_code_so_you_can_check_the_connection")}</p>
                             </div>
-                            <CloseButton onClick={closePairing} title={t("Close")} type="button">
+                            <CloseButton onClick={closePairing} title={t("close")} type="button">
                                 <XIcon size={14}/>
                             </CloseButton>
                         </DialogHead>
 
                         {incoming ? (
                             <Section>
-                                <Label>{t("Incoming pairing request")}</Label>
+                                <Label>{t("incoming_pairing_request")}</Label>
                                 <PromptName>{incoming.deviceName}</PromptName>
                                 <CodeBox>
                                     <Code>{incoming.code}</Code>
                                 </CodeBox>
-                                <Hint>{t("Compare this code with the other device.")}</Hint>
+                                <Hint>{t("compare_this_code_with_the_other_device")}</Hint>
                                 <Actions>
                                     <RejectButton onClick={() => answer(false)} type="button">
-                                        {t("Reject")}
+                                        {t("reject")}
                                     </RejectButton>
                                     <AcceptButton onClick={() => answer(true)} type="button">
-                                        {t("Accept")}
+                                        {t("accept")}
                                     </AcceptButton>
                                 </Actions>
                             </Section>
                         ) : pairCode ? (
                             <Section>
-                                <Label>{t("Pairing code")}</Label>
+                                <Label>{t("pairing_code")}</Label>
                                 <PromptName>{pairCode.deviceName}</PromptName>
                                 <CodeBox>
                                     <Code>{pairCode.code}</Code>
-                                    <CodeButton onClick={copyCode} title={t("Copy code")} type="button">
+                                    <CodeButton onClick={copyCode} title={t("copy_code")} type="button">
                                         {codeCopied ? <CheckIcon size={14}/> : <CopyIcon size={14}/>}
                                     </CodeButton>
                                 </CodeBox>
-                                <Hint>{t("Compare this code with the other device, then accept there.")}</Hint>
-                                <Waiting>{t("Waiting for the other device…")}</Waiting>
+                                <Hint>{t("compare_this_code_with_the_other_device_then_accept_there")}</Hint>
+                                <Waiting>{t("waiting_for_the_other_device")}</Waiting>
                             </Section>
                         ) : (
                             <>
                                 {pairError && <Error>{pairError}</Error>}
 
                                 <Section>
-                                    <Label>{t("Discovered devices")}</Label>
+                                    <Label>{t("discovered_devices")}</Label>
                                     {devices && devices.discovered.length > 0 ? (
                                         <DeviceList>
                                             {devices.discovered.map((device) => (
@@ -313,7 +313,7 @@ export function DevicesPage({copiedId, onCopy}: DevicesPageProps) {
                                                         onClick={() => pairWithDiscovered(device)}
                                                         type="button"
                                                     >
-                                                        {t("Pair")}
+                                                        {t("pair")}
                                                     </SmallPair>
                                                 </DiscoveredRow>
                                             ))}
@@ -321,13 +321,13 @@ export function DevicesPage({copiedId, onCopy}: DevicesPageProps) {
                                     ) : (
                                         <EmptyDiscovered>
                                             <RefreshIcon size={14}/>
-                                            {t("Scanning the local network…")}
+                                            {t("scanning_the_local_network")}
                                         </EmptyDiscovered>
                                     )}
                                 </Section>
 
                                 <Section>
-                                    <Label>{t("Enter an address")}</Label>
+                                    <Label>{t("enter_an_address")}</Label>
                                     <AddressRow>
                                         <AddressInput
                                             onChange={(event) => setAddress(event.target.value)}
@@ -342,7 +342,7 @@ export function DevicesPage({copiedId, onCopy}: DevicesPageProps) {
                                             onClick={pairWithAddress}
                                             type="button"
                                         >
-                                            {t("Pair")}
+                                            {t("pair")}
                                         </SmallPair>
                                     </AddressRow>
                                 </Section>
@@ -351,7 +351,7 @@ export function DevicesPage({copiedId, onCopy}: DevicesPageProps) {
 
                         <Hint>
                             <ShieldIcon size={14}/>
-                            <span>{t("The pairing proves both devices own their keys; the code is never sent as a password.")}</span>
+                            <span>{t("the_pairing_proves_both_devices_own_their_keys_the_code_is_never_sent_as_a_password")}</span>
                         </Hint>
                     </Dialog>
                 </Backdrop>

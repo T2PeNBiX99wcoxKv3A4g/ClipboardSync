@@ -25,12 +25,12 @@ const pageIn = keyframes`
 
 const pageMeta: Record<Page, { title: LocalizationKey; subtitle: LocalizationKey }> = {
     devices: {
-        title: "Devices",
-        subtitle: "Every device on the mesh, with the clipboard history it holds.",
+        title: "devices",
+        subtitle: "every_device_on_the_mesh_with_the_clipboard_history_it_holds",
     },
     settings: {
-        title: "Settings",
-        subtitle: "How ClipboardSync looks, starts, and shares.",
+        title: "settings",
+        subtitle: "how_clipboard_sync_looks_starts_and_shares",
     },
 };
 
@@ -102,7 +102,7 @@ export default function App() {
             void installUpdate().then(
                 (ack) => {
                     if (!ack.ok) setUpdateDialog((current) => current
-                        ? {...current, error: ack.error ?? t("Update failed")}
+                        ? {...current, error: ack.error ?? t("update_failed")}
                         : current);
                 },
                 (error) => setUpdateDialog((current) => current
@@ -121,7 +121,7 @@ export default function App() {
                 ...current,
                 progress,
                 error: progress.phase === "error"
-                    ? progress.error ?? t("Update failed")
+                    ? progress.error ?? t("update_failed")
                     : current.error
             }
             : current);
@@ -155,7 +155,7 @@ export default function App() {
         void startUpdateDownload().then(
             (ack) => {
                 if (!ack.ok) setUpdateDialog((current) => current
-                    ? {...current, error: ack.error ?? t("Update failed")}
+                    ? {...current, error: ack.error ?? t("update_failed")}
                     : current);
             },
             (error) => setUpdateDialog((current) => current
@@ -205,16 +205,16 @@ export default function App() {
                             <VersionText>
                                 {info
                                     ? `v${info.version} · ${info.platform}${info.debug ? " · debug" : ""}`
-                                    : t("browser preview")}
+                                    : t("browser_preview")}
                             </VersionText>
                             {update?.available && (
                                 <UpdateDot
-                                    aria-label={t("Version {version} is available.", {version: update.latest})}
+                                    aria-label={t("version_version_is_available", {version: update.latest})}
                                     onClick={() => {
                                         setPage("settings");
                                         setSettingsSection("updates");
                                     }}
-                                    title={t("Version {version} is available.", {version: update.latest})}
+                                    title={t("version_version_is_available", {version: update.latest})}
                                     type="button"
                                 />
                             )}

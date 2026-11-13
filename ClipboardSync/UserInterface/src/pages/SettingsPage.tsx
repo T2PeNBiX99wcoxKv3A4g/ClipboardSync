@@ -30,15 +30,15 @@ interface SettingsPageProps {
 type SectionId = "general" | "sync" | "history" | "updates" | "about";
 
 const sections: { id: SectionId; label: LocalizationKey }[] = [
-    {id: "general", label: "General"},
-    {id: "sync", label: "Sync"},
-    {id: "history", label: "History"},
-    {id: "updates", label: "Updates"},
-    {id: "about", label: "About"},
+    {id: "general", label: "general"},
+    {id: "sync", label: "sync"},
+    {id: "history", label: "history"},
+    {id: "updates", label: "updates"},
+    {id: "about", label: "about"},
 ];
 
 const languages = [
-    {id: "system", label: "System default"},
+    {id: "system", label: "system_default"},
     {id: "en", label: "English"},
     {id: "ja", label: "日本語"},
     {id: "zh-CN", label: "简体中文"},
@@ -46,16 +46,16 @@ const languages = [
 ];
 
 const themes: { id: string; label: LocalizationKey }[] = [
-    {id: "system", label: "System default"},
-    {id: "light", label: "Light"},
-    {id: "dark", label: "Dark"},
+    {id: "system", label: "system_default"},
+    {id: "light", label: "light"},
+    {id: "dark", label: "dark"},
 ];
 
 export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpdate}: SettingsPageProps) {
     const t = useTranslation();
     const languageOptions = languages.map((language) => ({
         ...language,
-        label: language.id === "system" ? t("System default") : language.label,
+        label: language.id === "system" ? t("system_default") : language.label,
     }));
     const themeOptions = themes.map((theme) => ({...theme, label: t(theme.label)}));
     const [settings, setSettings] = useState<Settings | null>(null);
@@ -153,7 +153,7 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
             setSaved(next);
             setSettings((current) => current ? {...current, language: next.language} : current);
         }, () => {
-            setNotice({ok: false, text: t("The host did not answer.")});
+            setNotice({ok: false, text: t("the_host_did_not_answer")});
         });
     };
 
@@ -166,7 +166,7 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
             setSaved(next);
             setSettings((current) => current ? {...current, theme: next.theme} : current);
         }, () => {
-            setNotice({ok: false, text: t("The host did not answer.")});
+            setNotice({ok: false, text: t("the_host_did_not_answer")});
         });
     };
 
@@ -176,7 +176,7 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
         setStartupState((current) => current ? {...current, enabled} : current);
 
         void setStartup(enabled).then(setStartupState, () => {
-            setNotice({ok: false, text: t("The host did not answer.")});
+            setNotice({ok: false, text: t("the_host_did_not_answer")});
         });
     };
 
@@ -187,9 +187,9 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
         void saveSettings(settings).then((next) => {
             setSettings(next);
             setSaved(next);
-            setNotice({ok: true, text: t("Settings saved.")});
+            setNotice({ok: true, text: t("settings_saved")});
         }, (error) => {
-            setNotice({ok: false, text: error instanceof Error ? error.message : t("The host did not answer.")});
+            setNotice({ok: false, text: error instanceof Error ? error.message : t("the_host_did_not_answer")});
         }).finally(() => {
             setSaving(false);
             window.setTimeout(() => setNotice(null), 4000);
@@ -257,9 +257,9 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
         setClearing(true);
         void clearHistory().then(() => {
             setConfirmClear(false);
-            setNotice({ok: true, text: t("History cleared.")});
+            setNotice({ok: true, text: t("history_cleared")});
         }, (error) => {
-            setNotice({ok: false, text: error instanceof Error ? error.message : t("The host did not answer.")});
+            setNotice({ok: false, text: error instanceof Error ? error.message : t("the_host_did_not_answer")});
         }).finally(() => {
             setClearing(false);
             window.setTimeout(() => setNotice(null), 4000);
@@ -267,7 +267,7 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
     };
 
     if (!settings) {
-        return <Loading>{t("Loading settings…")}</Loading>;
+        return <Loading>{t("loading_settings")}</Loading>;
     }
 
     return (
@@ -277,14 +277,14 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
                     sectionRefs.current.general = node;
                 }}>
                     <SectionHead>
-                        <h2>{t("General")}</h2>
-                        <p>{t("How ClipboardSync looks and starts.")}</p>
+                        <h2>{t("general")}</h2>
+                        <p>{t("how_clipboard_sync_looks_and_starts")}</p>
                     </SectionHead>
                     <Card>
                         <Field>
                             <FieldText>
-                                <label htmlFor="device-name">{t("Device name")}</label>
-                                <p>{t("The name the other devices see.")}</p>
+                                <label htmlFor="device-name">{t("device_name")}</label>
+                                <p>{t("the_name_the_other_devices_see")}</p>
                             </FieldText>
                             <TextInput
                                 id="device-name"
@@ -296,11 +296,11 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
 
                         <Field>
                             <FieldText>
-                                <label htmlFor="language">{t("Language")}</label>
-                                <p>{t("Applies to the interface and the tray menu.")}</p>
+                                <label htmlFor="language">{t("language")}</label>
+                                <p>{t("applies_to_the_interface_and_the_tray_menu")}</p>
                             </FieldText>
                             <Dropdown
-                                label={t("Language")}
+                                label={t("language")}
                                 onChange={changeLanguage}
                                 options={languageOptions}
                                 value={settings.language}
@@ -309,11 +309,11 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
 
                         <Field>
                             <FieldText>
-                                <label>{t("Theme")}</label>
-                                <p>{t("Applies to the interface.")}</p>
+                                <label>{t("theme")}</label>
+                                <p>{t("applies_to_the_interface")}</p>
                             </FieldText>
                             <Dropdown
-                                label={t("Theme")}
+                                label={t("theme")}
                                 onChange={changeTheme}
                                 options={themeOptions}
                                 value={settings.theme}
@@ -322,29 +322,29 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
 
                         <Field>
                             <FieldText>
-                                <label>{t("Start with the window hidden")}</label>
-                                <p>{t("Keep ClipboardSync in the tray when it launches.")}</p>
+                                <label>{t("start_with_the_window_hidden")}</label>
+                                <p>{t("keep_clipboard_sync_in_the_tray_when_it_launches")}</p>
                             </FieldText>
                             <Toggle
                                 checked={settings.startHidden}
-                                label={t("Start with the window hidden")}
+                                label={t("start_with_the_window_hidden")}
                                 onChange={(value) => update("startHidden", value)}
                             />
                         </Field>
 
                         <Field>
                             <FieldText>
-                                <label>{t("Launch at startup")}</label>
+                                <label>{t("launch_at_startup")}</label>
                                 <p>
                                     {startup?.supported === false
-                                        ? t("This platform has no per-user startup entry.")
-                                        : t("Start ClipboardSync when you sign in.")}
+                                        ? t("this_platform_has_no_per_user_startup_entry")
+                                        : t("start_clipboard_sync_when_you_sign_in")}
                                 </p>
                             </FieldText>
                             <Toggle
                                 checked={startup?.enabled ?? false}
                                 disabled={!startup?.supported}
-                                label={t("Launch at startup")}
+                                label={t("launch_at_startup")}
                                 onChange={toggleStartup}
                             />
                         </Field>
@@ -355,61 +355,61 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
                     sectionRefs.current.sync = node;
                 }}>
                     <SectionHead>
-                        <h2>{t("Sync")}</h2>
-                        <p>{t("What this device shares with its paired devices.")}</p>
+                        <h2>{t("sync")}</h2>
+                        <p>{t("what_this_device_shares_with_its_paired_devices")}</p>
                     </SectionHead>
                     <Card>
                         <Field>
                             <FieldText>
-                                <label>{t("Enable syncing")}</label>
-                                <p>{t("Turn off to stay paired but stop sending and receiving.")}</p>
+                                <label>{t("enable_syncing")}</label>
+                                <p>{t("turn_off_to_stay_paired_but_stop_sending_and_receiving")}</p>
                             </FieldText>
                             <Toggle
                                 checked={settings.syncEnabled}
-                                label={t("Enable syncing")}
+                                label={t("enable_syncing")}
                                 onChange={(value) => update("syncEnabled", value)}
                             />
                         </Field>
                         <Field>
                             <FieldText>
-                                <label>{t("Text and links")}</label>
-                                <p>{t("Copying text or a URL sends it to the other devices.")}</p>
+                                <label>{t("text_and_links")}</label>
+                                <p>{t("copying_text_or_a_url_sends_it_to_the_other_devices")}</p>
                             </FieldText>
                             <Toggle
                                 checked={settings.syncText}
                                 disabled={!settings.syncEnabled}
-                                label={t("Text and links")}
+                                label={t("text_and_links")}
                                 onChange={(value) => update("syncText", value)}
                             />
                         </Field>
                         <Field>
                             <FieldText>
-                                <label>{t("Images")}</label>
-                                <p>{t("Copying an image sends it to the other devices.")}</p>
+                                <label>{t("images")}</label>
+                                <p>{t("copying_an_image_sends_it_to_the_other_devices")}</p>
                             </FieldText>
                             <Toggle
                                 checked={settings.syncImages}
                                 disabled={!settings.syncEnabled}
-                                label={t("Images")}
+                                label={t("images")}
                                 onChange={(value) => update("syncImages", value)}
                             />
                         </Field>
                         <Field>
                             <FieldText>
-                                <label>{t("Files and folders")}</label>
-                                <p>{t("Copying files or folders sends them to the other devices.")}</p>
+                                <label>{t("files_and_folders")}</label>
+                                <p>{t("copying_files_or_folders_sends_them_to_the_other_devices")}</p>
                             </FieldText>
                             <Toggle
                                 checked={settings.syncFiles}
                                 disabled={!settings.syncEnabled}
-                                label={t("Files and folders")}
+                                label={t("files_and_folders")}
                                 onChange={(value) => update("syncFiles", value)}
                             />
                         </Field>
                         <Field>
                             <FieldText>
-                                <label htmlFor="image-limit">{t("Image size limit")}</label>
-                                <p>{t("Images larger than this are skipped.")}</p>
+                                <label htmlFor="image-limit">{t("image_size_limit")}</label>
+                                <p>{t("images_larger_than_this_are_skipped")}</p>
                             </FieldText>
                             <SizeRow>
                                 <NumberInput
@@ -425,8 +425,8 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
                         </Field>
                         <Field>
                             <FieldText>
-                                <label htmlFor="file-limit">{t("File size limit")}</label>
-                                <p>{t("One copied selection larger than this is skipped.")}</p>
+                                <label htmlFor="file-limit">{t("file_size_limit")}</label>
+                                <p>{t("one_copied_selection_larger_than_this_is_skipped")}</p>
                             </FieldText>
                             <SizeRow>
                                 <NumberInput
@@ -442,45 +442,45 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
                         </Field>
                         <Field>
                             <FieldText>
-                                <label htmlFor="blob-directory">{t("Blob storage folder")}</label>
-                                <p>{t("Leave empty to use the app data folder. Changing it moves existing blobs.")}</p>
+                                <label htmlFor="blob-directory">{t("blob_storage_folder")}</label>
+                                <p>{t("leave_empty_to_use_the_app_data_folder_changing_it_moves_existing_blobs")}</p>
                             </FieldText>
                             <PathInput
                                 id="blob-directory"
                                 onChange={(event) => update("blobDirectory", event.target.value)}
-                                placeholder={t("Default")}
+                                placeholder={t("default")}
                                 value={settings.blobDirectory}
                             />
                         </Field>
                     </Card>
-                    <Note>{t("Images are shared as PNG; files and folders are copied recursively.")}</Note>
+                    <Note>{t("images_are_shared_as_png_files_and_folders_are_copied_recursively")}</Note>
                 </Section>
 
                 <Section id="settings-history" ref={(node) => {
                     sectionRefs.current.history = node;
                 }}>
                     <SectionHead>
-                        <h2>{t("History")}</h2>
-                        <p>{t("The local record of clipboard items.")}</p>
+                        <h2>{t("history")}</h2>
+                        <p>{t("the_local_record_of_clipboard_items")}</p>
                     </SectionHead>
                     <Card>
                         <Field>
                             <FieldText>
-                                <label>{t("Clear history")}</label>
-                                <p>{t("This only clears history; the system clipboard is not changed.")}</p>
+                                <label>{t("clear_history")}</label>
+                                <p>{t("this_only_clears_history_the_system_clipboard_is_not_changed")}</p>
                             </FieldText>
                             {!confirmClear ? (
                                 <GhostButton disabled={clearing} onClick={() => setConfirmClear(true)} type="button">
-                                    {t("Clear history")}
+                                    {t("clear_history")}
                                 </GhostButton>
                             ) : (
                                 <Actions>
                                     <GhostButton disabled={clearing} onClick={() => setConfirmClear(false)}
                                                  type="button">
-                                        {t("Cancel")}
+                                        {t("cancel")}
                                     </GhostButton>
                                     <DangerButton disabled={clearing} onClick={clear} type="button">
-                                        {clearing ? t("Clearing…") : t("Clear")}
+                                        {clearing ? t("clearing") : t("clear")}
                                     </DangerButton>
                                 </Actions>
                             )}
@@ -488,14 +488,14 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
                         {confirmClear && (
                             <ClearConfirm>
                                 <ClearText>
-                                    <strong>{t("Clear history on all paired devices?")}</strong>
+                                    <strong>{t("clear_history_on_all_paired_devices")}</strong>
                                 </ClearText>
                             </ClearConfirm>
                         )}
                         <Field>
                             <FieldText>
-                                <label htmlFor="history-limit">{t("Items to keep")}</label>
-                                <p>{t("Older items are removed once the limit is reached.")}</p>
+                                <label htmlFor="history-limit">{t("items_to_keep")}</label>
+                                <p>{t("older_items_are_removed_once_the_limit_is_reached")}</p>
                             </FieldText>
                             <NumberInput
                                 id="history-limit"
@@ -513,8 +513,8 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
                     sectionRefs.current.updates = node;
                 }}>
                     <SectionHead>
-                        <h2>{t("Updates")}</h2>
-                        <p>{t("Check for a newer release and open its download page.")}</p>
+                        <h2>{t("updates")}</h2>
+                        <p>{t("check_for_a_newer_release_and_open_its_download_page")}</p>
                     </SectionHead>
                     <UpdateCard $available={updateState?.available ?? false}>
                         <UpdateSummary>
@@ -522,31 +522,31 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
                                 <StatusDot $available={updateState?.available ?? false}/>
                                 <span>
                                 {updateError
-                                    ? t("The update check failed.")
+                                    ? t("the_update_check_failed")
                                     : updateState
                                         ? updateState.available
-                                            ? t("A newer version is available: v{version}", {version: updateState.latest})
-                                            : t("You are running the latest version.")
-                                        : t("Check the published version.")}
+                                            ? t("a_newer_version_is_available_v_version", {version: updateState.latest})
+                                            : t("you_are_running_the_latest_version")
+                                        : t("check_the_published_version")}
                             </span>
                             </UpdateStatus>
                             <UpdateCurrent>
-                                {info ? `v${info.version} · ${info.platform}` : t("browser preview")}
+                                {info ? `v${info.version} · ${info.platform}` : t("browser_preview")}
                             </UpdateCurrent>
                         </UpdateSummary>
                         <UpdateActions>
                             <GhostButton disabled={updateBusy} onClick={checkUpdate} type="button">
-                                {updateBusy ? t("Checking…") : t("Check for updates")}
+                                {updateBusy ? t("checking") : t("check_for_updates")}
                             </GhostButton>
                             {updateState?.available && info?.platform === "windows" && (
                                 <ReleaseButton onClick={onInstallUpdate} type="button">
-                                    {t("Download and install")}
+                                    {t("download_and_install")}
                                 </ReleaseButton>
                             )}
                             {updateState?.available && (
                                 <GhostButton onClick={() => void openReleasesPage(RELEASES_URL).catch(() => undefined)}
                                              type="button">
-                                    {t("Open release page")}
+                                    {t("open_release_page")}
                                 </GhostButton>
                             )}
                         </UpdateActions>
@@ -557,25 +557,25 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
                     sectionRefs.current.about = node;
                 }}>
                     <SectionHead>
-                        <h2>{t("About")}</h2>
-                        <p>{t("The build running on this device.")}</p>
+                        <h2>{t("about")}</h2>
+                        <p>{t("the_build_running_on_this_device")}</p>
                     </SectionHead>
                     <Card>
                         <Field>
                             <FieldText>
-                                <label>{t("Version")}</label>
-                                <p>{info ? `${info.version} · ${info.platform}` : t("browser preview")}</p>
+                                <label>{t("version")}</label>
+                                <p>{info ? `${info.version} · ${info.platform}` : t("browser_preview")}</p>
                             </FieldText>
                             <InfoIcon size={15}/>
                         </Field>
                         <Field>
                             <FieldText>
-                                <label>{t("Logs")}</label>
-                                <p>{info?.logDirectory || t("Only available in the desktop app.")}</p>
+                                <label>{t("logs")}</label>
+                                <p>{info?.logDirectory || t("only_available_in_the_desktop_app")}</p>
                             </FieldText>
                             <GhostButton onClick={() => void openLogsFolder().catch(() => undefined)} type="button">
                                 <FolderIcon size={13}/>
-                                {t("Open logs")}
+                                {t("open_logs")}
                             </GhostButton>
                         </Field>
                     </Card>
@@ -589,26 +589,26 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
                                 {notice.text}
                             </Notice>
                         )}
-                        {!notice && (dirty ? t("Unsaved changes") : t("All changes saved"))}
+                        {!notice && (dirty ? t("unsaved_changes") : t("all_changes_saved"))}
                     </Status>
                     <Actions>
                         <GhostAction disabled={saving} onClick={restoreDefaults} type="button">
-                            {t("Restore defaults")}
+                            {t("restore_defaults")}
                         </GhostAction>
                         {dirty && (
                             <DiscardAction disabled={saving} onClick={discard} type="button">
-                                {t("Discard changes")}
+                                {t("discard_changes")}
                             </DiscardAction>
                         )}
                         <SaveButton disabled={!dirty || saving} onClick={save} type="button">
-                            {saving ? t("Saving…") : t("Save changes")}
+                            {saving ? t("saving") : t("save_changes")}
                         </SaveButton>
                     </Actions>
                 </SaveBar>
             </Main>
 
-            <Toc aria-label={t("Sections")}>
-                <TocLabel>{t("Sections")}</TocLabel>
+            <Toc aria-label={t("sections")}>
+                <TocLabel>{t("sections")}</TocLabel>
                 <TocList>
                     {sections.map(({id, label}) => (
                         <TocItem

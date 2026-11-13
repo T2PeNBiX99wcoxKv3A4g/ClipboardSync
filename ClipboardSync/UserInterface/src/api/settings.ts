@@ -6,7 +6,7 @@ export type Settings = AppSettingsGenerated;
 
 /** Used in a browser preview, where there is no settings file to read. */
 export const PREVIEW_SETTINGS: Settings = {
-    deviceName: "This device",
+    deviceName: "this_device",
     language: "system",
     theme: "system",
     startHidden: false,

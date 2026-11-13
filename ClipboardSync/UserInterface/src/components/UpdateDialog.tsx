@@ -34,9 +34,9 @@ export function UpdateDialog({progress, changelog, error, onCancel, onClose}: Up
         <Backdrop role="dialog" aria-modal="true">
             <Card>
                 <Header>
-                    <h2>{t("Updating ClipboardSync")}</h2>
+                    <h2>{t("updating_clipboard_sync")}</h2>
                     {failed && (
-                        <CloseButton aria-label={t("Close")} onClick={onClose} type="button">
+                        <CloseButton aria-label={t("close")} onClick={onClose} type="button">
                             ×
                         </CloseButton>
                     )}
@@ -44,18 +44,18 @@ export function UpdateDialog({progress, changelog, error, onCancel, onClose}: Up
 
                 <Status $failed={Boolean(failed)} $installing={installing}>
                     {failed
-                        ? t("Update failed")
+                        ? t("update_failed")
                         : installing
-                            ? t("Installing...")
+                            ? t("installing")
                             : phase === "downloading"
-                                ? t("Downloading...")
-                                : t("Loading changes...")}
+                                ? t("downloading")
+                                : t("loading_changes")}
                 </Status>
 
                 {!failed && (
                     <>
                         <Track
-                            aria-label={t("Downloading...")}
+                            aria-label={t("downloading")}
                             aria-valuemax={100}
                             aria-valuemin={0}
                             aria-valuenow={percent ?? undefined}
@@ -79,19 +79,19 @@ export function UpdateDialog({progress, changelog, error, onCancel, onClose}: Up
 
                 {failed && <Failure>{failed}</Failure>}
 
-                <ChangesHeader>{t("Changes")}</ChangesHeader>
+                <ChangesHeader>{t("changes")}</ChangesHeader>
                 <Changelog>
                     {changelog?.trim()
                         ? changelog
                         : phase === "changelog" && !failed
-                            ? t("Loading changes...")
-                            : t("No changelog was published.")}
+                            ? t("loading_changes")
+                            : t("no_changelog_was_published")}
                 </Changelog>
 
                 {downloading && (
                     <Actions>
                         <CancelButton onClick={onCancel} type="button">
-                            {t("Cancel")}
+                            {t("cancel")}
                         </CancelButton>
                     </Actions>
                 )}

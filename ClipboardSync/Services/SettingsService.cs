@@ -32,7 +32,7 @@ internal sealed class SettingsService() : SettingsServiceBase<SettingsService, A
     protected override string? Validate(AppSettings settings)
     {
         if (string.IsNullOrWhiteSpace(settings.DeviceName))
-            return Localization.Get("error.invalidDeviceName");
+            return Localization.Get("error.invalid_device_name");
 
         try
         {
@@ -41,7 +41,7 @@ internal sealed class SettingsService() : SettingsServiceBase<SettingsService, A
         catch (Exception ex)
         {
             Constants.Logger.Warning(ex, "Could not move the blob store to {Directory}", settings.BlobDirectory);
-            return Localization.Get("error.blobDirectory");
+            return Localization.Get("error.blob_directory");
         }
 
         return null;

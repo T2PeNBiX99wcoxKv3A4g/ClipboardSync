@@ -12,13 +12,13 @@ export function TitleBar() {
         <Bar>
             <Brand>
                 <BrandMark size={19}/>
-                <strong>{t("ClipboardSync")}</strong>
+                <strong>{t("clipboard_sync")}</strong>
             </Brand>
 
             <DragArea {...drag}/>
 
             <Controls>
-                <ControlButton onClick={controls.minimize} title={t("Minimize")} type="button">
+                <ControlButton onClick={controls.minimize} title={t("minimize")} type="button">
                     <svg aria-hidden="true" viewBox="0 0 10 10">
                         <path d="M2 5h6"/>
                     </svg>
@@ -26,7 +26,7 @@ export function TitleBar() {
 
                 <ControlButton
                     onClick={controls.toggleMaximize}
-                    title={controls.maximized ? t("Restore") : t("Maximize")}
+                    title={controls.maximized ? t("restore") : t("maximize")}
                     type="button"
                 >
                     {controls.maximized
@@ -39,7 +39,7 @@ export function TitleBar() {
                         </svg>}
                 </ControlButton>
 
-                <CloseButton onClick={controls.close} title={t("Close")} type="button">
+                <CloseButton onClick={controls.close} title={t("close")} type="button">
                     <svg aria-hidden="true" viewBox="0 0 10 10">
                         <path d="m2 2 6 6M8 2 2 8"/>
                     </svg>

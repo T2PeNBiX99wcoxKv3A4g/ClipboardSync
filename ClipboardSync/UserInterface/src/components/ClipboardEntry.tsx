@@ -37,12 +37,12 @@ export function ClipboardEntry({item, copied, onCopy}: ClipboardEntryProps) {
     const title = item.kind === "file"
         ? item.files?.length === 1
             ? item.files[0].path
-            : t("{count} items", {count: item.files?.length ?? 0})
+            : t("count_items", {count: item.files?.length ?? 0})
         : item.content;
     const meta = item.kind === "file"
         ? fileCount === 0
-            ? t("Empty folder")
-            : `${fileCount === 1 ? t("1 file") : t("{count} files", {count: fileCount})} · ${formatSize(item.totalBytes)}`
+            ? t("empty_folder")
+            : `${fileCount === 1 ? t("k_1_file") : t("count_files", {count: fileCount})} · ${formatSize(item.totalBytes)}`
         : item.meta;
 
     useEffect(() => {
@@ -80,7 +80,7 @@ export function ClipboardEntry({item, copied, onCopy}: ClipboardEntryProps) {
                 <CopyButton
                     $active={copied}
                     onClick={() => onCopy(item)}
-                    title={copied ? t("Copied") : t("Copy")}
+                    title={copied ? t("copied") : t("copy")}
                     type="button"
                 >
                     {copied ? <CheckIcon size={12}/> : <CopyIcon size={12}/>}
@@ -116,7 +116,7 @@ export function ClipboardEntry({item, copied, onCopy}: ClipboardEntryProps) {
                 <Status
                     $status={item.status}
                     title={showCount
-                        ? t("{reached} of {peers} devices have this item.", {
+                        ? t("reached_of_peers_devices_have_this_item", {
                             reached: item.reached,
                             peers: item.peers,
                         })
@@ -130,7 +130,7 @@ export function ClipboardEntry({item, copied, onCopy}: ClipboardEntryProps) {
 
                 <Direction>
                     {item.direction === "out" ? <UploadIcon size={11}/> : <DownloadIcon size={11}/>}
-                    {item.direction === "out" ? t("Outgoing") : t("Incoming")}
+                    {item.direction === "out" ? t("outgoing") : t("incoming")}
                 </Direction>
             </Bottom>
         </Entry>
@@ -178,19 +178,19 @@ function statusColor(status: TransferStatus): string {
     }
 }
 
-/** "Sending" and "Receiving" share the transferring state; the direction decides the label. */
+/** "sending" and "receiving" share the transferring state; the direction decides the label. */
 function statusLabel(item: ClipboardItem): LocalizationKey {
     switch (item.status) {
         case "synced":
-            return "Synced";
+            return "synced";
         case "transferring":
-            return item.direction === "out" ? "Sending" : "Receiving";
+            return item.direction === "out" ? "sending" : "receiving";
         case "waiting":
-            return "Waiting";
+            return "waiting";
         case "received":
-            return "Received";
+            return "received";
         default:
-            return "Failed";
+            return "failed";
     }
 }
 
