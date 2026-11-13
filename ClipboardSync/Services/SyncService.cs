@@ -40,7 +40,7 @@ internal partial class SyncService
         _clipboard.TextCopied += OnTextCopied;
         _clipboard.ImageCopied += OnImageCopied;
         _clipboard.FilesCopied += OnFilesCopied;
-        SettingsService.Changed += _ => ApplyCurrent();
+        SettingsService.Instance.Changed += _ => ApplyCurrent();
 
         ApplyCurrent();
         _ = Task.Run(RetryLoopAsync);
