@@ -34,21 +34,39 @@ export function Dropdown({value, options, onChange, label}: DropdownProps) {
     useEffect(() => {
         if (!open) return;
 
-        const onPointerDown = (event: MouseEvent) => {
+        const close = () => setOpen(false);
+
+        const onPointerDown = (event: PointerEvent) => {
             if (root.current && !root.current.contains(event.target as Node))
-                setOpen(false);
+                close();
+        };
+
+        const onClick = (event: MouseEvent) => {
+            if (root.current && !root.current.contains(event.target as Node))
+                close();
         };
 
         const onKeyDown = (event: KeyboardEvent) => {
-            if (event.key === "Escape") setOpen(false);
+            if (event.key === "Escape") close();
         };
 
-        document.addEventListener("mousedown", onPointerDown);
+        const onFocusIn = (event: FocusEvent) => {
+            if (root.current && !root.current.contains(event.target as Node))
+                close();
+        };
+
+        document.addEventListener("pointerdown", onPointerDown, true);
+        document.addEventListener("click", onClick, true);
         document.addEventListener("keydown", onKeyDown);
+        document.addEventListener("focusin", onFocusIn);
+        window.addEventListener("blur", close);
 
         return () => {
-            document.removeEventListener("mousedown", onPointerDown);
+            document.removeEventListener("pointerdown", onPointerDown, true);
+            document.removeEventListener("click", onClick, true);
             document.removeEventListener("keydown", onKeyDown);
+            document.removeEventListener("focusin", onFocusIn);
+            window.removeEventListener("blur", close);
         };
     }, [open]);
 
@@ -58,7 +76,13 @@ export function Dropdown({value, options, onChange, label}: DropdownProps) {
     };
 
     return (
-        <Root ref={root}>
+        <Root
+            onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node | null))
+                    setOpen(false);
+            }}
+            ref={root}
+        >
             <Trigger
                 aria-expanded={open}
                 aria-haspopup="listbox"
