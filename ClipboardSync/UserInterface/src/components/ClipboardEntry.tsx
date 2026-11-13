@@ -124,7 +124,8 @@ export function ClipboardEntry({item, copied, onCopy}: ClipboardEntryProps) {
                 >
                     <Dot/>
                     {t(status)}
-                    {percent !== null && item.status === "transferring" && <Percent>{percent}%</Percent>}
+                    {percent !== null && (item.status === "sending" || item.status === "receiving") &&
+                        <Percent>{percent}%</Percent>}
                     {showCount && <Count>{count}</Count>}
                 </Status>
 
@@ -167,10 +168,15 @@ function statusColor(status: TransferStatus): string {
     switch (status) {
         case "synced":
             return "var(--success)";
-        case "transferring":
+        case "sending":
+        case "receiving":
             return "var(--accent-primary)";
+        case "queued":
+            return "var(--text-muted)";
         case "waiting":
             return "var(--warning)";
+        case "retrying":
+            return "var(--danger)";
         case "received":
             return "#3b82f6";
         default:
@@ -178,15 +184,20 @@ function statusColor(status: TransferStatus): string {
     }
 }
 
-/** "sending" and "receiving" share the transferring state; the direction decides the label. */
 function statusLabel(item: ClipboardItem): LocalizationKey {
     switch (item.status) {
         case "synced":
             return "synced";
-        case "transferring":
-            return item.direction === "out" ? "sending" : "receiving";
+        case "queued":
+            return "queued";
+        case "sending":
+            return "sending";
+        case "receiving":
+            return "receiving";
         case "waiting":
             return "waiting";
+        case "retrying":
+            return "retrying";
         case "received":
             return "received";
         default:

@@ -97,6 +97,8 @@
   "sending": "Sending",
   "receiving": "Receiving",
   "waiting": "Waiting",
+  "queued": "Queued",
+  "retrying": "Retrying",
   "failed": "Failed",
   "outgoing": "Outgoing",
   "incoming": "Incoming",

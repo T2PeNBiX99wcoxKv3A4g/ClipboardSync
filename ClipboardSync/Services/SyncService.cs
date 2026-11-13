@@ -16,6 +16,7 @@ namespace ClipboardSync.Services;
 [Singleton]
 internal partial class SyncService
 {
+    private static readonly TimeSpan ReplayDelay = TimeSpan.FromMilliseconds(300);
     private readonly ClipboardService _clipboard = ClipboardService.Instance;
     private readonly DiscoveryService _discovery = DiscoveryService.Instance;
     private readonly DeviceIdentity _identity = DeviceIdentity.Instance;
@@ -25,6 +26,7 @@ internal partial class SyncService
     private readonly PeerServer _server = PeerServer.Instance;
     private readonly SettingsService _settings = SettingsService.Instance;
     private readonly ClipboardStore _store = ClipboardStore.Instance;
+    private readonly SemaphoreSlim _syncGate = new(1, 1);
     private long _lastClearBroadcast;
     private long _lastFileAt;
 
@@ -86,16 +88,32 @@ internal partial class SyncService
         await _store.ForgetPeerAsync(peer.Id);
         PublishBoard();
 
-        foreach (var record in (await _store.SnapshotAsync()).Take(_settings.Current.HistoryLimit))
+        var limit = Math.Clamp(_settings.Current.HistoryLimit, 10, 5000);
+
+        foreach (var record in (await _store.SnapshotAsync()).OrderBy(record => record.At).TakeLast(limit))
         {
             await _store.MarkPendingAsync(record.Id, peer.Id);
-            await DeliverAsync(record, peer);
+            await DeliverAsync(record, peer, replay: true);
+            await Task.Delay(ReplayDelay);
         }
     }
 
     public void OnDiscoveryChanged() => PublishDevices();
 
-    public void OnPresenceChanged() => PublishDevices();
+    public void OnPresenceChanged()
+    {
+        PublishDevices();
+
+        // A peer that just came back gets one ordered replay, so its clipboard history catches up.
+        if (_peers.All.Any(peer => _presence.IsOnline(peer.Id)))
+        {
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(800));
+                await SyncMissingAsync();
+            });
+        }
+    }
 
     private void ApplyCurrent()
     {
@@ -300,7 +318,7 @@ internal partial class SyncService
         await Task.WhenAll(peers.Select(peer => DeliverAsync(record, peer)));
     }
 
-    private async Task DeliverAsync(ClipboardRecord record, PairedDevice peer)
+    private async Task DeliverAsync(ClipboardRecord record, PairedDevice peer, bool replay = false)
     {
         if (record.OriginDeviceId == peer.Id || record.DeliveredTo.Contains(peer.Id))
             return;
@@ -326,7 +344,7 @@ internal partial class SyncService
 
             var message = new ClipboardItemMessage(PeerProtocol.ClipboardItem, record.Id, record.OriginDeviceId,
                 record.OriginDeviceName, record.Kind, record.Content, record.Meta, record.At, data,
-                record.Files?.ToArray(), record.Roots?.ToArray(), record.TotalBytes, _store.ClearAt);
+                record.Files?.ToArray(), record.Roots?.ToArray(), record.TotalBytes, _store.ClearAt, replay);
 
             if (record.Kind == "file" && record.DeliveredTo.Count == 0)
                 _store.SetProgress(record.Id, record.TotalBytes > 0 ? 1 : 0);
@@ -598,9 +616,15 @@ internal partial class SyncService
             return;
         }
 
-        if (await _store.AddAsync(record))
+        var added = await _store.AddAsync(record);
+
+        // A replay is a deliberate second pass so the receiving clipboard history can record every
+        // item the peer missed; it still applies when this device already stored the item.
+        if (added || message.Replay)
         {
-            Log.Information("Received a clipboard item from {Device}", record.OriginDeviceName);
+            Log.Information(message.Replay
+                ? "Replayed a clipboard item from {Device}"
+                : "Received a clipboard item from {Device}", record.OriginDeviceName);
 
             if (record.Kind == "image")
             {
@@ -611,8 +635,11 @@ internal partial class SyncService
             else
                 ApplyRemoteText(record.Content);
 
-            PublishBoard();
-            _ = RelayAsync(record, session.PeerDeviceId);
+            if (added)
+            {
+                PublishBoard();
+                _ = RelayAsync(record, session.PeerDeviceId);
+            }
         }
 
         await AcknowledgeAsync(session, message.Id, true, null, token);
@@ -651,8 +678,11 @@ internal partial class SyncService
         if (roots.Any(root => !seen.Contains(root) || ClipboardFiles.Resolve(Constants.DataDirectory, root) is null))
             throw new PeerSecurityException("The file item has an unsafe root.");
 
-        if (await _store.FindAsync(message.Id) is not null)
+        if (await _store.FindAsync(message.Id) is { } existing)
         {
+            if (message.Replay)
+                await ApplyRemoteFilesAsync(existing);
+
             await AcknowledgeAsync(session, message.Id, true, null, token);
             return;
         }
@@ -680,6 +710,9 @@ internal partial class SyncService
 
         if (!await _store.AddAsync(placeholder))
         {
+            if (message.Replay && await _store.FindAsync(message.Id) is { } stored)
+                await ApplyRemoteFilesAsync(stored);
+
             await AcknowledgeAsync(session, message.Id, true, null, token);
             return;
         }
@@ -879,29 +912,46 @@ internal partial class SyncService
     }
 
     /// <summary>
-    ///     Makes every device's board converge: for each item, any peer that has not acknowledged it
-    ///     is sent a copy. This covers items copied before a device was paired, items that failed while
-    ///     a peer was offline, and items relayed through another device.
+    ///     Makes every device's board converge: for each peer, every item it has not acknowledged is
+    ///     replayed oldest first, one at a time. The delay between items gives the receiving side's
+    ///     clipboard history a chance to record each one instead of only the last.
     /// </summary>
     private async Task SyncMissingAsync()
     {
-        var peers = _peers.All;
-        if (peers.Count == 0)
+        if (!_syncGate.Wait(0))
             return;
 
-        foreach (var record in (await _store.SnapshotAsync()).Take(200))
+        try
         {
-            var targets = peers
-                .Where(peer => peer.Id != record.OriginDeviceId && !record.DeliveredTo.Contains(peer.Id))
-                .ToArray();
+            var peers = _peers.All.Where(peer => _presence.IsOnline(peer.Id)).ToArray();
+            if (peers.Length == 0)
+                return;
 
-            if (targets.Length == 0)
-                continue;
+            var records = await _store.SnapshotAsync();
+            var limit = Math.Clamp(_settings.Current.HistoryLimit, 10, 5000);
 
-            foreach (var peer in targets)
-                await _store.MarkPendingAsync(record.Id, peer.Id);
+            await Task.WhenAll(peers.Select(peer => ReplayMissingForPeerAsync(peer, records, limit)));
+        }
+        finally
+        {
+            _syncGate.Release();
+        }
+    }
 
-            await Task.WhenAll(targets.Select(peer => DeliverAsync(record, peer)));
+    private async Task ReplayMissingForPeerAsync(PairedDevice peer, IReadOnlyList<ClipboardRecord> records, int limit)
+    {
+        var missing = records
+            .Where(record => record.OriginDeviceId != peer.Id && !record.DeliveredTo.Contains(peer.Id))
+            .OrderBy(record => record.At)
+            .TakeLast(limit);
+
+        foreach (var record in missing)
+        {
+            await _store.MarkPendingAsync(record.Id, peer.Id);
+            await DeliverAsync(record, peer, replay: true);
+
+            // Give the OS clipboard history time to keep each replayed item.
+            await Task.Delay(ReplayDelay);
         }
     }
 
@@ -1129,16 +1179,22 @@ internal partial class SyncService
         string status;
         if (!local)
             status = record.Kind == "file" && record.Progress < record.TotalBytes
-                ? "transferring"
+                ? "receiving"
                 : "received";
         else if (record.FailedFor.Count > 0)
-            status = "failed";
+            status = "retrying";
         else if (record.PendingFor.Count > 0)
-            status = record.Kind == "file" && record.Progress > 0 && record.Progress < record.TotalBytes
-                ? "transferring"
-                : reached > 0
-                    ? "transferring"
+        {
+            var transferring = record.Kind == "file" &&
+                               record.Progress > 0 && record.Progress < record.TotalBytes;
+            var online = record.PendingFor.Any(id => _presence.IsOnline(id));
+
+            status = transferring || reached > 0
+                ? "sending"
+                : online
+                    ? "queued"
                     : "waiting";
+        }
         else if (peers == 0 || reached >= peers)
             status = "synced";
         else

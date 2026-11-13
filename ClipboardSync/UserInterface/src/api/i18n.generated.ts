@@ -101,12 +101,14 @@ declare module "@photino-net-utils/bridge"
         "pairing_code": true;
         "pairing_failed": true;
         "pair_a_device": true;
+        "queued": true;
         "reached_of_peers_devices_have_this_item": true;
         "received": true;
         "receiving": true;
         "reject": true;
         "restore": true;
         "restore_defaults": true;
+        "retrying": true;
         "save_changes": true;
         "saving": true;
         "scanning_the_local_network": true;

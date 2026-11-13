@@ -16,7 +16,7 @@ import {getSettings, saveSettings, type Settings} from "../api/settings";
 import {clearHistory} from "../api/peer";
 import {Toggle} from "../components/Toggle";
 import {Dropdown} from "../components/Dropdown";
-import {CheckIcon, FolderIcon, InfoIcon} from "../components/Icons";
+import {CheckIcon, FolderIcon} from "../components/Icons";
 
 interface SettingsPageProps {
     info: AppInfo | null;
@@ -27,13 +27,12 @@ interface SettingsPageProps {
     onInstallUpdate: () => void;
 }
 
-type SectionId = "general" | "sync" | "history" | "updates" | "about";
+type SectionId = "general" | "sync" | "history" | "about";
 
 const sections: { id: SectionId; label: LocalizationKey }[] = [
     {id: "general", label: "general"},
     {id: "sync", label: "sync"},
     {id: "history", label: "history"},
-    {id: "updates", label: "updates"},
     {id: "about", label: "about"},
 ];
 
@@ -74,7 +73,6 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
         general: null,
         sync: null,
         history: null,
-        updates: null,
         about: null,
     });
     const sectionNavReady = settings !== null;
@@ -509,12 +507,12 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
                     </Card>
                 </Section>
 
-                <Section id="settings-updates" ref={(node) => {
-                    sectionRefs.current.updates = node;
+                <Section id="settings-about" ref={(node) => {
+                    sectionRefs.current.about = node;
                 }}>
                     <SectionHead>
-                        <h2>{t("updates")}</h2>
-                        <p>{t("check_for_a_newer_release_and_open_its_download_page")}</p>
+                        <h2>{t("about")}</h2>
+                        <p>{t("the_build_running_on_this_device")}</p>
                     </SectionHead>
                     <UpdateCard $available={updateState?.available ?? false}>
                         <UpdateSummary>
@@ -551,23 +549,7 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
                             )}
                         </UpdateActions>
                     </UpdateCard>
-                </Section>
-
-                <Section id="settings-about" ref={(node) => {
-                    sectionRefs.current.about = node;
-                }}>
-                    <SectionHead>
-                        <h2>{t("about")}</h2>
-                        <p>{t("the_build_running_on_this_device")}</p>
-                    </SectionHead>
                     <Card>
-                        <Field>
-                            <FieldText>
-                                <label>{t("version")}</label>
-                                <p>{info ? `${info.version} · ${info.platform}` : t("browser_preview")}</p>
-                            </FieldText>
-                            <InfoIcon size={15}/>
-                        </Field>
                         <Field>
                             <FieldText>
                                 <label>{t("logs")}</label>

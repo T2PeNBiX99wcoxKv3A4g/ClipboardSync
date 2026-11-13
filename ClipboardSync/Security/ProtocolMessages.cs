@@ -116,7 +116,8 @@ internal sealed record ClipboardItemMessage(
     ClipboardFileEntry[]? Files = null,
     string[]? Roots = null,
     long TotalBytes = 0,
-    long ClearAt = 0);
+    long ClearAt = 0,
+    bool Replay = false);
 
 /// <summary>A device cleared its history; peers older than this timestamp clear theirs too.</summary>
 internal sealed record HistoryClearMessage(string Type, long At);

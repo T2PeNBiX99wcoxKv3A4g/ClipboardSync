@@ -94,6 +94,8 @@
   "sending": "送信中",
   "receiving": "受信中",
   "waiting": "待機中",
+  "queued": "送信待ち",
+  "retrying": "再試行中",
   "failed": "失敗",
   "outgoing": "送信",
   "incoming": "受信",

@@ -1,6 +1,14 @@
 import {Native} from "@photino-net-utils/bridge";
 
-export type TransferStatus = "synced" | "transferring" | "waiting" | "failed" | "received";
+export type TransferStatus =
+    | "synced"
+    | "queued"
+    | "sending"
+    | "waiting"
+    | "retrying"
+    | "receiving"
+    | "received"
+    | "failed";
 export type TransferDirection = "out" | "in";
 export type ClipboardKind = "text" | "link" | "image" | "file";
 

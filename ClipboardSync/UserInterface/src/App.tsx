@@ -212,7 +212,7 @@ export default function App() {
                                     aria-label={t("version_version_is_available", {version: update.latest})}
                                     onClick={() => {
                                         setPage("settings");
-                                        setSettingsSection("updates");
+                                        setSettingsSection("about");
                                     }}
                                     title={t("version_version_is_available", {version: update.latest})}
                                     type="button"
