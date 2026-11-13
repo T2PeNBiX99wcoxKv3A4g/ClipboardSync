@@ -143,5 +143,6 @@
   "error.update_in_progress": "すでに更新をダウンロード中です。",
   "error.update_download_failed": "更新をダウンロードできませんでした。",
   "error.changelog_failed": "変更履歴を読み込めませんでした。",
-  "error.open_release_failed": "リリースページを開けませんでした。"
+  "error.open_release_failed": "リリースページを開けませんでした。",
+  "error.open_url_failed": "リンクを開けませんでした。"
 }

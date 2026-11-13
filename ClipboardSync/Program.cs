@@ -105,6 +105,7 @@ internal static class Program
                 Notify: (type, data) => WindowManager.Instance.NotifyMainWindow(type, data)));
 
             // Touching each singleton constructs it, which is what registers its message handlers.
+            _ = LinkService.Instance;
 
             var manager = WindowManager.Instance;
             manager.AppUrl = appUrl;

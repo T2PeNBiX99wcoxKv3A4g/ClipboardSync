@@ -143,5 +143,6 @@
   "error.update_in_progress": "已經在下載更新。",
   "error.update_download_failed": "無法下載更新。",
   "error.changelog_failed": "無法載入更新記錄。",
-  "error.open_release_failed": "無法開啟發佈頁面。"
+  "error.open_release_failed": "無法開啟發佈頁面。",
+  "error.open_url_failed": "無法開啟連結。"
 }

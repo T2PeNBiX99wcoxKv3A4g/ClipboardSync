@@ -23,3 +23,6 @@ internal sealed record SettingsPayload(
 
 /// <summary>Payload for <c>app.navigate</c>: the page the tray asked the interface to open.</summary>
 internal sealed record AppNavigatePayload(string Page);
+
+/// <summary>Body for <c>system.openUrl</c>.</summary>
+internal sealed record OpenUrlRequest(string Url);

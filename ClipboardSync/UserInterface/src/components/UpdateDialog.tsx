@@ -1,5 +1,6 @@
+import type {MouseEvent} from "react";
 import styled, {keyframes} from "styled-components";
-import {useTranslation} from "@photino-net-utils/bridge";
+import {Markdown, openUrl, useTranslation} from "@photino-net-utils/bridge";
 import type {UpdateProgress} from "../api/system";
 
 interface UpdateDialogProps {
@@ -29,6 +30,15 @@ export function UpdateDialog({progress, changelog, error, onCancel, onClose}: Up
             ? progress.percent
             : null;
     const indeterminate = downloading && percent === null;
+
+    const openLink = (event: MouseEvent<HTMLDivElement>) => {
+        const anchor = (event.target as HTMLElement).closest("a");
+        if (!anchor?.href)
+            return;
+
+        event.preventDefault();
+        void openUrl(anchor.href).catch(() => undefined);
+    };
 
     return (
         <Backdrop role="dialog" aria-modal="true">
@@ -80,9 +90,9 @@ export function UpdateDialog({progress, changelog, error, onCancel, onClose}: Up
                 {failed && <Failure>{failed}</Failure>}
 
                 <ChangesHeader>{t("changes")}</ChangesHeader>
-                <Changelog>
+                <Changelog onClick={openLink}>
                     {changelog?.trim()
-                        ? changelog
+                        ? <Markdown source={changelog}/>
                         : phase === "changelog" && !failed
                             ? t("loading_changes")
                             : t("no_changelog_was_published")}
@@ -225,7 +235,7 @@ const ChangesHeader = styled.span`
     color: var(--text-muted);
 `;
 
-const Changelog = styled.pre`
+const Changelog = styled.div`
     flex: 1;
     min-height: 120px;
     margin: 0;
@@ -235,11 +245,94 @@ const Changelog = styled.pre`
     border-radius: var(--radius-sm);
     background: var(--bg-secondary);
     color: var(--text-secondary);
-    font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 10.5px;
     line-height: 1.55;
-    white-space: pre-wrap;
     user-select: text;
+
+    h1, h2, h3 {
+        margin: 12px 0 5px;
+        color: var(--text-primary);
+        line-height: 1.3;
+    }
+
+    h1 {
+        font-size: 14px;
+    }
+
+    h2 {
+        padding-bottom: 4px;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 12.5px;
+    }
+
+    h3 {
+        font-size: 11px;
+    }
+
+    p {
+        margin: 5px 0;
+    }
+
+    ul, ol {
+        margin: 4px 0 8px;
+        padding-left: 18px;
+    }
+
+    li {
+        margin: 2px 0;
+    }
+
+    a {
+        color: var(--accent-primary);
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    code {
+        padding: 1px 4px;
+        border-radius: 3px;
+        background: var(--bg-pill);
+        font-family: var(--font-mono);
+        font-size: 0.92em;
+    }
+
+    pre {
+        margin: 6px 0;
+        padding: 8px 10px;
+        overflow: auto;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        background: var(--bg-media-soft);
+
+        code {
+            padding: 0;
+            background: transparent;
+        }
+    }
+
+    blockquote {
+        margin: 6px 0;
+        padding-left: 8px;
+        border-left: 2px solid var(--border-color-hover);
+        color: var(--text-muted);
+    }
+
+    hr {
+        margin: 10px 0;
+        border: 0;
+        border-top: 1px solid var(--border-color);
+    }
+
+    > :first-child {
+        margin-top: 0;
+    }
+
+    > :last-child {
+        margin-bottom: 0;
+    }
 `;
 
 const Actions = styled.div`

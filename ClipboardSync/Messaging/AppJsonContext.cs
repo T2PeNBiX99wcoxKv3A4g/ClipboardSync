@@ -39,6 +39,7 @@ namespace ClipboardSync.Messaging;
 [JsonSerializable(typeof(WindowStatePayload))]
 [JsonSerializable(typeof(WindowResizeRequest))]
 [JsonSerializable(typeof(AppNavigatePayload))]
+[JsonSerializable(typeof(OpenUrlRequest))]
 [JsonSerializable(typeof(AppSettings))]
 [JsonSerializable(typeof(PairedDevice))]
 [JsonSerializable(typeof(PairedDevice[]))]

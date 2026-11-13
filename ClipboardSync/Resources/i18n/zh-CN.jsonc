@@ -143,5 +143,6 @@
   "error.update_in_progress": "已经在下载更新。",
   "error.update_download_failed": "无法下载更新。",
   "error.changelog_failed": "无法加载更新日志。",
-  "error.open_release_failed": "无法打开发布页面。"
+  "error.open_release_failed": "无法打开发布页面。",
+  "error.open_url_failed": "无法打开链接。"
 }

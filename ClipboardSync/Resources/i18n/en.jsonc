@@ -146,5 +146,6 @@
   "error.update_in_progress": "An update is already being downloaded.",
   "error.update_download_failed": "The update could not be downloaded.",
   "error.changelog_failed": "The changelog could not be loaded.",
-  "error.open_release_failed": "The release page could not be opened."
+  "error.open_release_failed": "The release page could not be opened.",
+  "error.open_url_failed": "The link could not be opened."
 }

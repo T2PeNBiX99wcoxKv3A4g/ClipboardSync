@@ -54,6 +54,7 @@ declare module "@photino-net-utils/bridge"
         "error.invalid_settings": true;
         "error.open_logs_failed": true;
         "error.open_release_failed": true;
+        "error.open_url_failed": true;
         "error.update_check_failed": true;
         "error.update_download_failed": true;
         "error.update_in_progress": true;
