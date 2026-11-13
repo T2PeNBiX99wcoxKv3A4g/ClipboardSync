@@ -54,12 +54,29 @@
              Framework-dependent single-file: a Windows machine can cross-publish the Linux build. -->
         <SettingsCodeGenPath>$(MSBuildProjectDirectory)\Libs\CodeGen\$(NETCoreSdkRuntimeIdentifier)\PhotinoNETUtils.CodeGen</SettingsCodeGenPath>
         <SettingsCodeGenPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">$(SettingsCodeGenPath).exe</SettingsCodeGenPath>
+        <SettingsTypeScriptPath>$(MSBuildProjectDirectory)\UserInterface\src\api\settings.generated.ts</SettingsTypeScriptPath>
+        <SettingsSchemaPath>$(MSBuildProjectDirectory)\UserInterface\src\api\settings.schema.json</SettingsSchemaPath>
+        <LocalizationKeysPath>$(MSBuildProjectDirectory)\UserInterface\src\api\i18n.generated.ts</LocalizationKeysPath>
+        <TranslationFile>$(MSBuildProjectDirectory)\Resources\i18n\en.jsonc</TranslationFile>
     </PropertyGroup>
 
-    <Target Name="GenerateSettingsTypes"
+    <!-- The translation keys are not a build product; the file is read directly. -->
+    <Target Name="GenerateLocalizationKeys"
             BeforeTargets="BeforeBuild"
-            Condition="Exists('$(SettingsCodeGenPath)')">
-        <Exec Command="&quot;$(SettingsCodeGenPath)&quot; --model &quot;$(MSBuildProjectDirectory)\Models\AppSettings.cs&quot; --out &quot;$(MSBuildProjectDirectory)\UserInterface\src\api\settings.generated.ts&quot; --schema &quot;$(MSBuildProjectDirectory)\UserInterface\src\api\settings.schema.json&quot; --i18n &quot;$(MSBuildProjectDirectory)\Resources\i18n\en.jsonc&quot; --i18n-out &quot;$(MSBuildProjectDirectory)\UserInterface\src\api\i18n.generated.ts&quot;"/>
+            Condition="Exists('$(SettingsCodeGenPath)')"
+            Inputs="$(TranslationFile);$(SettingsCodeGenPath)"
+            Outputs="$(LocalizationKeysPath)">
+        <Exec Command="&quot;$(SettingsCodeGenPath)&quot; --i18n &quot;$(TranslationFile)&quot; --i18n-out &quot;$(LocalizationKeysPath)&quot;"/>
+    </Target>
+
+    <!-- The settings come from the compiled model: the compiler has already resolved #if, partial
+         files, const references and nameof, so the interface cannot disagree with the app. -->
+    <Target Name="GenerateSettingsTypes"
+            AfterTargets="CoreCompile"
+            Condition="Exists('$(SettingsCodeGenPath)')"
+            Inputs="@(IntermediateAssembly);$(SettingsCodeGenPath)"
+            Outputs="$(SettingsTypeScriptPath);$(SettingsSchemaPath)">
+        <Exec Command="&quot;$(SettingsCodeGenPath)&quot; --assembly &quot;@(IntermediateAssembly)&quot; --out &quot;$(SettingsTypeScriptPath)&quot; --schema &quot;$(SettingsSchemaPath)&quot;"/>
     </Target>
 
     <ItemGroup>
