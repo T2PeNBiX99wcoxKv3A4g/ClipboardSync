@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.9.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.8.1..v0.9.0) - 2026-11-13
+
+### ⛰️  Features
+
+- *(update)* Render the changelog as markdown - ([346e7da](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/346e7da6d6805f7e3fbc74bb839c9602c8c49918))
+- Replay missed clips in order and merge the about sections - ([449d7c6](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/449d7c6ec5f149b9696b946b0fda84c4e18af1ba))
+
+### 🐛 Bug Fixes
+
+- *(ui)* Close dropdowns when focus leaves - ([8a29cd3](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/8a29cd39a19cefe6668619ccc2a5c03e948535cd))
+
+### ⚙️ Miscellaneous Tasks
+
+- Update PhotinoNetUtils bridge to version 0.26.0 - ([73eb732](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/73eb732db24e987d4f38300f598ac66ed7cb7db9))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([157671a](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/157671a022f80bb0c661ad0675cd2af9cc658497))
+
+
 ## [0.8.1](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.8.0..v0.8.1) - 2026-11-13
 
 ### ⚙️ Miscellaneous Tasks
