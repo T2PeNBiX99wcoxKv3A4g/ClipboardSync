@@ -23,6 +23,7 @@ jobs:
     with:
       project_path: './ClipboardSync/ClipboardSync.csproj'
       filename: 'ClipboardSync'
+      dotnet_version: '11.0.x'
       runtimes: '["win-x64", "linux-x64"]'
       version_file_path: './ClipboardSync/ClipboardSync.csproj'
       prerelease: true
