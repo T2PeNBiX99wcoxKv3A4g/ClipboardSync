@@ -30,11 +30,13 @@ internal static class Program
         // The bridge serializes through this context; it has to know it before the interface speaks.
         NativeBridge.Initialize(AppJsonContext.Default);
 
+        // Discover the translation files first: settings normalization maps a stored locale to one of them.
+        Localization.Initialize(typeof(Program).Assembly, "ClipboardSync.Resources.i18n.",
+            () => SettingsService.Instance.Language);
+
         // The language lives in the settings; load them before anything asks for a string.
         SettingsService.Instance.LoadAsync().GetAwaiter().GetResult();
         BlobStore.Configure(SettingsService.Instance.Current.BlobDirectory);
-        Localization.Initialize(typeof(Program).Assembly, "ClipboardSync.Resources.i18n.",
-            () => SettingsService.Instance.Language);
 
         if (OperatingSystem.IsLinux())
         {
