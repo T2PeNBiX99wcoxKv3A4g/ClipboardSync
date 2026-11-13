@@ -50,8 +50,9 @@
     </ItemGroup>
 
     <PropertyGroup>
-        <!-- The generator is native AOT: one executable, no .dll/.deps.json/.runtimeconfig.json. -->
-        <SettingsCodeGenPath>$(MSBuildProjectDirectory)\Libs\CodeGen\PhotinoNETUtils.CodeGen</SettingsCodeGenPath>
+        <!-- One executable per platform under Libs/CodeGen/<rid>; the host RID picks the right one.
+             Framework-dependent single-file: a Windows machine can cross-publish the Linux build. -->
+        <SettingsCodeGenPath>$(MSBuildProjectDirectory)\Libs\CodeGen\$(NETCoreSdkRuntimeIdentifier)\PhotinoNETUtils.CodeGen</SettingsCodeGenPath>
         <SettingsCodeGenPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">$(SettingsCodeGenPath).exe</SettingsCodeGenPath>
     </PropertyGroup>
 
