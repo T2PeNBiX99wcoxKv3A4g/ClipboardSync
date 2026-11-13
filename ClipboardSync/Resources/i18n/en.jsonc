@@ -1,4 +1,4 @@
-// The key is the English text, so a missing translation still reads naturally.
+// Keys are lowercase paths (letters, digits, '_' and '.'); a missing translation falls back to this file.
 {
   // Keys are case-insensitive and must be unique inside one file. A second spelling of the same
   // key is a build error (PNU2102); fix it by renaming or removing that key - never by deleting

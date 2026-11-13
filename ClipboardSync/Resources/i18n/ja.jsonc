@@ -1,4 +1,4 @@
-// The key is the English text, so a missing translation still reads naturally.
+// Missing keys fall back to en.jsonc.
 {
   "clipboard_sync": "ClipboardSync",
   "minimize": "最小化",
