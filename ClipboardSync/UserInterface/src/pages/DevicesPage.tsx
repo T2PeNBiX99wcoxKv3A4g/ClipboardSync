@@ -560,7 +560,7 @@ const Backdrop = styled.div`
     display: grid;
     place-items: center;
     padding: 24px;
-    background: rgba(10, 8, 6, 0.72);
+    background: var(--overlay);
     backdrop-filter: blur(3px);
 `;
 
@@ -642,7 +642,7 @@ const CodeBox = styled.div`
     padding: 13px 14px;
     border: 1px dashed var(--border-color-hover);
     border-radius: var(--radius-md);
-    background: rgba(16, 12, 9, 0.6);
+    background: var(--bg-panel);
 `;
 
 const Code = styled.strong`
@@ -713,7 +713,7 @@ const AcceptButton = styled.button`
     border: 1px solid transparent;
     border-radius: var(--radius-sm);
     background: var(--accent-gradient);
-    color: #241206;
+    color: var(--text-on-accent);
     font: inherit;
     font-size: 10.5px;
     font-weight: 600;

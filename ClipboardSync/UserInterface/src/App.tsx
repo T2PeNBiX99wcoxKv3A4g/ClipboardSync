@@ -1,7 +1,8 @@
 import {useEffect, useRef, useState} from "react";
 import styled, {keyframes} from "styled-components";
-import {Native, ResizeHandles, type LocalizationKey, useTranslation, useWindowCorners} from "@photino-net-utils/bridge";
+import {Native, ResizeHandles, type LocalizationKey, type ThemeMode, useTheme, useTranslation, useWindowCorners} from "@photino-net-utils/bridge";
 import {type AppInfo, cancelUpdateDownload, getAppInfo, getUpdateStatus, installUpdate, type UpdateCheck, onUpdateChangelog, onUpdateProgress, type UpdateProgress, startUpdateDownload} from "./api/system";
+import {getSettings, onSettingsChanged} from "./api/settings";
 import {type ClipboardItem, copyFiles, copyImage} from "./api/peer";
 import {Sidebar} from "./components/Sidebar";
 import {TitleBar} from "./components/TitleBar";
@@ -46,6 +47,7 @@ export default function App() {
     const cancelled = useRef(false);
     const [page, setPage] = useState<Page>("devices");
     const [info, setInfo] = useState<AppInfo | null>(null);
+    const [theme, setTheme] = useState<ThemeMode>("system");
     const [update, setUpdate] = useState<UpdateCheck | null>(null);
     const [updateDialog, setUpdateDialog] = useState<UpdateDialogState | null>(null);
     const [settingsSection, setSettingsSection] = useState<string | null>(null);
@@ -59,6 +61,17 @@ export default function App() {
     useEffect(() => {
         void getUpdateStatus().then(setUpdate, () => undefined);
     }, []);
+
+    // The theme follows the stored setting, and follows the OS while it is "system".
+    useEffect(() => {
+        const apply = (mode: string) =>
+            setTheme(mode === "light" || mode === "dark" ? mode : "system");
+
+        void getSettings().then((settings) => apply(settings.theme), () => undefined);
+        return onSettingsChanged((settings) => apply(settings.theme));
+    }, []);
+
+    useTheme(theme);
 
     // The host waits for this before pushing events; sending to a web view that is still loading
     // would abort it.

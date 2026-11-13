@@ -17,6 +17,10 @@ public sealed record AppSettings
     [Setting(Comment = "Interface and backend language: system, en, ja, zh-CN or zh-TW.")]
     public string Language { get; init; } = "system";
 
+    /// <summary>Interface theme: <c>system</c>, <c>light</c> or <c>dark</c>.</summary>
+    [Setting(Comment = "Interface theme: system, light or dark.")]
+    public string Theme { get; init; } = "system";
+
     /// <summary>Start with the window hidden in the tray.</summary>
     [Setting(Comment = "Start with the window hidden in the tray.")]
     public bool StartHidden { get; init; }

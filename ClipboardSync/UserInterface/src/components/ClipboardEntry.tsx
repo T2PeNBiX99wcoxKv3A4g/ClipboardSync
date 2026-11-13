@@ -153,28 +153,28 @@ function kindIcon(kind: ClipboardKind) {
 function kindColor(kind: ClipboardKind): string {
     switch (kind) {
         case "link":
-            return "#ff8a3d";
+            return "var(--accent-primary)";
         case "image":
-            return "#60a5fa";
+            return "#3b82f6";
         case "file":
-            return "#ffd166";
+            return "var(--warning)";
         default:
-            return "#c6b6a6";
+            return "var(--text-secondary)";
     }
 }
 
 function statusColor(status: TransferStatus): string {
     switch (status) {
         case "synced":
-            return "#6ee7b7";
+            return "var(--success)";
         case "transferring":
-            return "#ff8a3d";
+            return "var(--accent-primary)";
         case "waiting":
-            return "#ffd166";
+            return "var(--warning)";
         case "received":
-            return "#60a5fa";
+            return "#3b82f6";
         default:
-            return "#ff6b6b";
+            return "var(--danger)";
     }
 }
 
@@ -202,11 +202,11 @@ const Entry = styled.article<{ $status: TransferStatus }>`
     border: 1px solid var(--border-color);
     border-left: 2px solid ${({$status}) => statusColor($status)};
     border-radius: var(--radius-sm);
-    background: rgba(20, 16, 12, 0.5);
+    background: var(--bg-entry);
     transition: background 120ms ease, border-color 120ms ease;
 
     &:hover {
-        background: rgba(35, 29, 24, 0.8);
+        background: var(--bg-entry-hover);
         border-color: var(--border-color-hover);
         border-left-color: ${({$status}) => statusColor($status)};
     }
@@ -226,7 +226,7 @@ const Preview = styled.div`
     overflow: hidden;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
-    background: rgba(10, 8, 6, 0.55);
+    background: var(--bg-media);
 
     img {
         display: block;
@@ -252,7 +252,7 @@ const FileList = styled.div`
     padding: 7px 8px;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
-    background: rgba(10, 8, 6, 0.45);
+    background: var(--bg-media-soft);
 `;
 
 const FileRow = styled.div`
@@ -266,7 +266,7 @@ const FileRow = styled.div`
 
     svg {
         flex-shrink: 0;
-        color: #ffd166;
+        color: var(--warning);
     }
 `;
 
@@ -381,7 +381,7 @@ const Dot = styled.span`
 const Count = styled.span`
     padding: 1px 4px;
     border-radius: 3px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-pill);
     color: var(--text-secondary);
 `;
 

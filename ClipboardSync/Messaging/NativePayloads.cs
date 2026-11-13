@@ -10,6 +10,7 @@ internal sealed record OkPayload(bool Ok = true);
 internal sealed record SettingsPayload(
     string DeviceName,
     string Language,
+    string Theme,
     bool StartHidden,
     bool SyncEnabled,
     bool SyncText,

@@ -25,7 +25,7 @@ internal sealed class SettingsService() : SettingsServiceBase<SettingsService, A
     public string Language => Current.Language;
 
     protected override SettingsPayload Payload() =>
-        new(Current.DeviceName, Current.Language, Current.StartHidden, Current.SyncEnabled,
+        new(Current.DeviceName, Current.Language, Current.Theme, Current.StartHidden, Current.SyncEnabled,
             Current.SyncText, Current.SyncImages, Current.SyncFiles, Current.HistoryLimit, Current.MaxImageMb,
             Current.MaxFileMb, Current.BlobDirectory);
 
@@ -60,6 +60,7 @@ internal sealed class SettingsService() : SettingsServiceBase<SettingsService, A
             ? AppSettings.Default.DeviceName
             : stored.DeviceName.Trim(),
         Language = Localization.Normalize(stored.Language),
+        Theme = stored.Theme is "light" or "dark" ? stored.Theme : "system",
         MaxFileMb = stored.MaxFileMb > 0 ? stored.MaxFileMb : ClipboardLimits.DefaultFileMb,
         BlobDirectory = stored.BlobDirectory?.Trim() ?? string.Empty
     };

@@ -45,12 +45,19 @@ const languages = [
     {id: "zh-TW", label: "繁體中文"},
 ];
 
+const themes: { id: string; label: LocalizationKey }[] = [
+    {id: "system", label: "System default"},
+    {id: "light", label: "Light"},
+    {id: "dark", label: "Dark"},
+];
+
 export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpdate}: SettingsPageProps) {
     const t = useTranslation();
     const languageOptions = languages.map((language) => ({
         ...language,
         label: language.id === "system" ? t("System default") : language.label,
     }));
+    const themeOptions = themes.map((theme) => ({...theme, label: t(theme.label)}));
     const [settings, setSettings] = useState<Settings | null>(null);
     const [saved, setSaved] = useState<Settings | null>(null);
     const [startup, setStartupState] = useState<{ supported: boolean; enabled: boolean } | null>(null);
@@ -150,6 +157,19 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
         });
     };
 
+    const changeTheme = (theme: string) => {
+        update("theme", theme);
+
+        if (!settings || !saved) return;
+
+        void saveSettings({...saved, theme}).then((next) => {
+            setSaved(next);
+            setSettings((current) => current ? {...current, theme: next.theme} : current);
+        }, () => {
+            setNotice({ok: false, text: t("The host did not answer.")});
+        });
+    };
+
     const dirty = settings !== null && saved !== null && JSON.stringify(settings) !== JSON.stringify(saved);
 
     const toggleStartup = (enabled: boolean) => {
@@ -183,6 +203,7 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
             // Keep the device name: it identifies this device to peers, not a preference.
             deviceName: settings.deviceName,
             language: "system",
+            theme: "system",
             startHidden: false,
             syncEnabled: true,
             syncText: true,
@@ -283,6 +304,19 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
                                 onChange={changeLanguage}
                                 options={languageOptions}
                                 value={settings.language}
+                            />
+                        </Field>
+
+                        <Field>
+                            <FieldText>
+                                <label>{t("Theme")}</label>
+                                <p>{t("Applies to the interface.")}</p>
+                            </FieldText>
+                            <Dropdown
+                                label={t("Theme")}
+                                onChange={changeTheme}
+                                options={themeOptions}
+                                value={settings.theme}
                             />
                         </Field>
 
@@ -922,7 +956,7 @@ const DangerButton = styled.button`
     border: 1px solid rgba(255, 107, 107, 0.45);
     border-radius: var(--radius-sm);
     background: rgba(255, 107, 107, 0.12);
-    color: #ff9b9b;
+    color: var(--danger);
     font: inherit;
     font-size: 9.5px;
     cursor: pointer;
@@ -1039,7 +1073,7 @@ const SaveButton = styled.button`
     border: 1px solid transparent;
     border-radius: var(--radius-sm);
     background: var(--accent-gradient);
-    color: #241206;
+    color: var(--text-on-accent);
     font: inherit;
     font-size: 11px;
     font-weight: 600;

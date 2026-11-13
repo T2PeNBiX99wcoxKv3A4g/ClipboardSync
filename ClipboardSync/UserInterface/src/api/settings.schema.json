@@ -11,6 +11,10 @@
       "type": "string",
       "description": "Interface and backend language: system, en, ja, zh-CN or zh-TW."
     },
+    "theme": {
+      "type": "string",
+      "description": "Interface theme: system, light or dark."
+    },
     "startHidden": {
       "type": "boolean",
       "description": "Start with the window hidden in the tray."

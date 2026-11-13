@@ -37,7 +37,7 @@ const Aside = styled.aside`
     width: 218px;
     flex-shrink: 0;
     padding: 16px 14px 18px;
-    background: rgba(12, 10, 8, 0.9);
+    background: var(--bg-sidebar);
     border-right: 1px solid var(--border-color);
 `;
 

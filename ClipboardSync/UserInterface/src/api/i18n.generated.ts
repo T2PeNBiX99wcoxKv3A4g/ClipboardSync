@@ -12,6 +12,7 @@ declare module "@photino-net-utils/bridge"
         "Accept": true;
         "All changes saved": true;
         "Applies to the interface and the tray menu.": true;
+        "Applies to the interface.": true;
         "Blob storage folder": true;
         "Both devices show the same code, so you can check the connection.": true;
         "browser preview": true;
@@ -35,6 +36,7 @@ declare module "@photino-net-utils/bridge"
         "Copying an image sends it to the other devices.": true;
         "Copying files or folders sends them to the other devices.": true;
         "Copying text or a URL sends it to the other devices.": true;
+        "Dark": true;
         "Default": true;
         "Device name": true;
         "Devices": true;
@@ -76,6 +78,7 @@ declare module "@photino-net-utils/bridge"
         "Language": true;
         "Launch at startup": true;
         "Leave empty to use the app data folder. Changing it moves existing blobs.": true;
+        "Light": true;
         "Loading changes...": true;
         "Loading settings…": true;
         "Logs": true;
@@ -121,6 +124,7 @@ declare module "@photino-net-utils/bridge"
         "The name the other devices see.": true;
         "The pairing proves both devices own their keys; the code is never sent as a password.": true;
         "The update check failed.": true;
+        "Theme": true;
         "This device": true;
         "This device is offline. New items wait here until it reconnects.": true;
         "This only clears history; the system clipboard is not changed.": true;

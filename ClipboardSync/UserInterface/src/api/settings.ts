@@ -8,6 +8,7 @@ export type Settings = AppSettingsGenerated;
 export const PREVIEW_SETTINGS: Settings = {
     deviceName: "This device",
     language: "system",
+    theme: "system",
     startHidden: false,
     syncEnabled: true,
     syncText: true,
