@@ -1,7 +1,7 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import styled, {keyframes} from "styled-components";
-import {Native, ResizeHandles, useTranslation, useWindowCorners} from "@photino-net-utils/bridge";
-import {type AppInfo, downloadUpdate, getAppInfo, getChangelog, getUpdateStatus, type UpdateCheck, type UpdateProgress} from "./api/system";
+import {Native, ResizeHandles, useWindowCorners} from "@photino-net-utils/bridge";
+import {type AppInfo, cancelUpdateDownload, getAppInfo, getUpdateStatus, installUpdate, type UpdateCheck, onUpdateChangelog, onUpdateProgress, type UpdateProgress, startUpdateDownload} from "./api/system";
 import {type ClipboardItem, copyFiles, copyImage} from "./api/peer";
 import {Sidebar} from "./components/Sidebar";
 import {TitleBar} from "./components/TitleBar";
@@ -9,6 +9,7 @@ import {UpdateDialog} from "./components/UpdateDialog";
 import {DevicesPage} from "./pages/DevicesPage";
 import {SettingsPage} from "./pages/SettingsPage";
 import type {Page} from "./pages";
+import {type LocalizationKey, useAppTranslation} from "./i18n";
 
 /** Pages fade in from a little below, which makes a switch feel like a change of view. */
 const pageIn = keyframes`
@@ -22,7 +23,7 @@ const pageIn = keyframes`
     }
 `;
 
-const pageMeta: Record<Page, { title: string; subtitle: string }> = {
+const pageMeta: Record<Page, { title: LocalizationKey; subtitle: LocalizationKey }> = {
     devices: {
         title: "Devices",
         subtitle: "Every device on the mesh, with the clipboard history it holds.",
@@ -36,13 +37,14 @@ const pageMeta: Record<Page, { title: string; subtitle: string }> = {
 interface UpdateDialogState {
     progress: UpdateProgress | null;
     changelog: string | null;
-    loadingChangelog: boolean;
     error: string | null;
 }
 
 export default function App() {
-    const t = useTranslation();
+    const t = useAppTranslation();
     const corners = useWindowCorners();
+    const installing = useRef(false);
+    const cancelled = useRef(false);
     const [page, setPage] = useState<Page>("devices");
     const [info, setInfo] = useState<AppInfo | null>(null);
     const [update, setUpdate] = useState<UpdateCheck | null>(null);
@@ -69,16 +71,8 @@ export default function App() {
     // The tray can ask for a page while the window is hidden.
     useEffect(() => {
         return Native.on((message) => {
-            if (message.type === "app.update") {
+            if (message.type === "update.checked") {
                 setUpdate((message.data as UpdateCheck | undefined) ?? null);
-                return;
-            }
-
-            if (message.type === "app.updateProgress") {
-                const progress = message.data as UpdateProgress;
-                setUpdateDialog((current) => current
-                    ? {...current, progress, error: progress.error ?? current.error}
-                    : current);
                 return;
             }
 
@@ -89,6 +83,41 @@ export default function App() {
             if (next) setPage(next);
         });
     }, []);
+
+    useEffect(() => onUpdateProgress((progress) => {
+        if (progress.phase === "ready" && !cancelled.current && !installing.current) {
+            installing.current = true;
+            void installUpdate().then(
+                (ack) => {
+                    if (!ack.ok) setUpdateDialog((current) => current
+                        ? {...current, error: ack.error ?? t("Update failed")}
+                        : current);
+                },
+                (error) => setUpdateDialog((current) => current
+                    ? {...current, error: error instanceof Error ? error.message : String(error)}
+                    : current)
+            );
+        }
+
+        if (progress.phase === "cancelled") {
+            setUpdateDialog(null);
+            return;
+        }
+
+        setUpdateDialog((current) => current
+            ? {
+                ...current,
+                progress,
+                error: progress.phase === "error"
+                    ? progress.error ?? t("Update failed")
+                    : current.error
+            }
+            : current);
+    }), [t]);
+
+    useEffect(() => onUpdateChangelog(({text}) => {
+        setUpdateDialog((current) => current ? {...current, changelog: text} : current);
+    }), []);
 
     const copy = (item: ClipboardItem) => {
         if (item.kind === "image")
@@ -103,27 +132,30 @@ export default function App() {
     };
 
     const startUpdate = () => {
+        installing.current = false;
+        cancelled.current = false;
         setUpdateDialog({
-            progress: {received: 0, total: 0, done: false, installing: false},
+            progress: {phase: "changelog", downloaded: 0, total: 0, percent: 0},
             changelog: null,
-            loadingChangelog: true,
             error: null
         });
 
-        void getChangelog().then(
-            (changelog) => setUpdateDialog((current) => current
-                ? {...current, changelog, loadingChangelog: false}
-                : current),
-            () => setUpdateDialog((current) => current
-                ? {...current, loadingChangelog: false}
+        void startUpdateDownload().then(
+            (ack) => {
+                if (!ack.ok) setUpdateDialog((current) => current
+                    ? {...current, error: ack.error ?? t("Update failed")}
+                    : current);
+            },
+            (error) => setUpdateDialog((current) => current
+                ? {...current, error: error instanceof Error ? error.message : String(error)}
                 : current)
         );
+    };
 
-        void downloadUpdate().catch((error) => {
-            setUpdateDialog((current) => current
-                ? {...current, error: error instanceof Error ? error.message : String(error)}
-                : current);
-        });
+    const cancelUpdate = () => {
+        cancelled.current = true;
+        void cancelUpdateDownload().catch(() => undefined);
+        setUpdateDialog(null);
     };
 
     const {title, subtitle} = pageMeta[page];
@@ -183,7 +215,7 @@ export default function App() {
                 <UpdateDialog
                     changelog={updateDialog.changelog}
                     error={updateDialog.error}
-                    loadingChangelog={updateDialog.loadingChangelog}
+                    onCancel={cancelUpdate}
                     onClose={() => setUpdateDialog(null)}
                     progress={updateDialog.progress}
                 />

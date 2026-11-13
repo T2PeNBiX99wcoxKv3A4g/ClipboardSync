@@ -8,6 +8,7 @@ using PhotinoNetUtils.Localization;
 using PhotinoNetUtils.Messaging;
 using PhotinoNetUtils.Platform;
 using PhotinoNetUtils.Services;
+using PhotinoNetUtils.Updates;
 using Serilog;
 #if !DEBUG
 using PhotinoNetUtils.Hosting;
@@ -93,10 +94,17 @@ internal static class Program
             using var startup = new StartupService(new StartupRegistration(
                 typeof(Program).Assembly, Constants.Name, "edit-paste",
                 "Clipboard sharing across your devices"));
+            using var updates = new UpdateService(new UpdateOptions(
+                Owner: "T2PeNBiX99wcoxKv3A4g",
+                Repository: "ClipboardSync",
+                AppName: Constants.Name,
+                CurrentVersion: AppBuild.Version,
+                AssetPattern: "ClipboardSync-{version}-win-x64.msi",
+                LogDirectory: Constants.LogDirectory,
+                Shutdown: () => WindowManager.Instance.Exit(),
+                Notify: (type, data) => WindowManager.Instance.NotifyMainWindow(type, data)));
 
             // Touching each singleton constructs it, which is what registers its message handlers.
-            _ = AppLogsService.Instance;
-            _ = UpdateService.Instance;
 
             var manager = WindowManager.Instance;
             manager.AppUrl = appUrl;

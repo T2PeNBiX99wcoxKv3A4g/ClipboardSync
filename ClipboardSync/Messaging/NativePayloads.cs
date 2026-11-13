@@ -20,14 +20,5 @@ internal sealed record SettingsPayload(
     int MaxFileMb,
     string BlobDirectory);
 
-/// <summary>Body for <c>app.updateStatus</c> and <c>app.checkUpdate</c>.</summary>
-internal sealed record UpdateCheckPayload(string Current, string Latest, bool Available);
-
-/// <summary>Progress for <c>app.downloadUpdate</c>, pushed as <c>app.updateProgress</c>.</summary>
-internal sealed record UpdateProgressPayload(long Received, long Total, bool Done, bool Installing, string? Error);
-
-/// <summary>Body for <c>app.changelog</c>.</summary>
-internal sealed record ChangelogPayload(string Content);
-
 /// <summary>Payload for <c>app.navigate</c>: the page the tray asked the interface to open.</summary>
 internal sealed record AppNavigatePayload(string Page);

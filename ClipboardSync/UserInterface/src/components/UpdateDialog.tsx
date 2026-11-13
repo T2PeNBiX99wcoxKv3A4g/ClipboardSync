@@ -1,12 +1,12 @@
 import styled, {keyframes} from "styled-components";
-import {useTranslation} from "@photino-net-utils/bridge";
 import type {UpdateProgress} from "../api/system";
+import {useAppTranslation} from "../i18n";
 
 interface UpdateDialogProps {
     progress: UpdateProgress | null;
     changelog: string | null;
-    loadingChangelog: boolean;
     error: string | null;
+    onCancel: () => void;
     onClose: () => void;
 }
 
@@ -17,13 +17,14 @@ function formatBytes(value: number) {
 }
 
 /** The floating download / install dialog, with the changelog of the newest release. */
-export function UpdateDialog({progress, changelog, loadingChangelog, error, onClose}: UpdateDialogProps) {
-    const t = useTranslation();
-    const failed = error ?? progress?.error ?? null;
-    const installing = progress?.installing ?? false;
-    const percent = progress && progress.total > 0
-        ? Math.min(100, Math.round((progress.received / progress.total) * 100))
-        : null;
+export function UpdateDialog({progress, changelog, error, onCancel, onClose}: UpdateDialogProps) {
+    const t = useAppTranslation();
+    const phase = progress?.phase ?? "changelog";
+    const failed = error ?? (phase === "error" ? progress?.error ?? null : null);
+    const installing = phase === "ready";
+    const downloading = !failed && !installing;
+    const percent = progress && progress.percent >= 0 ? progress.percent : null;
+    const indeterminate = downloading && percent === null;
 
     return (
         <Backdrop role="dialog" aria-modal="true">
@@ -42,21 +43,25 @@ export function UpdateDialog({progress, changelog, loadingChangelog, error, onCl
                         ? t("Update failed")
                         : installing
                             ? t("Installing...")
-                            : t("Downloading...")}
+                            : phase === "downloading"
+                                ? t("Downloading...")
+                                : t("Loading changes...")}
                 </Status>
 
                 {!failed && (
                     <>
                         <Track>
                             <Fill
-                                $indeterminate={percent === null}
+                                $indeterminate={indeterminate}
                                 style={percent === null ? undefined : {width: `${percent}%`}}
                             />
                         </Track>
                         <Meta>
                             <span>{percent === null ? t("Starting...") : `${percent}%`}</span>
                             {progress && progress.total > 0 && (
-                                <span>{formatBytes(progress.received)} / {formatBytes(progress.total)}</span>
+                                <span>
+                                    {formatBytes(progress.downloaded)} / {formatBytes(progress.total)}
+                                </span>
                             )}
                         </Meta>
                     </>
@@ -66,12 +71,20 @@ export function UpdateDialog({progress, changelog, loadingChangelog, error, onCl
 
                 <ChangesHeader>{t("Changes")}</ChangesHeader>
                 <Changelog>
-                    {loadingChangelog
-                        ? t("Loading changes...")
-                        : changelog?.trim()
-                            ? changelog
+                    {changelog?.trim()
+                        ? changelog
+                        : phase === "changelog" && !failed
+                            ? t("Loading changes...")
                             : t("No changelog was published.")}
                 </Changelog>
+
+                {downloading && (
+                    <Actions>
+                        <CancelButton onClick={onCancel} type="button">
+                            {t("Cancel")}
+                        </CancelButton>
+                    </Actions>
+                )}
             </Card>
         </Backdrop>
     );
@@ -202,4 +215,25 @@ const Changelog = styled.pre`
     line-height: 1.55;
     white-space: pre-wrap;
     user-select: text;
+`;
+
+const Actions = styled.div`
+    display: flex;
+    justify-content: flex-end;
+`;
+
+const CancelButton = styled.button`
+    padding: 5px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: 9.5px;
+    cursor: pointer;
+
+    &:hover {
+        border-color: var(--border-color-hover);
+        color: var(--text-primary);
+    }
 `;

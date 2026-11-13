@@ -1,7 +1,8 @@
 import styled from "styled-components";
 import {useEffect, useState} from "react";
-import {useLocale, useTranslation} from "@photino-net-utils/bridge";
+import {useLocale} from "@photino-net-utils/bridge";
 import {type ClipboardItem, type ClipboardKind, getImagePreview, type TransferStatus} from "../api/peer";
+import {type LocalizationKey, useAppTranslation} from "../i18n";
 import {formatSize, relativeTime} from "../utils/format";
 import {
     CheckIcon,
@@ -23,10 +24,10 @@ interface ClipboardEntryProps {
 
 /** One item in a device's clipboard column, with how far it has travelled through the mesh. */
 export function ClipboardEntry({item, copied, onCopy}: ClipboardEntryProps) {
-    const t = useTranslation();
+    const t = useAppTranslation();
     const locale = useLocale();
     const Icon = kindIcon(item.kind);
-    const status = statusLabel(item, t);
+    const status = statusLabel(item);
     const count = `${item.reached}/${item.peers}`;
     const showCount = item.status !== "received" && item.peers > 0;
     const [preview, setPreview] = useState<string | null | undefined>(undefined);
@@ -179,18 +180,18 @@ function statusColor(status: TransferStatus): string {
 }
 
 /** "Sending" and "Receiving" share the transferring state; the direction decides the label. */
-function statusLabel(item: ClipboardItem, t: (key: string) => string): string {
+function statusLabel(item: ClipboardItem): LocalizationKey {
     switch (item.status) {
         case "synced":
-            return t("Synced");
+            return "Synced";
         case "transferring":
-            return item.direction === "out" ? t("Sending") : t("Receiving");
+            return item.direction === "out" ? "Sending" : "Receiving";
         case "waiting":
-            return t("Waiting");
+            return "Waiting";
         case "received":
-            return t("Received");
+            return "Received";
         default:
-            return t("Failed");
+            return "Failed";
     }
 }
 

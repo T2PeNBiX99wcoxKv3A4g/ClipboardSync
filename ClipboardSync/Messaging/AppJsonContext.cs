@@ -5,6 +5,7 @@ using ClipboardSync.Security;
 using PhotinoNetUtils.Localization;
 using PhotinoNetUtils.Messaging;
 using PhotinoNetUtils.Services;
+using PhotinoNetUtils.Updates;
 
 namespace ClipboardSync.Messaging;
 
@@ -29,8 +30,9 @@ namespace ClipboardSync.Messaging;
 [JsonSerializable(typeof(OkPayload))]
 [JsonSerializable(typeof(AppInfoPayload))]
 [JsonSerializable(typeof(UpdateCheckPayload))]
+[JsonSerializable(typeof(UpdateAckPayload))]
 [JsonSerializable(typeof(UpdateProgressPayload))]
-[JsonSerializable(typeof(ChangelogPayload))]
+[JsonSerializable(typeof(UpdateChangelogPayload))]
 [JsonSerializable(typeof(SettingsPayload))]
 [JsonSerializable(typeof(StartupRequest))]
 [JsonSerializable(typeof(StartupPayload))]

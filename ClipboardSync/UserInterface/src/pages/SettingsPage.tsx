@@ -1,12 +1,12 @@
 import {useEffect, useRef, useState} from "react";
 import styled, {css, keyframes} from "styled-components";
-import {useTranslation} from "@photino-net-utils/bridge";
 import {
     type AppInfo,
     checkForUpdates,
     getUpdateStatus,
     openLogsFolder,
-    openReleasePage,
+    openReleasesPage,
+    RELEASES_URL,
     setStartup,
     startupStatus,
     type UpdateCheck
@@ -16,6 +16,7 @@ import {clearHistory} from "../api/peer";
 import {Toggle} from "../components/Toggle";
 import {Dropdown} from "../components/Dropdown";
 import {CheckIcon, FolderIcon, InfoIcon} from "../components/Icons";
+import {type LocalizationKey, useAppTranslation} from "../i18n";
 
 interface SettingsPageProps {
     info: AppInfo | null;
@@ -28,7 +29,7 @@ interface SettingsPageProps {
 
 type SectionId = "general" | "sync" | "history" | "updates" | "about";
 
-const sections: { id: SectionId; label: string }[] = [
+const sections: { id: SectionId; label: LocalizationKey }[] = [
     {id: "general", label: "General"},
     {id: "sync", label: "Sync"},
     {id: "history", label: "History"},
@@ -45,7 +46,7 @@ const languages = [
 ];
 
 export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpdate}: SettingsPageProps) {
-    const t = useTranslation();
+    const t = useAppTranslation();
     const languageOptions = languages.map((language) => ({
         ...language,
         label: language.id === "system" ? t("System default") : language.label,
@@ -509,7 +510,7 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
                                 </ReleaseButton>
                             )}
                             {updateState?.available && (
-                                <GhostButton onClick={() => void openReleasePage().catch(() => undefined)}
+                                <GhostButton onClick={() => void openReleasesPage(RELEASES_URL).catch(() => undefined)}
                                              type="button">
                                     {t("Open release page")}
                                 </GhostButton>

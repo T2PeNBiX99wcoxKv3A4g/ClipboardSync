@@ -1,10 +1,11 @@
 import styled from "styled-components";
-import {useTranslation, useWindowControls, useWindowDrag} from "@photino-net-utils/bridge";
+import {useWindowControls, useWindowDrag} from "@photino-net-utils/bridge";
+import {useAppTranslation} from "../i18n";
 import {BrandMark} from "./Brand";
 
 /** The interface draws the window title bar; the host hides the native one but keeps its frame. */
 export function TitleBar() {
-    const t = useTranslation();
+    const t = useAppTranslation();
     const controls = useWindowControls();
     const drag = useWindowDrag();
 
