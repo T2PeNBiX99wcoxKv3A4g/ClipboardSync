@@ -1,5 +1,67 @@
 # Changelog
 
+## [0.8.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.7.6..v0.8.0) - 2026-11-13
+
+### ⛰️  Features
+
+- *(settings)* Store settings as TOML - ([eea7cc6](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/eea7cc6fa89b9c777b27305a3f1896b5f53f7cfc))
+- *(theme)* Add light mode and a theme setting - ([121078c](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/121078ccdad27c0ebab81f528154894c5884c0af))
+- *(update)* Download and install updates on Windows - ([fe73f9c](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/fe73f9ce12dac6556bf7f677555240f22e41a40e))
+
+### 🐛 Bug Fixes
+
+- *(build)* Generate the settings types from the compiled model - ([48129a7](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/48129a7453c0b70c81c8f46b14743dbb078c54c7))
+- *(update)* Make the download progress bar visible - ([d057de6](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/d057de63f1d71d9038f7e6b6d8c5bc1314aaa8a6))
+
+### 🚜 Refactor
+
+- *(i18n)* Use path-shaped keys - ([faa549b](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/faa549b59a0e81f41dabb9d86636b801d638119e))
+- *(i18n)* Use the shared localization key augmentation - ([0f15827](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/0f15827480486b1c1c78de3cd9d2dc90823ae4b8))
+- *(settings)* Reuse the shared normalization helpers - ([f72b2e8](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/f72b2e8fb9035f03e453e6cf8743c8d97636c013))
+- *(settings)* Use the shared settings service instance - ([a1ce957](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/a1ce95723ae20eb11a7ec4e61fd75768ac4c6a8b))
+- Use the shared system and update clients - ([b9f59e9](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/b9f59e9bf499f221fba64a09a400c88e6d560455))
+- Adapt to PhotinoNETUtils 0.19 - ([b214588](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/b214588a2d9d92cfc8f5c1107ec2e37722ee23bd))
+- Drop redundant singleton touches - ([cc88632](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/cc88632a22aeb9446962306498e43fc0a8338c98))
+- Consolidate imports using global usings and clean up unused references - ([41697c7](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/41697c757eab4c691db02a2a68829467409de130))
+
+### 📚 Documentation
+
+- *(i18n)* Replace the stale English-key comment - ([b6b197a](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/b6b197aed4d8a4cec0140af8dec8da7b242e79c8))
+
+### ⚙️ Miscellaneous Tasks
+
+- Update PhotinoNetUtils bridge to version 0.25.0 - ([4435f4e](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/4435f4e25b4d0b8749960642652652451764acde))
+- Update PhotinoNetUtils bridge to version 0. - ([20e92fa](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/20e92faef529a9baa116624847c4895148a5bad2))
+- Update PhotinoNetUtils bridge to version 0.22.0 - ([6c38877](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/6c38877454618f44613b61d3fb8f22a3d685085e))
+- Update PhotinoNetUtils bridge to version 0.21.0 - ([76e350b](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/76e350bb3e5ebfbdd20c7de95ce544bd27d811c4))
+- Update PhotinoNetUtils bridge to version 0.20.2 - ([8b5b32d](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/8b5b32d0854115c7541190b666d94bf740fa3ccd))
+- Use runtime-specific settings codegen path - ([cb188f7](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/cb188f71d997c0b91d87a89982efed0f894d04c5))
+- Update PhotinoNetUtils bridge to version 0.20.0 - ([2ada0ab](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/2ada0ab9e34dc5e2068223b13e47b65f8a4c4086))
+- Update the shared generator - ([a6411dd](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/a6411dde2ba34315f8491341581dccb846e0acc9))
+- Update the shared generator - ([3fa8278](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/3fa82782a331938b2cb7e99d1b77ef7ddb4b3bfe))
+- Update the shared generator - ([4852573](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/48525731e2dd33dcca385f72b79371cd466881d8))
+- Update the shared generator - ([7c12a21](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/7c12a21dec12033306c53706ed65b610e7cec3ad))
+- Update the shared generator - ([42ebcba](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/42ebcba55719731e7a170576d872bace9fc14710))
+- Update the shared generator - ([07e969f](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/07e969f5acec22ea0610dfedf9cb9986f0e51188))
+- Update the shared generator - ([2818248](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/2818248e2c1c9cd8235c145a34213551d71fcd82))
+- Update the shared generator - ([74c673a](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/74c673acff90f01092b3a5f69559806aa9e09be1))
+- Update the shared generator - ([af6d2c8](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/af6d2c85fe2024552fa119bf6ffc64e458bd55cc))
+- Validate every translation file - ([e2bcda9](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/e2bcda90074bf3e94c92ffff69948190ef7149dd))
+- Adopt the shared analyzers - ([ee5b8db](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/ee5b8db9fcb2024f797ce26a2eda852aeb62076d))
+- Format settings page and organize imports - ([5259274](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/5259274b9b45307bf73da189a12fd6c1a8359df0))
+- Add the shared source generator - ([18d4e7f](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/18d4e7ff860671a1959f57d9a4af52bd50a22103))
+- Target .NET 11 - ([ba9e559](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/ba9e559617c6d7c045c2baca3c3c974e30f6e783))
+- Update shared PhotinoNETUtils to 0.17.0 - ([1b91282](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/1b9128231a6a466090f736e328beb145eb857b01))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([6e9081f](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/6e9081ff1307bfa6c3c9d11edf0218697580fb8e))
+
+### Build
+
+- Generate settings types and i18n keys - ([90f24b2](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/90f24b27b8ca762959dd7faa47965bc1283c5847))
+
+
 ## [0.7.6](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.7.5..v0.7.6) - 2026-11-10
 
 ### ⚙️ Miscellaneous Tasks
