@@ -1,6 +1,6 @@
 import styled, {keyframes} from "styled-components";
+import {useTranslation} from "@photino-net-utils/bridge";
 import type {UpdateProgress} from "../api/system";
-import {useAppTranslation} from "../i18n";
 
 interface UpdateDialogProps {
     progress: UpdateProgress | null;
@@ -18,7 +18,7 @@ function formatBytes(value: number) {
 
 /** The floating download / install dialog, with the changelog of the newest release. */
 export function UpdateDialog({progress, changelog, error, onCancel, onClose}: UpdateDialogProps) {
-    const t = useAppTranslation();
+    const t = useTranslation();
     const phase = progress?.phase ?? "changelog";
     const failed = error ?? (phase === "error" ? progress?.error ?? null : null);
     const installing = phase === "ready";

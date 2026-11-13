@@ -1,8 +1,7 @@
 import styled from "styled-components";
 import {useEffect, useState} from "react";
-import {useLocale} from "@photino-net-utils/bridge";
+import {type LocalizationKey, useLocale, useTranslation} from "@photino-net-utils/bridge";
 import {type ClipboardItem, type ClipboardKind, getImagePreview, type TransferStatus} from "../api/peer";
-import {type LocalizationKey, useAppTranslation} from "../i18n";
 import {formatSize, relativeTime} from "../utils/format";
 import {
     CheckIcon,
@@ -24,7 +23,7 @@ interface ClipboardEntryProps {
 
 /** One item in a device's clipboard column, with how far it has travelled through the mesh. */
 export function ClipboardEntry({item, copied, onCopy}: ClipboardEntryProps) {
-    const t = useAppTranslation();
+    const t = useTranslation();
     const locale = useLocale();
     const Icon = kindIcon(item.kind);
     const status = statusLabel(item);

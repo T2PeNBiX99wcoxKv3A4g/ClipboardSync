@@ -1,5 +1,6 @@
 import {useEffect, useRef, useState} from "react";
 import styled, {css, keyframes} from "styled-components";
+import {type LocalizationKey, useTranslation} from "@photino-net-utils/bridge";
 import {
     type AppInfo,
     checkForUpdates,
@@ -16,7 +17,6 @@ import {clearHistory} from "../api/peer";
 import {Toggle} from "../components/Toggle";
 import {Dropdown} from "../components/Dropdown";
 import {CheckIcon, FolderIcon, InfoIcon} from "../components/Icons";
-import {type LocalizationKey, useAppTranslation} from "../i18n";
 
 interface SettingsPageProps {
     info: AppInfo | null;
@@ -46,7 +46,7 @@ const languages = [
 ];
 
 export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpdate}: SettingsPageProps) {
-    const t = useAppTranslation();
+    const t = useTranslation();
     const languageOptions = languages.map((language) => ({
         ...language,
         label: language.id === "system" ? t("System default") : language.label,

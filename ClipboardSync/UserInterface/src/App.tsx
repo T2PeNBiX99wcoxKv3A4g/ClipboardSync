@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from "react";
 import styled, {keyframes} from "styled-components";
-import {Native, ResizeHandles, useWindowCorners} from "@photino-net-utils/bridge";
+import {Native, ResizeHandles, type LocalizationKey, useTranslation, useWindowCorners} from "@photino-net-utils/bridge";
 import {type AppInfo, cancelUpdateDownload, getAppInfo, getUpdateStatus, installUpdate, type UpdateCheck, onUpdateChangelog, onUpdateProgress, type UpdateProgress, startUpdateDownload} from "./api/system";
 import {type ClipboardItem, copyFiles, copyImage} from "./api/peer";
 import {Sidebar} from "./components/Sidebar";
@@ -9,7 +9,6 @@ import {UpdateDialog} from "./components/UpdateDialog";
 import {DevicesPage} from "./pages/DevicesPage";
 import {SettingsPage} from "./pages/SettingsPage";
 import type {Page} from "./pages";
-import {type LocalizationKey, useAppTranslation} from "./i18n";
 
 /** Pages fade in from a little below, which makes a switch feel like a change of view. */
 const pageIn = keyframes`
@@ -41,7 +40,7 @@ interface UpdateDialogState {
 }
 
 export default function App() {
-    const t = useAppTranslation();
+    const t = useTranslation();
     const corners = useWindowCorners();
     const installing = useRef(false);
     const cancelled = useRef(false);

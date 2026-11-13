@@ -1,6 +1,6 @@
 import styled, {css} from "styled-components";
+import {type LocalizationKey, useTranslation} from "@photino-net-utils/bridge";
 import type {Page} from "../pages";
-import {type LocalizationKey, useAppTranslation} from "../i18n";
 import {DevicesIcon, SlidersIcon} from "./Icons";
 
 interface SidebarProps {
@@ -14,7 +14,7 @@ const items: { id: Page; label: LocalizationKey; icon: typeof DevicesIcon }[] = 
 ];
 
 export function Sidebar({page, onNavigate}: SidebarProps) {
-    const t = useAppTranslation();
+    const t = useTranslation();
 
     return (
         <Aside>

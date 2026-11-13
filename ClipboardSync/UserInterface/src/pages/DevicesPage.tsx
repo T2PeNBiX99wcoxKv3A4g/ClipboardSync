@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import styled, {css, keyframes} from "styled-components";
-import {useAppTranslation} from "../i18n";
+import {useTranslation} from "@photino-net-utils/bridge";
 import {
     type ClipboardItem,
     type DevicesState,
@@ -41,7 +41,7 @@ const pulse = keyframes`
 
 /** All paired devices and the clipboard board each of them holds. */
 export function DevicesPage({copiedId, onCopy}: DevicesPageProps) {
-    const t = useAppTranslation();
+    const t = useTranslation();
     const [devices, setDevices] = useState<DevicesState | null>(null);
     const [history, setHistory] = useState<ClipboardItem[]>([]);
     const [pairOpen, setPairOpen] = useState(false);
