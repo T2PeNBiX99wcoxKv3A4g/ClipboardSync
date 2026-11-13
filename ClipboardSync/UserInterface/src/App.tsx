@@ -1,10 +1,11 @@
 import {useEffect, useState} from "react";
 import styled, {keyframes} from "styled-components";
 import {Native, ResizeHandles, useTranslation, useWindowCorners} from "@photino-net-utils/bridge";
-import {type AppInfo, getAppInfo, getUpdateStatus, type UpdateCheck} from "./api/system";
+import {type AppInfo, downloadUpdate, getAppInfo, getChangelog, getUpdateStatus, type UpdateCheck, type UpdateProgress} from "./api/system";
 import {type ClipboardItem, copyFiles, copyImage} from "./api/peer";
 import {Sidebar} from "./components/Sidebar";
 import {TitleBar} from "./components/TitleBar";
+import {UpdateDialog} from "./components/UpdateDialog";
 import {DevicesPage} from "./pages/DevicesPage";
 import {SettingsPage} from "./pages/SettingsPage";
 import type {Page} from "./pages";
@@ -32,12 +33,20 @@ const pageMeta: Record<Page, { title: string; subtitle: string }> = {
     },
 };
 
+interface UpdateDialogState {
+    progress: UpdateProgress | null;
+    changelog: string | null;
+    loadingChangelog: boolean;
+    error: string | null;
+}
+
 export default function App() {
     const t = useTranslation();
     const corners = useWindowCorners();
     const [page, setPage] = useState<Page>("devices");
     const [info, setInfo] = useState<AppInfo | null>(null);
     const [update, setUpdate] = useState<UpdateCheck | null>(null);
+    const [updateDialog, setUpdateDialog] = useState<UpdateDialogState | null>(null);
     const [settingsSection, setSettingsSection] = useState<string | null>(null);
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -65,6 +74,14 @@ export default function App() {
                 return;
             }
 
+            if (message.type === "app.updateProgress") {
+                const progress = message.data as UpdateProgress;
+                setUpdateDialog((current) => current
+                    ? {...current, progress, error: progress.error ?? current.error}
+                    : current);
+                return;
+            }
+
             if (message.type !== "app.navigate")
                 return;
 
@@ -83,6 +100,30 @@ export default function App() {
 
         setCopiedId(item.id);
         window.setTimeout(() => setCopiedId((current) => current === item.id ? null : current), 1600);
+    };
+
+    const startUpdate = () => {
+        setUpdateDialog({
+            progress: {received: 0, total: 0, done: false, installing: false},
+            changelog: null,
+            loadingChangelog: true,
+            error: null
+        });
+
+        void getChangelog().then(
+            (changelog) => setUpdateDialog((current) => current
+                ? {...current, changelog, loadingChangelog: false}
+                : current),
+            () => setUpdateDialog((current) => current
+                ? {...current, loadingChangelog: false}
+                : current)
+        );
+
+        void downloadUpdate().catch((error) => {
+            setUpdateDialog((current) => current
+                ? {...current, error: error instanceof Error ? error.message : String(error)}
+                : current);
+        });
     };
 
     const {title, subtitle} = pageMeta[page];
@@ -109,6 +150,7 @@ export default function App() {
                                 <SettingsPage
                                     focusSection={settingsSection}
                                     info={info}
+                                    onInstallUpdate={startUpdate}
                                     onSectionFocused={() => setSettingsSection(null)}
                                 />
                             )}
@@ -117,7 +159,9 @@ export default function App() {
                     <Footer>
                         <Version>
                             <VersionText>
-                                {info ? `v${info.version} · ${info.platform}` : t("browser preview")}
+                                {info
+                                    ? `v${info.version} · ${info.platform}${info.debug ? " · debug" : ""}`
+                                    : t("browser preview")}
                             </VersionText>
                             {update?.available && (
                                 <UpdateDot
@@ -134,6 +178,16 @@ export default function App() {
                     </Footer>
                 </Main>
             </Shell>
+
+            {updateDialog && (
+                <UpdateDialog
+                    changelog={updateDialog.changelog}
+                    error={updateDialog.error}
+                    loadingChangelog={updateDialog.loadingChangelog}
+                    onClose={() => setUpdateDialog(null)}
+                    progress={updateDialog.progress}
+                />
+            )}
 
             <ResizeHandles/>
         </Root>

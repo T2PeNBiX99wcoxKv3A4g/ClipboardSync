@@ -22,6 +22,8 @@ interface SettingsPageProps {
     /** A section the footer's update dot asked for: <c>updates</c>, <c>about</c>, etc. */
     focusSection?: string | null;
     onSectionFocused?: () => void;
+    /** Downloads the installer and opens the progress dialog. */
+    onInstallUpdate: () => void;
 }
 
 type SectionId = "general" | "sync" | "history" | "updates" | "about";
@@ -42,7 +44,7 @@ const languages = [
     {id: "zh-TW", label: "繁體中文"},
 ];
 
-export function SettingsPage({info, focusSection, onSectionFocused}: SettingsPageProps) {
+export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpdate}: SettingsPageProps) {
     const t = useTranslation();
     const languageOptions = languages.map((language) => ({
         ...language,
@@ -501,11 +503,16 @@ export function SettingsPage({info, focusSection, onSectionFocused}: SettingsPag
                             <GhostButton disabled={updateBusy} onClick={checkUpdate} type="button">
                                 {updateBusy ? t("Checking…") : t("Check for updates")}
                             </GhostButton>
-                            {updateState?.available && (
-                                <ReleaseButton onClick={() => void openReleasePage().catch(() => undefined)}
-                                               type="button">
-                                    {t("Open release page")}
+                            {updateState?.available && info?.platform === "windows" && (
+                                <ReleaseButton onClick={onInstallUpdate} type="button">
+                                    {t("Download and install")}
                                 </ReleaseButton>
+                            )}
+                            {updateState?.available && (
+                                <GhostButton onClick={() => void openReleasePage().catch(() => undefined)}
+                                             type="button">
+                                    {t("Open release page")}
+                                </GhostButton>
                             )}
                         </UpdateActions>
                     </UpdateCard>

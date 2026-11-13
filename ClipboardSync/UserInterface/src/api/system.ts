@@ -73,3 +73,25 @@ export async function openReleasePage(): Promise<void> {
 
     await Native.request("app.openRelease");
 }
+
+export interface UpdateProgress {
+    received: number;
+    total: number;
+    done: boolean;
+    installing: boolean;
+    error?: string | null;
+}
+
+/** Downloads the installer and starts it; progress arrives as `app.updateProgress` events. */
+export async function downloadUpdate(): Promise<void> {
+    if (!Native.available) return;
+
+    await Native.request("app.downloadUpdate");
+}
+
+/** Reads the changelog of the newest release, falling back to the repository copy. */
+export async function getChangelog(): Promise<string> {
+    if (!Native.available) return "";
+
+    return (await Native.request<{ content: string }>("app.changelog")).content;
+}

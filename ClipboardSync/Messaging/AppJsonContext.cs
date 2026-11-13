@@ -29,6 +29,8 @@ namespace ClipboardSync.Messaging;
 [JsonSerializable(typeof(OkPayload))]
 [JsonSerializable(typeof(AppInfoPayload))]
 [JsonSerializable(typeof(UpdateCheckPayload))]
+[JsonSerializable(typeof(UpdateProgressPayload))]
+[JsonSerializable(typeof(ChangelogPayload))]
 [JsonSerializable(typeof(SettingsPayload))]
 [JsonSerializable(typeof(StartupRequest))]
 [JsonSerializable(typeof(StartupPayload))]
