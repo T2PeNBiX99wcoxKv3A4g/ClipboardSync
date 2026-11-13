@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.8.1](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.8.0..v0.8.1) - 2026-11-13
+
+### ⚙️ Miscellaneous Tasks
+
+- Update PhotinoNetUtils bridge to version 0.25.1 - ([42d0e64](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/42d0e64fa2e79701ee97c7ffbb0ffb19429c3aa9))
+- Update PhotinoNetUtils bridge to version 0.25.1 - ([f4c514e](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/f4c514e95ce0d7363f83711a66e4666302554aee))
+- Build the pre-release with the .NET 11 SDK - ([25728a8](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/25728a8f3feede74dae6a4f80f382bcb3d8a2f45))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([065ef55](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/065ef555f0d408995d27b981a256f2d9c5e86eb5))
+
+
 ## [0.8.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.7.6..v0.8.0) - 2026-11-13
 
 ### ⛰️  Features
