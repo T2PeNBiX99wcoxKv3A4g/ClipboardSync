@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.9.3](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.9.2..v0.9.3) - 2026-11-14
+
+### ⚙️ Miscellaneous Tasks
+
+- Update PhotinoNetUtils bridge to version 0.28.3 - ([fd48949](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/fd489496208ec5c714400dcfa10cde1279fb5f25))
+- Update PhotinoNetUtils bridge to version 0.28.2 - ([95b6a9c](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/95b6a9cbd29a6fc5dd007fe04f23cb201304f0db))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([f943a2b](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/f943a2b4d259ea6bd638eb365bb546ee20a1c61b))
+
+
 ## [0.9.2](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.9.1..v0.9.2) - 2026-11-14
 
 ### ⚙️ Miscellaneous Tasks
