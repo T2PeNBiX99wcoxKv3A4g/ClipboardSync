@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.10.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.9.6..v0.10.0) - 2026-11-15
+
+### ⛰️  Features
+
+- *(ui)* Give each device board a fixed height and its own scroll - ([0418a92](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/0418a92648309b5fbd381a288ed367365ef0ab9f))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([2be771a](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/2be771a3e509ebf46c362b7ccf15dc0774eb62c0))
+
+
 ## [0.9.6](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.9.5..v0.9.6) - 2026-11-15
 
 ### Action
