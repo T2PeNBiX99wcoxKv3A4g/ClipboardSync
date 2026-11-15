@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.5](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.9.4..v0.9.5) - 2026-11-15
+
+### 🐛 Bug Fixes
+
+- *(linux)* Capture JPEG, WebP and other clipboard images - ([3fdc135](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/3fdc135b61d3180955404c259da701f382a4bc08))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([5640bbc](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/5640bbc0243926367dd869c0f2bf2b9ac8380f81))
+
+
 ## [0.9.4](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.9.3..v0.9.4) - 2026-11-14
 
 ### ⚙️ Miscellaneous Tasks
