@@ -46,6 +46,7 @@ Architecture: amd64
 Maintainer: yukiyosanako <yukiyosanako@users.noreply.github.com>
 Installed-Size: $(du -sk "$stage" | cut -f1)
 Depends: libgtk-3-0 | libgtk-3-0t64, libwebkit2gtk-4.1-0, libnotify4, libicu72 | libicu74 | libicu76, libssl3 | libssl3t64, zlib1g, libkrb5-3, fontconfig, libfreetype6
+Recommends: imagemagick
 Homepage: https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync
 Description: Clipboard sharing between your own devices
  ClipboardSync keeps one clipboard board across the devices you pair. Copying

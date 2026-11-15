@@ -16,6 +16,23 @@ internal partial class LinuxClipboardWatcher : IClipboardWatcher
 {
     private const byte Separator = 0x01;
     private const int MaxValueLength = 1024 * 1024;
+    private static readonly TimeSpan ImageReadTimeout = TimeSpan.FromSeconds(20);
+    private static readonly TimeSpan ImagePollInterval = TimeSpan.FromMilliseconds(1_500);
+
+    /// <summary>Image formats worth asking for, best first; anything else offered is still read.</summary>
+    private static readonly string[] PreferredImageTypes =
+    [
+        "image/png",
+        "image/webp",
+        "image/jpeg",
+        "image/jpg",
+        "image/bmp",
+        "image/tiff",
+        "image/gif",
+        "image/avif",
+        "image/heic",
+        "image/x-portable-pixmap"
+    ];
 
     private readonly SemaphoreSlim _clipboardGate = new(1, 1);
     private CancellationTokenSource? _cancellation;
@@ -23,11 +40,13 @@ internal partial class LinuxClipboardWatcher : IClipboardWatcher
     private CancellationTokenSource? _fileCancellation;
     private bool _imageBaselineSet;
     private CancellationTokenSource? _imageCancellation;
+    private bool _imageTooLarge;
     private string? _lastFiles;
     private string? _lastImageHash;
     private string? _lastText;
     private Process? _process;
     private bool _started;
+    private string? _unconvertedImage;
 
     public event Action<string>? TextCopied;
 
@@ -42,6 +61,8 @@ internal partial class LinuxClipboardWatcher : IClipboardWatcher
 
         _started = true;
         _imageBaselineSet = false;
+        _imageTooLarge = false;
+        _unconvertedImage = null;
         _fileBaselineSet = false;
         _imageCancellation = new();
         _fileCancellation = new();
@@ -77,6 +98,8 @@ internal partial class LinuxClipboardWatcher : IClipboardWatcher
         _lastImageHash = null;
         _lastFiles = null;
         _imageBaselineSet = false;
+        _imageTooLarge = false;
+        _unconvertedImage = null;
         _fileBaselineSet = false;
         _started = false;
         _cancellation?.Dispose();
@@ -190,50 +213,84 @@ internal partial class LinuxClipboardWatcher : IClipboardWatcher
     private async Task ImageLoopAsync(CancellationToken token)
     {
         while (!token.IsCancellationRequested)
+        {
             try
             {
-                await _clipboardGate.WaitAsync(token);
-                byte[]? png;
-
-                try
-                {
-                    png = ReadImageWithCommand();
-                }
-                finally
-                {
-                    _clipboardGate.Release();
-                }
-
-                if (png is { Length: > 0 } && png.Length <= ClipboardLimits.MaxImageBytes)
-                {
-                    var hash = Convert.ToHexString(SHA256.HashData(png));
-
-                    // The clipboard already has a value when the app starts; that is not a new copy.
-                    if (!_imageBaselineSet)
-                    {
-                        _imageBaselineSet = true;
-                        _lastImageHash = hash;
-                    }
-                    else if (hash != _lastImageHash)
-                    {
-                        _lastImageHash = hash;
-                        Try.Run(() => ImageCopied?.Invoke(png))
-                            .OnFailure(ex => Log.Warning(ex, "Clipboard image handler failed"));
-                    }
-                }
-
-                await Task.Delay(TimeSpan.FromMilliseconds(1_500), token);
+                await PollImageAsync(token);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
             {
                 break;
             }
             catch (Exception ex)
             {
-                Log.Debug(ex, "The image clipboard watcher stopped");
+                // One bad read must not stop watching images for the rest of the session.
+                Log.Warning(ex, "The image clipboard watcher could not read the clipboard");
+            }
+
+            try
+            {
+                await Task.Delay(ImagePollInterval, token);
+            }
+            catch (OperationCanceledException)
+            {
                 break;
             }
+        }
     }
+
+    private async Task PollImageAsync(CancellationToken token)
+    {
+        byte[]? png;
+        bool tooLarge;
+
+        await _clipboardGate.WaitAsync(token);
+        try
+        {
+            (png, tooLarge) = await ReadImageAsync(token);
+        }
+        finally
+        {
+            _clipboardGate.Release();
+        }
+
+        if (tooLarge)
+        {
+            if (!_imageTooLarge)
+            {
+                _imageTooLarge = true;
+                Log.Warning("A clipboard image is larger than the {Limit} MB limit and was skipped",
+                    ClipboardLimits.MaxImageBytes / (1024 * 1024));
+            }
+
+            return;
+        }
+
+        _imageTooLarge = false;
+
+        // Whatever sits on the clipboard when the app starts is not a new copy, so the first poll
+        // decides the baseline once. An image copied after that is always reported, even when the
+        // clipboard held only text at startup.
+        if (!_imageBaselineSet)
+        {
+            _imageBaselineSet = true;
+            _lastImageHash = png is { Length: > 0 } ? HashImage(png) : null;
+            return;
+        }
+
+        if (png is not { Length: > 0 })
+            return;
+
+        var hash = HashImage(png);
+        if (hash == _lastImageHash)
+            return;
+
+        _lastImageHash = hash;
+        Try.Run(() => ImageCopied?.Invoke(png))
+            .OnFailure(ex => Log.Warning(ex, "Clipboard image handler failed"));
+    }
+
+    private static string HashImage(byte[] png) => Convert.ToHexString(SHA256.HashData(png));
 
     private async Task FileLoopAsync(CancellationToken token)
     {
@@ -586,20 +643,122 @@ internal partial class LinuxClipboardWatcher : IClipboardWatcher
         return false;
     }
 
-    private static byte[]? ReadImageWithCommand()
+    /// <summary>
+    ///     Reads the image on the clipboard as PNG, whichever image format its owner offers. Asking
+    ///     for <c>image/png</c> alone loses JPEG, WebP and BMP copies; the offered types are read
+    ///     from the clipboard and anything else is converted.
+    /// </summary>
+    private async Task<(byte[]? Png, bool TooLarge)> ReadImageAsync(CancellationToken token)
     {
-        (string Command, string[] Arguments)[] candidates =
+        foreach (var type in ImageTypesOnClipboard())
+        {
+            foreach (var (command, arguments) in ImageReaders(type))
+            {
+                var (data, tooLarge) = await ReadBytesAsync(command, arguments, token);
+                if (tooLarge)
+                    return (null, true);
+
+                if (data is not { Length: > 0 })
+                    continue;
+
+                (var png, var conversionTooLarge) = await ToPngAsync(data, token);
+                if (conversionTooLarge)
+                    return (null, true);
+
+                if (png is { Length: > 0 })
+                    return (png, false);
+            }
+        }
+
+        return (null, false);
+    }
+
+    private static (string Command, string[] Arguments)[] ImageReaders(string type) =>
+    [
+        ("wl-paste", ["--type", type]),
+        ("xclip", ["-selection", "clipboard", "-t", type, "-o"])
+    ];
+
+    /// <summary>The image types the clipboard offers, best first. Empty when it holds no image.</summary>
+    private static string[] ImageTypesOnClipboard()
+    {
+        var listed = Run("wl-paste", ["--list-types"])
+                     ?? Run("xclip", ["-selection", "clipboard", "-t", "TARGETS", "-o"]);
+
+        if (string.IsNullOrWhiteSpace(listed))
+            return ["image/png", "image/jpeg"];
+
+        return [.. listed
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(type => type.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(Rank)];
+
+        static int Rank(string type)
+        {
+            var index = Array.FindIndex(PreferredImageTypes,
+                preferred => string.Equals(preferred, type, StringComparison.OrdinalIgnoreCase));
+
+            return index < 0 ? PreferredImageTypes.Length : index;
+        }
+    }
+
+    private async Task<(byte[]? Png, bool TooLarge)> ToPngAsync(byte[] data, CancellationToken token)
+    {
+        if (IsPng(data))
+            return (data, false);
+
+        // -strip drops the date chunks ImageMagick writes, so converting one copy twice yields the
+        // same bytes; otherwise the same image looks new every poll and is captured repeatedly.
+        (string Command, string[] Arguments)[] converters =
         [
-            ("wl-paste", ["--type", "image/png"]),
-            ("xclip", ["-selection", "clipboard", "-t", "image/png", "-o"])
+            ("magick", ["-", "-auto-orient", "-strip", "png:-"]),
+            ("convert", ["-", "-auto-orient", "-strip", "png:-"]),
+            ("ffmpeg",
+                [
+                    "-hide_banner", "-loglevel", "error", "-i", "pipe:0", "-frames:v", "1", "-map_metadata", "-1",
+                    "-c:v", "png", "-f", "image2pipe", "pipe:1"
+                ])
         ];
 
-        foreach (var (command, arguments) in candidates)
-            if (RunBytes(command, arguments) is { Length: > 0 } bytes)
-                return bytes;
+        foreach (var (command, arguments) in converters)
+        {
+            var (png, tooLarge) = await ReadBytesAsync(command, arguments, token, data);
+            if (tooLarge)
+                return (null, true);
 
-        return null;
+            if (png is { Length: > 0 })
+            {
+                _unconvertedImage = null;
+                return (png, false);
+            }
+        }
+
+        var source = HashImage(data);
+        if (_unconvertedImage != source)
+        {
+            _unconvertedImage = source;
+            Log.Warning(
+                "A {Type} clipboard image could not be converted to PNG; install ImageMagick to share non-PNG copies",
+                SniffType(data));
+        }
+
+        return (null, false);
     }
+
+    /// <summary>Names the image format from its magic bytes, for logs only.</summary>
+    private static string SniffType(byte[] data) => data switch
+    {
+        [0xFF, 0xD8, 0xFF, ..] => "JPEG",
+        [0x52, 0x49, 0x46, 0x46, _, _, _, _, 0x57, 0x45, 0x42, 0x50, ..] => "WebP",
+        [0x42, 0x4D, ..] => "BMP",
+        [0x47, 0x49, 0x46, 0x38, ..] => "GIF",
+        [0x49, 0x49, 0x2A, 0x00, ..] or [0x4D, 0x4D, 0x00, 0x2A, ..] => "TIFF",
+        _ => "unknown"
+    };
+
+    private static bool IsPng(byte[] data) =>
+        data is [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, ..];
 
     private static bool WriteImageWithCommand(byte[] png)
     {
@@ -651,41 +810,61 @@ internal partial class LinuxClipboardWatcher : IClipboardWatcher
             }
     }
 
-    private static byte[]? RunBytes(string command, string[] arguments)
+    /// <summary>
+    ///     Runs a reader to completion and returns what it wrote, giving up at the image limit or the
+    ///     timeout so a stuck clipboard owner cannot freeze the watcher. <paramref name="input" /> is
+    ///     fed to the process when the command converts rather than reads.
+    /// </summary>
+    private static async Task<(byte[]? Data, bool TooLarge)> ReadBytesAsync(string command, string[] arguments,
+        CancellationToken token, byte[]? input = null)
     {
-        var process = Try.Run(() => Process.Start(Command(command, arguments))).GetOrNull();
+        var startInfo = Command(command, arguments);
+        startInfo.RedirectStandardError = false;
+        startInfo.RedirectStandardInput = input is not null;
+
+        var process = Try.Run(() => Process.Start(startInfo)).GetOrNull();
         if (process is null)
-            return null;
+            return (null, false);
+
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token);
+        timeout.CancelAfter(ImageReadTimeout);
 
         using (process)
-        {
-            using var output = new MemoryStream();
-            var buffer = new byte[81920];
-
             try
             {
-                var stream = process.StandardOutput.BaseStream;
-                int read;
-                while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+                if (input is not null)
                 {
+                    await process.StandardInput.BaseStream.WriteAsync(input, timeout.Token);
+                    await process.StandardInput.BaseStream.FlushAsync(timeout.Token);
+                    process.StandardInput.Close();
+                }
+
+                using var output = new MemoryStream();
+                var buffer = new byte[81920];
+
+                while (true)
+                {
+                    var read = await process.StandardOutput.BaseStream.ReadAsync(buffer, timeout.Token);
+                    if (read == 0)
+                        break;
+
                     if (output.Length + read > ClipboardLimits.MaxImageBytes)
                     {
                         Try.Run(() => process.Kill(true)).OnFailure(_ => { });
-                        return null;
+                        return (null, true);
                     }
 
                     output.Write(buffer, 0, read);
                 }
 
-                return process.WaitForExit(2000) && process.ExitCode == 0 && output.Length > 0
-                    ? output.ToArray()
-                    : null;
+                await process.WaitForExitAsync(timeout.Token);
+                return process.ExitCode == 0 && output.Length > 0 ? (output.ToArray(), false) : (null, false);
             }
             catch (Exception)
             {
-                return null;
+                Try.Run(() => process.Kill(true)).OnFailure(_ => { });
+                return (null, false);
             }
-        }
     }
 
     private static bool RunBytesWithInput(string command, string[] arguments, byte[] input)

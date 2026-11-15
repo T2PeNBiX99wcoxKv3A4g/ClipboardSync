@@ -57,6 +57,7 @@ depend = zlib
 depend = krb5
 depend = fontconfig
 depend = freetype2
+optdepend = imagemagick: convert JPEG, WebP and BMP clipboard images to PNG
 EOF
 
 # makepkg writes a gzipped mtree file next to the package info, so do the same.

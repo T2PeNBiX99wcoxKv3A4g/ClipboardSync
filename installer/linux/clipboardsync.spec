@@ -25,6 +25,9 @@ Requires:       krb5-libs
 Requires:       fontconfig
 Requires:       freetype
 
+# Optional: converts JPEG, WebP and BMP clipboard images to PNG for sharing.
+Recommends:     ImageMagick
+
 %description
 ClipboardSync keeps one clipboard board across the devices you pair. Copying
 text, a URL or an image on one device sends it to the others over an encrypted
