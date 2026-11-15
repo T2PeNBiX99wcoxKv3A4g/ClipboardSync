@@ -407,10 +407,13 @@ const Board = styled.div`
     align-items: start;
 `;
 
+/** One row of columns fills the window; further rows keep the same height and scroll the page. */
 const Column = styled.section<{ $offline: boolean }>`
     display: flex;
     flex-direction: column;
     gap: 10px;
+    min-height: 0;
+    height: clamp(320px, calc(100vh - 250px), 900px);
     padding: 12px;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
@@ -516,8 +519,12 @@ const RemoveButton = styled.button`
 
 const ColumnBody = styled.div`
     display: flex;
+    flex: 1;
     flex-direction: column;
     gap: 8px;
+    min-height: 0;
+    padding-right: 2px;
+    overflow-y: auto;
 `;
 
 const Empty = styled.p`

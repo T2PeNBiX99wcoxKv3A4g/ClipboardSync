@@ -644,6 +644,8 @@ Please report this to https://github.com/markedjs/marked.`,e){let e=`<p>An error
     display: flex;
     flex-direction: column;
     gap: 10px;
+    min-height: 0;
+    height: clamp(320px, calc(100vh - 250px), 900px);
     padding: 12px;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
@@ -731,8 +733,12 @@ Please report this to https://github.com/markedjs/marked.`,e){let e=`<p>An error
     }
 `,dl=G.div`
     display: flex;
+    flex: 1;
     flex-direction: column;
     gap: 8px;
+    min-height: 0;
+    padding-right: 2px;
+    overflow-y: auto;
 `,fl=G.p`
     padding: 24px 10px;
     text-align: center;
