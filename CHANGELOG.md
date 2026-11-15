@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.6](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.9.5..v0.9.6) - 2026-11-15
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([ba0a5a5](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/ba0a5a596473030cdaaaf06ebc722488a5a62932))
+
+### Build
+
+- Pick up PhotinoNETUtils 0.29.2 - ([ad76ccf](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/ad76ccf189336c56133fd0748ed827eba6add20e))
+
+
 ## [0.9.5](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.9.4..v0.9.5) - 2026-11-15
 
 ### 🐛 Bug Fixes
