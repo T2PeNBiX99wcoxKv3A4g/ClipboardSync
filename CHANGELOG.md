@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.11.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.10.0..v0.11.0) - 2026-11-16
+
+### ⛰️  Features
+
+- *(ui)* Add open source attribution notices - ([af743bc](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/af743bc77875bb0ad2524845468aa61502574ce1))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([2c373b9](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/2c373b9d196572e7ab7a6f98fe58d780eefb8036))
+
+
 ## [0.10.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.9.6..v0.10.0) - 2026-11-15
 
 ### ⛰️  Features
