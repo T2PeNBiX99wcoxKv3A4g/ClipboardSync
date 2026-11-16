@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.11.1](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.11.0..v0.11.1) - 2026-11-16
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([f6b866c](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/f6b866c0ba2993c339f8e1b7e3bd78b70f93ec49))
+
+### Build
+
+- *(ui)* Take the build scripts from the shared bridge - ([9be31bf](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/9be31bf635f281cfbea992f4852a779991f28c1b))
+
+
 ## [0.11.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.10.0..v0.11.0) - 2026-11-16
 
 ### ⛰️  Features
