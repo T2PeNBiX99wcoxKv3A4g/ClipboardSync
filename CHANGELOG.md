@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.12.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.11.4..v0.12.0) - 2026-11-16
+
+### ⛰️  Features
+
+- *(site)* One install panel, split by system - ([5cd9ba2](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/5cd9ba250763f886b6d49a7ef7eda1c739e817db))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([5e20ea6](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/5e20ea66aa20b62a0f6c7eae042011f3735106e1))
+
+
 ## [0.11.4](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.11.3..v0.11.4) - 2026-11-16
 
 ### 📚 Documentation
