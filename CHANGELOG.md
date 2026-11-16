@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.11.4](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.11.3..v0.11.4) - 2026-11-16
+
+### 📚 Documentation
+
+- Correct what Windows 10 needs before the first launch - ([0618e29](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/0618e2963fb57ececc142e11a1eff35df47d2387))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([38d4c95](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/38d4c95c9d842ebb8789d5ba5d494bd3d18113b2))
+
+
 ## [0.11.3](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.11.2..v0.11.3) - 2026-11-16
 
 ### Action
