@@ -59,9 +59,7 @@
       "何でもコピーします。項目は両方のボードに届き、相手のクリップボードに反映されます。定期的な照合が、取りこぼした項目を埋めます。"
     ],
     "installTitle": "インストール",
-    "installBefore": "ビルドは自己完結型で、.NET ランタイムを同梱しているためほかに何も必要ありません。Linux では WebKitGTK 4.1 と AppIndicator ライブラリが必要です（",
     "readme": "README",
-    "installAfter": " を参照）。Windows 版はコード署名されていないため、初回に警告が出ることがあります。",
     "platforms": [
       {
         "name": "Windows",
@@ -80,7 +78,8 @@
         "note": "x86_64 (.pkg.tar.zst)"
       }
     ],
-    "webView2Note": "Windows 11 には WebView2 ランタイムが含まれます。Windows 10 にはないため、起動前に {link} からインストールしてください。"
+    "installWindows": "ビルドは自己完結型で、.NET ランタイムを同梱しています。Windows 11 には WebView2 ランタイムが含まれています。Windows 10 では {link} から先にインストールしてください。",
+    "installLinux": "ビルドは自己完結型で、.NET ランタイムを同梱しています。Linux では WebKitGTK 4.1 と AppIndicator ライブラリ が必要で、パッケージが自動的に導入します。"
   },
   "docs": {
     "setup": "セットアップ",
