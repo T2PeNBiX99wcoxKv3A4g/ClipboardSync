@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.11.2](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.11.1..v0.11.2) - 2026-11-16
+
+### 🚜 Refactor
+
+- *(site)* Build the site from the shared package - ([d632ab7](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/d632ab788224396c318c3fea4399d70a6034141f))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([8e74469](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/8e744697fc80de272bccc6d8b163bd1ad1091ff6))
+
+
 ## [0.11.1](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.11.0..v0.11.1) - 2026-11-16
 
 ### Action
