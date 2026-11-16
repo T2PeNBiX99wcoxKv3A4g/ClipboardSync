@@ -37,6 +37,7 @@ declare module "@photino-net-utils/bridge"
         "copy_code": true;
         "count_files": true;
         "count_items": true;
+        "count_open_source_projects": true;
         "dark": true;
         "default": true;
         "devices": true;
@@ -97,6 +98,8 @@ declare module "@photino-net-utils/bridge"
         "only_available_in_the_desktop_app": true;
         "open_logs": true;
         "open_release_page": true;
+        "open_source_attribution": true;
+        "open_source_licenses_for_the_libraries_clipboard_sync_uses": true;
         "outgoing": true;
         "pair": true;
         "pairing_code": true;

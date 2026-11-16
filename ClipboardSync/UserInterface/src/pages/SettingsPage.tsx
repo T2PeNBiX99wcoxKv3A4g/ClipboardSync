@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from "react";
+import {lazy, Suspense, useEffect, useRef, useState} from "react";
 import styled, {css, keyframes} from "styled-components";
 import {type LocalizationKey, useTranslation} from "@photino-net-utils/bridge";
 import {
@@ -17,6 +17,11 @@ import {clearHistory} from "../api/peer";
 import {Toggle} from "../components/Toggle";
 import {Dropdown} from "../components/Dropdown";
 import {CheckIcon, FolderIcon} from "../components/Icons";
+
+/* The licence texts are large, so the notices panel is loaded only when it is opened. */
+const AttributionPage = lazy(() =>
+    import("../components/AttributionPage").then((module) => ({default: module.AttributionPage}))
+);
 
 interface SettingsPageProps {
     info: AppInfo | null;
@@ -67,6 +72,7 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
     const [updateError, setUpdateError] = useState(false);
     const [confirmClear, setConfirmClear] = useState(false);
     const [clearing, setClearing] = useState(false);
+    const [attributionOpen, setAttributionOpen] = useState(false);
     const [activeSection, setActiveSection] = useState<SectionId>("general");
     const pageRef = useRef<HTMLDivElement>(null);
     const sectionRefs = useRef<Record<SectionId, HTMLElement | null>>({
@@ -563,6 +569,10 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
                     </Card>
                 </Section>
 
+                <AttributionLink onClick={() => setAttributionOpen(true)} type="button">
+                    {t("open_source_attribution")}
+                </AttributionLink>
+
                 <SaveBar>
                     <Status>
                         {notice && (
@@ -604,6 +614,12 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
                     ))}
                 </TocList>
             </Toc>
+
+            {attributionOpen && (
+                <Suspense fallback={null}>
+                    <AttributionPage onClose={() => setAttributionOpen(false)}/>
+                </Suspense>
+            )}
         </Page>
     );
 }
@@ -951,6 +967,26 @@ const DangerButton = styled.button`
     &:disabled {
         opacity: 0.4;
         cursor: default;
+    }
+`;
+
+/** A quiet line at the bottom of the settings that opens the open-source notices. */
+const AttributionLink = styled.button`
+    align-self: flex-start;
+    padding: 2px 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-muted);
+    font: inherit;
+    font-size: 10px;
+    text-decoration: underline;
+    text-decoration-color: var(--border-color-hover);
+    text-underline-offset: 3px;
+    cursor: pointer;
+
+    &:hover {
+        color: var(--accent-primary);
+        text-decoration-color: var(--accent-primary);
     }
 `;
 
