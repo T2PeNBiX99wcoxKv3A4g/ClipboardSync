@@ -67,8 +67,8 @@ ClipboardSync は、ペアリングした端末の間で 1 つのクリップボ
 
 ### Windows
 
-1. Microsoft Edge **WebView2 ランタイム**。Windows 10 と 11 には通常入っています。ない場合は
-   [Microsoft のページ](https://developer.microsoft.com/microsoft-edge/webview2/) を参照して
+1. Microsoft Edge の **WebView2 ランタイム**。Windows 11 には含まれています。Windows 10 では別途インストールが必要です。
+   [Microsoft のページ](https://developer.microsoft.com/microsoft-edge/webview2/) から入手してください。
    ください。
 2. Windows 10 以降、x64。
 3. ビルドはコード署名されていないため、初回起動時に警告が出ることがあります。

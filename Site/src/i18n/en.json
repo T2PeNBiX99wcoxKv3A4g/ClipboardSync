@@ -59,7 +59,7 @@
       "Copy anything. The item lands on both boards and is applied to the other clipboard; a periodic reconciliation fills in whatever a device missed."
     ],
     "installTitle": "Install",
-    "installBefore": "Builds are self-contained: the .NET runtime is bundled, so nothing else needs installing. Windows also needs the WebView2 runtime, which Windows 10 and 11 already have; Linux needs WebKitGTK 4.1 and the AppIndicator library (see the ",
+    "installBefore": "Builds are self-contained: the .NET runtime is bundled, so nothing else needs installing. Linux needs WebKitGTK 4.1 and the AppIndicator library (see the",
     "readme": "README",
     "installAfter": "). The Windows build is not code-signed, so Windows may warn the first time.",
     "platforms": [
@@ -79,7 +79,8 @@
         "name": "Arch Linux",
         "note": "x86_64 (.pkg.tar.zst)"
       }
-    ]
+    ],
+    "webView2Note": "Windows 11 includes the WebView2 runtime. Windows 10 does not: install it from {link} before the first launch."
   },
   "docs": {
     "setup": "Setup",

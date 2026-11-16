@@ -59,7 +59,7 @@
       "複製任何內容。項目會出現在兩邊的看板，並套用到對方的剪貼簿；定期核對會補上漏掉的項目。"
     ],
     "installTitle": "安裝",
-    "installBefore": "建置版本是自包含的：已內建 .NET 執行階段，不需要另外安裝。Windows 還需要 WebView2 執行階段，Windows 10 和 11 已經內建；Linux 需要 WebKitGTK 4.1 和 AppIndicator 函式庫（見 ",
+    "installBefore": "建置版本是自包含的：已內建 .NET 執行階段，不需要另外安裝。Linux 需要 WebKitGTK 4.1 和 AppIndicator 函式庫（見",
     "readme": "README",
     "installAfter": "）。Windows 版沒有程式碼簽章，第一次執行時可能會出現警告。",
     "platforms": [
@@ -79,7 +79,8 @@
         "name": "Arch Linux",
         "note": "x86_64 (.pkg.tar.zst)"
       }
-    ]
+    ],
+    "webView2Note": "Windows 11 已內建 WebView2 執行階段；Windows 10 沒有，請先從 {link} 安裝後再啟動。"
   },
   "docs": {
     "setup": "設定",

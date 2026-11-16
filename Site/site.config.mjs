@@ -8,6 +8,7 @@ export const site = {
     description: "ClipboardSync shares text, links, images, files and folders between your own devices over an encrypted peer-to-peer connection.",
     url: "https://t2penbix99wcoxkv3a4g.github.io/ClipboardSync/",
     icon: "./icon.svg",
+    webView2Url: "https://developer.microsoft.com/microsoft-edge/webview2/",
     repository: "https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync",
     languages: ["en", "ja", "zh-CN", "zh-TW"],
     docs: [

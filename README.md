@@ -68,8 +68,8 @@ Four package formats are published beside the plain archives:
 
 ### Windows
 
-1. The Microsoft Edge **WebView2 Runtime**. Windows 10 and 11 normally already have it; otherwise
-   use [Microsoft's page](https://developer.microsoft.com/microsoft-edge/webview2/).
+1. The Microsoft Edge **WebView2 Runtime**. Windows 11 includes it; Windows 10 needs it, from
+   [Microsoft's page](https://developer.microsoft.com/microsoft-edge/webview2/).
 2. Windows 10 or newer, x64.
 3. The build is not code-signed, so Windows may warn the first time it is started.
 

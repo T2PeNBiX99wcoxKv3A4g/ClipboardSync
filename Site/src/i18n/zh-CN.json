@@ -59,7 +59,7 @@
       "复制任何内容。项目会出现在两边的面板，并应用到对方的剪贴板；定期核对会补上漏掉的項目。"
     ],
     "installTitle": "安装",
-    "installBefore": "构建版本是自包含的：已内置 .NET 运行时，不需要另外安装。Windows 还需要 WebView2 运行时，Windows 10 和 11 已经内置；Linux 需要 WebKitGTK 4.1 和 AppIndicator 库（见 ",
+    "installBefore": "构建版本是自包含的：已内置 .NET 运行时，不需要另外安装。Linux 需要 WebKitGTK 4.1 和 AppIndicator 库（见",
     "readme": "README",
     "installAfter": "）。Windows 版没有代码签名，第一次运行时可能会提示警告。",
     "platforms": [
@@ -79,7 +79,8 @@
         "name": "Arch Linux",
         "note": "x86_64 (.pkg.tar.zst)"
       }
-    ]
+    ],
+    "webView2Note": "Windows 11 已内置 WebView2 运行时；Windows 10 没有，请先从 {link} 安装后再启动。"
   },
   "docs": {
     "setup": "设置",

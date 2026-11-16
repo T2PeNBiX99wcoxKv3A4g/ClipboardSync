@@ -60,8 +60,8 @@ ClipboardSync 让已配对设备共用同一块剪贴板面板。在一台设备
 
 ### Windows
 
-1. Microsoft Edge **WebView2 运行时**。Windows 10 和 11 通常已经内置；如果没有，请使用
-   [Microsoft 的页面](https://developer.microsoft.com/microsoft-edge/webview2/)。
+1. Microsoft Edge **WebView2 运行时**。Windows 11 已内置；Windows 10 需要安装，请从
+   [Microsoft 的页面](https://developer.microsoft.com/microsoft-edge/webview2/) 获取。
 2. Windows 10 或更高版本，x64。
 3. 构建没有代码签名，第一次启动时 Windows 可能会提示警告。
 
