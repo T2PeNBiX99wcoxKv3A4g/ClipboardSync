@@ -4,13 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "generate": "node scripts/generate-docs.mjs",
+    "generate": "node node_modules/@photino-net-utils/site/scripts/generate-docs.mjs && node node_modules/@photino-net-utils/site/scripts/generate-og.mjs && node node_modules/@photino-net-utils/site/scripts/generate-index.mjs",
     "dev": "npm run generate && vite",
     "build": "npm run generate && tsc --noEmit && vite build",
     "preview": "vite preview",
     "upgrade": "node -e \"require('fs').rmSync('package-lock.json',{force:true})\" && npx npm-check-updates -u"
   },
   "dependencies": {
+    "@photino-net-utils/site": "file:../ClipboardSync/Libs/photino-net-utils-site-1.0.0.tgz",
     "lucide-react": "^1.71.0",
     "react": "^19",
     "react-dom": "^19",
@@ -23,6 +24,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.1.2",
+    "sharp": "^0.34.0",
     "typescript": "^7",
     "vite": "^8.3.7"
   }

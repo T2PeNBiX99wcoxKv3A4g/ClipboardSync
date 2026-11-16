@@ -1,9 +1,7 @@
-import React from "react";
-import {createRoot} from "react-dom/client";
-import {App} from "./App";
+import {renderSite} from "@photino-net-utils/site";
+import {site} from "../site.config.mjs";
+import {icons} from "../site.icons";
+import {copy, languages} from "./i18n";
+import {docs} from "./docs.generated";
 
-createRoot(document.getElementById("root")!).render(
-    <React.StrictMode>
-        <App/>
-    </React.StrictMode>
-);
+renderSite({config: {...site, icons}, languages, defaultLanguage: "en", copy, docs});
