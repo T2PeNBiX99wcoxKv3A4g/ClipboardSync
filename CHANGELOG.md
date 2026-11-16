@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.11.3](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.11.2..v0.11.3) - 2026-11-16
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([8b58905](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/8b5890502533fb7c74cfc0126e54d82660ef2da3))
+
+### Build
+
+- *(site)* Take the shared site with the phone header fix - ([674f136](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/674f1362efa1c02240b321696538683f54801d6e))
+
+
 ## [0.11.2](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.11.1..v0.11.2) - 2026-11-16
 
 ### 🚜 Refactor
