@@ -83,6 +83,7 @@
   },
   "docs": {
     "setup": "设置",
-    "reference": "参考"
+    "reference": "参考",
+    "history": "更新记录"
   }
 }

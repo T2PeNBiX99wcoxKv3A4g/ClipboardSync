@@ -83,6 +83,7 @@
   },
   "docs": {
     "setup": "Setup",
-    "reference": "Reference"
+    "reference": "Reference",
+    "history": "History"
   }
 }

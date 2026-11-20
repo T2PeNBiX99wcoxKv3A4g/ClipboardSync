@@ -83,6 +83,7 @@
   },
   "docs": {
     "setup": "セットアップ",
-    "reference": "リファレンス"
+    "reference": "リファレンス",
+    "history": "更新履歴"
   }
 }

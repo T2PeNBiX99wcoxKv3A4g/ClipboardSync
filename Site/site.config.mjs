@@ -35,6 +35,11 @@ export const site = {
         {
             "slug": "Troubleshooting",
             "group": "reference"
+        },
+        {
+            "slug": "Changelog",
+            "group": "history",
+            "source": "../CHANGELOG.md"
         }
     ],
     theme: {
