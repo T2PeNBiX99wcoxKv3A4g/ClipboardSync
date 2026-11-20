@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.13.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.12.0..v0.13.0) - 2026-11-20
+
+### ⛰️  Features
+
+- *(images)* Serve clipboard pictures over the local data plane - ([68dcda1](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/68dcda1183d87b83ea05375ea61402bee03629d8))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([f546697](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/f54669713b071231623b36e45a5b33455518e9e0))
+
+
 ## [0.12.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.11.4..v0.12.0) - 2026-11-16
 
 ### ⛰️  Features
