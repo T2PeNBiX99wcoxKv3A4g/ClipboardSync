@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.15.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.14.0..v0.15.0) - 2026-11-20
+
+### ⛰️  Features
+
+- *(data)* Fetch the history and device board as binary blocks - ([8f7be57](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/8f7be5732d4a9dcd5e5aae03a3aa2d0cca36e69d))
+
+### 🐛 Bug Fixes
+
+- *(site)* Pin the gfm autolink package npm cannot download - ([1097377](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/1097377542ed5dd822111354d9ce83a895522737))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([dca9028](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/dca9028d2d6a489ea6c7061f595417c17a62321b))
+
+
 ## [0.14.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.13.2..v0.14.0) - 2026-11-20
 
 ### ⛰️  Features
