@@ -1,4 +1,5 @@
 import {Native} from "@photino-net-utils/bridge";
+import {readBlock} from "./data";
 
 export type TransferStatus =
     | "synced"
@@ -85,14 +86,13 @@ const EMPTY_DEVICES: DevicesState = {
 export async function getDevices(): Promise<DevicesState> {
     if (!Native.available) return EMPTY_DEVICES;
 
-    return await Native.request<DevicesState>("devices.get");
+    return await fetchDevices();
 }
 
 export async function getHistory(): Promise<ClipboardItem[]> {
     if (!Native.available) return [];
 
-    const payload = await Native.request<{ items: ClipboardItem[] }>("history.get");
-    return payload.items ?? [];
+    return await fetchHistory();
 }
 
 let dataBaseTask: Promise<string> | null = null;
@@ -168,12 +168,113 @@ function onEvent<T>(type: string, handler: (payload: T) => void): () => void {
     });
 }
 
+/** A change notice without a body: the listener fetches what it needs. */
+function onPing(type: string, handler: () => void): () => void {
+    if (!Native.available) return () => undefined;
+
+    return Native.on((message) => {
+        if (message.type === type) handler();
+    });
+}
+
 export function onDevicesChanged(handler: (devices: DevicesState) => void): () => void {
-    return onEvent("devices.changed", handler);
+    return onPing("devices.changed", () => {
+        void fetchDevices().then(handler, () => {
+            // The host did not answer; the board on screen stays as it was.
+        });
+    });
 }
 
 export function onHistoryChanged(handler: (items: ClipboardItem[]) => void): () => void {
-    return onEvent<{ items: ClipboardItem[] }>("history.changed", (payload) => handler(payload.items ?? []));
+    return onPing("history.changed", () => {
+        void refreshHistory().then(handler, () => {
+            // The host did not answer; the next ping asks again.
+        });
+    });
+}
+
+/**
+ * The history fetcher for the pings: a transfer pings every 100 ms, and a page that asked again
+ * while a fetch was still running would queue a copy of the same list.
+ */
+let historyInFlight: Promise<ClipboardItem[]> | null = null;
+
+function refreshHistory(): Promise<ClipboardItem[]> {
+    historyInFlight ??= fetchHistory().finally(() => {
+        historyInFlight = null;
+    });
+
+    return historyInFlight;
+}
+
+/**
+ * Rows are kept exactly as the host sends them, in order and with duplicates: copying the same text
+ * twice is two entries in the history, not one.
+ */
+async function fetchHistory(): Promise<ClipboardItem[]> {
+    const block = await readBlock("/history");
+
+    return block.rows.map((row) => ({
+        id: String(row.id),
+        originDeviceId: String(row.originDeviceId),
+        originDeviceName: String(row.originDeviceName),
+        kind: String(row.kind) as ClipboardKind,
+        content: String(row.content),
+        meta: String(row.meta ?? "") || null,
+        at: Number(row.at),
+        direction: String(row.direction) as TransferDirection,
+        status: String(row.status) as TransferStatus,
+        reached: Number(row.reached),
+        peers: Number(row.peers),
+        files: toFiles(String(row.files ?? "")),
+        totalBytes: Number(row.totalBytes),
+        progress: Number(row.progress),
+    }));
+}
+
+/** The files of a file item travel as one string: path, size and directory flag, unit separated. */
+function toFiles(value: string): ClipboardFile[] | null {
+    if (!value) return null;
+
+    return value.split("\u001e").map((entry) => {
+        const [path, size, directory] = entry.split("\u001f");
+
+        return {
+            path,
+            size: Number(size ?? 0),
+            directory: directory === "1",
+        };
+    });
+}
+
+async function fetchDevices(): Promise<DevicesState> {
+    const block = await readBlock("/devices");
+    const rows = block.rows;
+
+    const self = rows.find((row) => row.scope === "self");
+    const peers = rows.filter((row) => row.scope === "peer");
+    const discovered = rows.filter((row) => row.scope === "discovered");
+
+    return {
+        self: self ? toDevice(self) : EMPTY_DEVICES.self,
+        peers: peers.map(toDevice),
+        discovered: discovered.map((row) => ({
+            id: String(row.id),
+            name: String(row.name),
+            host: String(row.host),
+            port: Number(row.port),
+        })),
+    };
+}
+
+function toDevice(row: Record<string, string | number>): DeviceInfo {
+    return {
+        id: String(row.id),
+        name: String(row.name),
+        self: Number(row.self) !== 0,
+        online: Number(row.online) !== 0,
+        itemCount: Number(row.items),
+    };
 }
 
 export function onPairCode(handler: (payload: PairCode) => void): () => void {

@@ -972,8 +972,6 @@ internal partial class SyncService
 
     private async Task<NativeResponse?> HandleMessageAsync(NativeContext context) => context.Request.Type switch
     {
-        "devices.get" => await DevicesAsync(context),
-        "history.get" => await HistoryAsync(context),
         "image.get" => await GetImageAsync(context),
         "image.copy" => await CopyImageAsync(context),
         "file.copy" => await CopyFilesAsync(context),
@@ -1105,28 +1103,19 @@ internal partial class SyncService
         }));
     }
 
-    private void PublishBoard() => _ = PublishBoardAsync();
-
-    private async Task PublishBoardAsync()
+    private void PublishBoard()
     {
-        await Task.WhenAll(PublishHistoryAsync(), PublishDevicesAsync());
+        PublishHistory();
+        PublishDevices();
     }
 
-    private void PublishDevices() => _ = PublishDevicesAsync();
+    private void PublishDevices() =>
+        // A ping, not the board: the window fetches it from the local server.
+        WindowManager.Instance.NotifyMainWindow("devices.changed", null);
 
-    private void PublishHistory() => _ = PublishHistoryAsync();
-
-    private async Task PublishDevicesAsync()
-    {
-        var payload = await BuildDevicesAsync();
-        WindowManager.Instance.NotifyMainWindow("devices.changed", payload);
-    }
-
-    private async Task PublishHistoryAsync()
-    {
-        var payload = await BuildHistoryAsync();
-        WindowManager.Instance.NotifyMainWindow("history.changed", payload);
-    }
+    private void PublishHistory() =>
+        // A ping, not the list: the window fetches it from the local server.
+        WindowManager.Instance.NotifyMainWindow("history.changed", null);
 
     private void PublishProgress()
     {
@@ -1165,11 +1154,11 @@ internal partial class SyncService
         return new(items);
     }
 
-    private async Task<NativeResponse?> DevicesAsync(NativeContext context) =>
-        context.Reply("devices.get.result", await BuildDevicesAsync());
+    /// <summary>The history as the data plane serves it. The window fetches it, not the push.</summary>
+    internal Task<HistoryPayload> HistoryForDataAsync() => BuildHistoryAsync();
 
-    private async Task<NativeResponse?> HistoryAsync(NativeContext context) =>
-        context.Reply("history.get.result", await BuildHistoryAsync());
+    /// <summary>The device board as the data plane serves it.</summary>
+    internal Task<DevicesPayload> DevicesForDataAsync() => BuildDevicesAsync();
 
     private ClipboardItemPayload ToPayload(ClipboardRecord record, int peers)
     {

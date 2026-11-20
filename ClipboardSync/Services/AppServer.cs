@@ -40,6 +40,8 @@ internal static class AppServer
 
     private static void MapData(WebApplication app, string token)
     {
+        DataRoutes.Map(app, token);
+
         // A clipboard screenshot is megabytes of PNG; as a response it keeps the browser's own cache
         // and connection pool, instead of a base64 string through the bridge.
         app.MapGet($"/data/{token}/image/{{id}}", async (string id) =>
