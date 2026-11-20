@@ -10,6 +10,11 @@ namespace ClipboardSync.Services;
 [Singleton]
 internal partial class LinkService
 {
+    /// <summary>Where the window fetches pictures from; asked once at startup.</summary>
+    [NativeMessage("app.data")]
+    private static NativeResponse Data(NativeContext context) =>
+        context.Reply("app.data.result", new DataPayload(AppServer.DataUrl));
+
     [NativeMessage("system.openUrl")]
     private static NativeResponse Open(NativeContext context)
     {

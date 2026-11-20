@@ -54,3 +54,6 @@ internal sealed record FileItemRequest(string ItemId);
 
 /// <summary>Body for <c>image.get</c>: a data URL the interface can render directly.</summary>
 internal sealed record ImagePayload(string? DataUrl);
+
+/// <summary>Where the window fetches its pictures from, answered once at startup.</summary>
+internal sealed record DataPayload(string Base);

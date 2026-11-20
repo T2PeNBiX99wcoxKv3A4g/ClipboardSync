@@ -95,24 +95,26 @@ export async function getHistory(): Promise<ClipboardItem[]> {
     return payload.items ?? [];
 }
 
-const imageCache = new Map<string, string>();
+let dataBaseTask: Promise<string> | null = null;
 
-/** Fetches an image preview as a data URL; the backend reads the stored PNG on demand. */
+/** The local server's data prefix, asked once. */
+function dataBase(): Promise<string> {
+    dataBaseTask ??= Native.request<{ base: string }>("app.data")
+        .then((payload) => payload.base ?? "")
+        .catch(() => "");
+
+    return dataBaseTask;
+}
+
+/**
+ * A loopback URL for a stored picture. The page takes it with its own connection pool and cache, so
+ * a screenshot never travels through the bridge as base64.
+ */
 export async function getImagePreview(itemId: string): Promise<string | null> {
-    const cached = imageCache.get(itemId);
-    if (cached) return cached;
     if (!Native.available) return null;
 
-    const payload = await Native.request<{ dataUrl?: string | null }>("image.get", {itemId});
-    if (!payload.dataUrl) return null;
-
-    if (imageCache.size >= 20) {
-        const oldest = imageCache.keys().next().value;
-        if (oldest) imageCache.delete(oldest);
-    }
-
-    imageCache.set(itemId, payload.dataUrl);
-    return payload.dataUrl;
+    const base = await dataBase();
+    return base ? `${base}/image/${encodeURIComponent(itemId)}` : null;
 }
 
 /** Puts a stored image back on this device's clipboard. */

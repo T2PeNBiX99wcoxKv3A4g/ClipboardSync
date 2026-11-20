@@ -64,6 +64,7 @@ namespace ClipboardSync.Messaging;
 [JsonSerializable(typeof(PairResultPayload))]
 [JsonSerializable(typeof(ImageRequest))]
 [JsonSerializable(typeof(ImagePayload))]
+[JsonSerializable(typeof(DataPayload))]
 [JsonSerializable(typeof(FileItemRequest))]
 [JsonSerializable(typeof(DiscoveryMessage))]
 [JsonSerializable(typeof(ClipboardItemMessage))]
