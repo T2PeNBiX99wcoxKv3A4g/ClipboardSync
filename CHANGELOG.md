@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.14.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.13.2..v0.14.0) - 2026-11-20
+
+### ⛰️  Features
+
+- *(site)* Read the changelog from GitHub first - ([d96fb09](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/d96fb09943d1bacadf1ad26861b41cad68a2547a))
+- *(site)* Add a changelog page - ([59a80d2](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/59a80d20adfac722b2c8880e2a5ba4e146f4afc0))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([508a523](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/508a5234121d8807c0b7fb120882db296081bdff))
+
+
 ## [0.13.2](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.13.1..v0.13.2) - 2026-11-20
 
 ### ⚙️ Miscellaneous Tasks
