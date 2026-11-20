@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.13.2](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.13.1..v0.13.2) - 2026-11-20
+
+### ⚙️ Miscellaneous Tasks
+
+- *(libs)* Update the shared bridge to 0.39.1 - ([ced86f4](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/ced86f4d0a61573121d9f5e70abf058a4bb76ee1))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([e5d24af](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/e5d24afacb0b0938b1e1f418f1a1c8ebe03a0385))
+
+
 ## [0.13.1](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.13.0..v0.13.1) - 2026-11-20
 
 ### Action
