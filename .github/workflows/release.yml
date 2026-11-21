@@ -11,6 +11,8 @@ on:
       - "README.md"
       - "README.*.md"
       - "Site/**"
+      # The site's own copy of the shared package: the desktop build never uses it.
+      - "ClipboardSync/Libs/photino-net-utils-site-*.tgz"
       - ".gitignore"
       - "LICENSE*"
       - ".github/workflows/dependabot-auto-merge.yml"
