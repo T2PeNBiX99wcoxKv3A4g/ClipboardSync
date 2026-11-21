@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.1](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.15.0..v0.15.1) - 2026-11-21
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([9eaddd4](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/9eaddd4d00ebb4b8bbe5e70b0722adb561b28c36))
+
+
 ## [0.15.0](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.14.0..v0.15.0) - 2026-11-20
 
 ### ⛰️  Features
