@@ -11,7 +11,7 @@
     "upgrade": "node -e \"require('fs').rmSync('package-lock.json',{force:true})\" && npx npm-check-updates -u"
   },
   "dependencies": {
-    "@photino-net-utils/site": "file:../ClipboardSync/Libs/photino-net-utils-site-1.0.0.tgz",
+    "@photino-net-utils/site": "file:../ClipboardSync/Libs/photino-net-utils-site-1.1.0.tgz",
     "lucide-react": "^1.71.0",
     "react": "^19",
     "react-dom": "^19",
