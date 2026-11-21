@@ -56,8 +56,8 @@ internal static class AppServer
             if (!File.Exists(file))
                 return Results.NotFound();
 
-            return Results.File(file, "image/png", enableRangeProcessing: false,
-                lastModified: File.GetLastWriteTimeUtc(file));
+            return BinaryContent.File(file, "image/png", range: false,
+                lastModified: File.GetLastWriteTimeUtc(file), maxAge: TimeSpan.FromMinutes(10));
         });
     }
 }

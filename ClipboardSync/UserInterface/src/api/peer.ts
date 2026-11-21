@@ -1,5 +1,5 @@
 import {Native} from "@photino-net-utils/bridge";
-import {readBlock} from "./data";
+import {data, readBlock} from "./data";
 
 export type TransferStatus =
     | "synced"
@@ -95,17 +95,6 @@ export async function getHistory(): Promise<ClipboardItem[]> {
     return await fetchHistory();
 }
 
-let dataBaseTask: Promise<string> | null = null;
-
-/** The local server's data prefix, asked once. */
-function dataBase(): Promise<string> {
-    dataBaseTask ??= Native.request<{ base: string }>("app.data")
-        .then((payload) => payload.base ?? "")
-        .catch(() => "");
-
-    return dataBaseTask;
-}
-
 /**
  * A loopback URL for a stored picture. The page takes it with its own connection pool and cache, so
  * a screenshot never travels through the bridge as base64.
@@ -113,8 +102,11 @@ function dataBase(): Promise<string> {
 export async function getImagePreview(itemId: string): Promise<string | null> {
     if (!Native.available) return null;
 
-    const base = await dataBase();
-    return base ? `${base}/image/${encodeURIComponent(itemId)}` : null;
+    try {
+        return await data.url(`/image/${encodeURIComponent(itemId)}`);
+    } catch {
+        return null;
+    }
 }
 
 /** Puts a stored image back on this device's clipboard. */

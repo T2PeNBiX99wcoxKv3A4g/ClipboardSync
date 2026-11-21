@@ -2,6 +2,7 @@ using ClipboardSync.Messaging;
 using ClipboardSync.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using PhotinoNetUtils.Hosting;
 
 namespace ClipboardSync.Services;
 
@@ -19,13 +20,13 @@ internal static class DataRoutes
     public static void Map(WebApplication app, string token)
     {
         app.MapGet($"/data/{token}/history", (Delegate)(async (HttpContext _) =>
-            Results.Bytes(History(await SyncService.Instance.HistoryForDataAsync()), DataBlock.ContentType)));
+            DataBlockResults.Block(History(await SyncService.Instance.HistoryForDataAsync()))));
 
         app.MapGet($"/data/{token}/devices", (Delegate)(async (HttpContext _) =>
-            Results.Bytes(Devices(await SyncService.Instance.DevicesForDataAsync()), DataBlock.ContentType)));
+            DataBlockResults.Block(Devices(await SyncService.Instance.DevicesForDataAsync()))));
     }
 
-    private static byte[] History(HistoryPayload payload)
+    private static DataBlock History(HistoryPayload payload)
     {
         var block = new DataBlock(HistoryKind)
             .Text("id")
@@ -64,10 +65,10 @@ internal static class DataRoutes
                 item.TotalBytes,
                 item.Progress);
 
-        return block.Build();
+        return block;
     }
 
-    private static byte[] Devices(DevicesPayload payload)
+    private static DataBlock Devices(DevicesPayload payload)
     {
         var block = new DataBlock(DevicesKind)
             .Text("scope")
@@ -89,7 +90,7 @@ internal static class DataRoutes
         foreach (var device in payload.Discovered)
             block.Row(["discovered", device.Id, device.Name, device.Host], device.Port, 0, 0, 0);
 
-        return block.Build();
+        return block;
     }
 
     /// <summary>
