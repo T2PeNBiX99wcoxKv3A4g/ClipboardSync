@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.15.2](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.15.1..v0.15.2) - 2026-11-22
+
+### 🚜 Refactor
+
+- *(data)* Use the shared binary block and media response - ([4560566](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/4560566102e7eb34f01f7f831d09816294cdf4d0))
+
+### ⚙️ Miscellaneous Tasks
+
+- Update the shared bridge and build - ([7f7cbbb](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/7f7cbbb30fe0083017cf0db235d8b06fb2d1957f))
+- Update the shared bridge and build - ([a9c2b74](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/a9c2b7489d6fea0ceb15c2028dd1de4ff3a06ea2))
+- Update the shared PhotinoNETUtils build - ([3c2cf8a](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/3c2cf8ac79ecb21cfe64017d0e15b59ce415e77f))
+- Update the shared PhotinoNETUtils build - ([eacf212](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/eacf2123eb0127ccc78ceca51549f4129b35ac0f))
+- No release for a site package update - ([b626df4](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/b626df41ac1e5f7f56f6c6e1d74703680536401b))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([db14864](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/db14864f39c2b726881b14b50d17a79c9953b81e))
+
+### Build
+
+- *(ui)* Rebuild the bundle for the shared bridge 0.44.2 - ([ebac3e3](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/ebac3e3660fd97885d9790484ba5f11b2e57b768))
+
+
 ## [0.15.1](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.15.0..v0.15.1) - 2026-11-21
 
 ### Action
