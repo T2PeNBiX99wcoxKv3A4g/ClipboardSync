@@ -1,4 +1,4 @@
-import{a as e,i as t,n,o as r,r as i,t as a}from"./index-Cgwj0tWh.js";var o=r(e(),1),s=[{name:`@fontsource/inter`,version:`5.3.0`,license:`OFL-1.1`,text:`Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter) Inter-Italic[opsz,wght].ttf: Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter)
+import{a as e,i as t,n,o as r,r as i,t as a}from"./index-HK1r_yk7.js";var o=r(e(),1),s=[{name:`@fontsource/inter`,version:`5.3.0`,license:`OFL-1.1`,text:`Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter) Inter-Italic[opsz,wght].ttf: Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
