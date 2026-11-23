@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.15.3](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.15.2..v0.15.3) - 2026-11-23
+
+### 📚 Documentation
+
+- *(site)* Show the devices preview on the landing page - ([01b1d24](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/01b1d247ccb67e11ea58c7e8f7e5f2f558c135b7))
+- Add a preview image of the devices page - ([d544e45](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/d544e45fcccc884adcd880694dc39775a5f0fd2a))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([9129273](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/91292736cb1860ff8c775d70ca457b780376cef6))
+
+
 ## [0.15.2](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.15.1..v0.15.2) - 2026-11-22
 
 ### 🚜 Refactor
