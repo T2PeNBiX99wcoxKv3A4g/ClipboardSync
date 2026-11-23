@@ -11,6 +11,9 @@ export const site = {
     webView2Url: "https://developer.microsoft.com/microsoft-edge/webview2/",
     repository: "https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync",
     languages: ["en", "ja", "zh-CN", "zh-TW"],
+    screenshots: {
+        main: "https://raw.githubusercontent.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/master/docs/main-window.png",
+    },
     docs: [
         {
             "slug": "Getting-Started",

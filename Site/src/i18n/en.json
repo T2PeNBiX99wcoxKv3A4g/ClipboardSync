@@ -11,6 +11,8 @@
     "noteText": "Transfers are encrypted, but each device's blob store is ordinary plaintext files in its local data folder. Files are deduplicated by SHA-256, a reconnect resumes from the bytes already received, and one selection is capped by the file size limit in Settings.",
     "download": "Download",
     "documentation": "Documentation",
+    "mainWindow": "The devices page: one board per paired device",
+    "mainWindowAlt": "The ClipboardSync devices page",
     "whatTitle": "What it does",
     "whatText": "ClipboardSync keeps one clipboard board across the devices you pair. Copy text, a link, an image, a file or a folder on one machine and it shows up on the others, ready to paste. Every device talks directly to the others over an encrypted session; there is no account and no server in the middle.",
     "featuresTitle": "Features",
