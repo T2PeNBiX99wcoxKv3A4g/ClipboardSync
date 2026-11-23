@@ -17,6 +17,12 @@ ClipboardSync keeps one clipboard board across the devices you pair. Copy text, 
 or a folder on one machine and it shows up on the others, ready to paste. Every device talks directly
 to the others over an encrypted session; there is no account and no server in the middle.
 
+<div align="center">
+  <a href="docs/main-window.png"><img src="docs/main-window.png" alt="The devices page" width="880"></a>
+  <br>
+  <em>The devices page: one board per paired device, each with its own scroll</em>
+</div>
+
 ## Features
 
 - **One shared board** — every paired device shows the same history, grouped by the device an item
