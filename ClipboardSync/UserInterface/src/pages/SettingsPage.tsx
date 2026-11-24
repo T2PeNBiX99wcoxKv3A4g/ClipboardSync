@@ -12,7 +12,7 @@ import {
     startupStatus,
     type UpdateCheck
 } from "../api/system";
-import {getSettings, saveSettings, type Settings} from "../api/settings";
+import {getSettings, getSettingsDefaults, saveSettings, type Settings} from "../api/settings";
 import {clearHistory} from "../api/peer";
 import {Toggle} from "../components/Toggle";
 import {Dropdown} from "../components/Dropdown";
@@ -203,20 +203,11 @@ export function SettingsPage({info, focusSection, onSectionFocused, onInstallUpd
     const restoreDefaults = () => {
         if (!settings) return;
 
-        setSettings({
+        void getSettingsDefaults().then((defaults) => {
             // Keep the device name: it identifies this device to peers, not a preference.
-            deviceName: settings.deviceName,
-            language: "system",
-            theme: "system",
-            startHidden: false,
-            syncEnabled: true,
-            syncText: true,
-            syncImages: true,
-            syncFiles: true,
-            historyLimit: 200,
-            maxImageMb: 10,
-            maxFileMb: 512,
-            blobDirectory: "",
+            setSettings({...defaults, deviceName: settings.deviceName});
+        }, () => {
+            setNotice({ok: false, text: t("the_host_did_not_answer")});
         });
     };
 

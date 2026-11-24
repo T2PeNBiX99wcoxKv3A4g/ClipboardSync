@@ -1,4 +1,4 @@
-import {loadSettings, Native, saveSettings as save} from "@photino-net-utils/bridge";
+import {loadSettings, loadSettingsDefaults, Native, saveSettings as save} from "@photino-net-utils/bridge";
 import type {AppSettingsGenerated} from "./settings.generated";
 
 /** Mirrors `ClipboardSync.Models.AppSettings`; generated from the C# model. */
@@ -14,6 +14,11 @@ export async function getSettings(): Promise<Settings> {
 
 export async function saveSettings(settings: Settings): Promise<Settings> {
     return await save<Settings>(settings);
+}
+
+/** The values a fresh install starts from; the bridge asks the host once and remembers the answer. */
+export async function getSettingsDefaults(): Promise<Settings> {
+    return await loadSettingsDefaults<Settings>();
 }
 
 /** Fires when the settings were saved, so every open view can pick the new values up. */
