@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.15.7](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.15.6..v0.15.7) - 2026-11-24
+
+### 🐛 Bug Fixes
+
+- *(board)* Keep an oversized clipboard text from blanking the list - ([fda705b](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/fda705b4aba8a2a3295dd03ad79b7603daab463e))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([a0093d8](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/a0093d87ad53b25e21d277806f36933e5c1853bf))
+
+
 ## [0.15.6](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.15.5..v0.15.6) - 2026-11-24
 
 ### Action
