@@ -1,35 +1,19 @@
-import {Native} from "@photino-net-utils/bridge";
+import {loadSettings, Native, saveSettings as save} from "@photino-net-utils/bridge";
 import type {AppSettingsGenerated} from "./settings.generated";
 
 /** Mirrors `ClipboardSync.Models.AppSettings`; generated from the C# model. */
 export type Settings = AppSettingsGenerated;
 
-/** Used in a browser preview, where there is no settings file to read. */
-export const PREVIEW_SETTINGS: Settings = {
-    deviceName: "this_device",
-    language: "system",
-    theme: "system",
-    startHidden: false,
-    syncEnabled: true,
-    syncText: true,
-    syncImages: true,
-    syncFiles: true,
-    historyLimit: 200,
-    maxImageMb: 10,
-    maxFileMb: 512,
-    blobDirectory: "",
-};
-
+/**
+ * Reads the settings. Every default belongs to the host, so nothing here repeats one; a browser
+ * preview has no settings file and gets the page's own "could not read" state instead.
+ */
 export async function getSettings(): Promise<Settings> {
-    if (!Native.available) return PREVIEW_SETTINGS;
-
-    return await Native.request<Settings>("settings.get");
+    return await loadSettings<Settings>();
 }
 
 export async function saveSettings(settings: Settings): Promise<Settings> {
-    if (!Native.available) return settings;
-
-    return await Native.request<Settings>("settings.save", settings);
+    return await save<Settings>(settings);
 }
 
 /** Fires when the settings were saved, so every open view can pick the new values up. */
