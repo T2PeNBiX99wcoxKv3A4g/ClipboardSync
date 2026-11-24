@@ -20,9 +20,6 @@
     "simple-icons": "^16.37.0",
     "styled-components": "^6.6.0"
   },
-  "overrides": {
-    "mdast-util-gfm-autolink-literal": "2.0.1"
-  },
   "devDependencies": {
     "@types/react": "^19",
     "@types/react-dom": "^19",
