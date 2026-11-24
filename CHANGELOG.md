@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.15.5](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.15.4..v0.15.5) - 2026-11-24
+
+### 🐛 Bug Fixes
+
+- *(i18n)* Declare the keys the shared library looks up - ([88eadcd](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/88eadcddfc5f1ddf26b4884ed026b4b2c375b936))
+
+### 🚜 Refactor
+
+- *(settings)* Take the defaults from the host - ([7b8f26a](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/7b8f26a09d40f73e80c9f8627b3846d31817183b))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([2a22195](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/2a221951145b3bfc6b977f26fea07251dc28041d))
+
+
 ## [0.15.4](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.15.3..v0.15.4) - 2026-11-24
 
 ### 🚜 Refactor
