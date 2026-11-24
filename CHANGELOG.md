@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.15.4](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.15.3..v0.15.4) - 2026-11-24
+
+### 🚜 Refactor
+
+- *(settings)* Take get and save from the shared bridge - ([dc44184](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/dc44184f026b49235f595bc7c10bab7cc22c7530))
+
+### ⚙️ Miscellaneous Tasks
+
+- *(settings)* Follow the shared payload signature - ([378cc5f](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/378cc5f058f8cf07d722945c5229c9951834158c))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([4b888ad](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/4b888adb5c1b745c95b34d253a50c209c7f19177))
+
+
 ## [0.15.3](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.15.2..v0.15.3) - 2026-11-23
 
 ### 📚 Documentation
