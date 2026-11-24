@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.6](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.15.5..v0.15.6) - 2026-11-24
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([aff4851](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/aff4851e4792132b6ad4e3d9fc0b58972e3f796b))
+
+
 ## [0.15.5](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.15.4..v0.15.5) - 2026-11-24
 
 ### 🐛 Bug Fixes
