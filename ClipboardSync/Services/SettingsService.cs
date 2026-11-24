@@ -24,10 +24,10 @@ internal sealed class SettingsService() : SettingsServiceBase<SettingsService, A
     /// <summary>The language both the backend and the interface use.</summary>
     public string Language => Current.Language;
 
-    protected override SettingsPayload Payload() =>
-        new(Current.DeviceName, Current.Language, Current.Theme, Current.StartHidden, Current.SyncEnabled,
-            Current.SyncText, Current.SyncImages, Current.SyncFiles, Current.HistoryLimit, Current.MaxImageMb,
-            Current.MaxFileMb, Current.BlobDirectory);
+    protected override SettingsPayload Payload(AppSettings settings) =>
+        new(settings.DeviceName, settings.Language, settings.Theme, settings.StartHidden, settings.SyncEnabled,
+            settings.SyncText, settings.SyncImages, settings.SyncFiles, settings.HistoryLimit, settings.MaxImageMb,
+            settings.MaxFileMb, settings.BlobDirectory);
 
     protected override string? Validate(AppSettings settings)
     {
