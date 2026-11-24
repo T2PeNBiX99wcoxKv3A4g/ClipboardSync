@@ -1,3 +1,4 @@
+using System.Text;
 using ClipboardSync.Messaging;
 using ClipboardSync.Models;
 using Microsoft.AspNetCore.Builder;
@@ -15,6 +16,14 @@ internal static class DataRoutes
 {
     public const ushort HistoryKind = 1;
     public const ushort DevicesKind = 2;
+
+    /// <summary>
+    ///     A block stores a cell's byte length in a u16, so a longer value cannot travel in one and
+    ///     the block refuses to build. A single oversized clipboard text would therefore hide the
+    ///     whole board, so a cell is clipped to this; the store keeps the full value and the copy
+    ///     and apply paths read it from there.
+    /// </summary>
+    private const int MaxCellBytes = ushort.MaxValue;
 
     /// <summary>The history has no column for a row's position: the order is the order the store gives.</summary>
     public static void Map(WebApplication app, string token)
@@ -51,10 +60,10 @@ internal static class DataRoutes
                 [
                     item.Id,
                     item.OriginDeviceId,
-                    item.OriginDeviceName,
+                    Cell(item.OriginDeviceName),
                     item.Kind,
-                    item.Content,
-                    item.Meta ?? "",
+                    Cell(item.Content),
+                    Cell(item.Meta ?? ""),
                     item.Direction,
                     item.Status,
                     Files(item.Files)
@@ -80,25 +89,62 @@ internal static class DataRoutes
             .Number("online")
             .Number("items");
 
-        block.Row(["self", payload.Self.Id, payload.Self.Name, ""],
+        block.Row(["self", payload.Self.Id, Cell(payload.Self.Name), ""],
             0, payload.Self.Self ? 1 : 0, payload.Self.Online ? 1 : 0, payload.Self.ItemCount);
 
         foreach (var peer in payload.Peers)
-            block.Row(["peer", peer.Id, peer.Name, ""],
+            block.Row(["peer", peer.Id, Cell(peer.Name), ""],
                 0, peer.Self ? 1 : 0, peer.Online ? 1 : 0, peer.ItemCount);
 
         foreach (var device in payload.Discovered)
-            block.Row(["discovered", device.Id, device.Name, device.Host], device.Port, 0, 0, 0);
+            block.Row(["discovered", device.Id, Cell(device.Name), Cell(device.Host)], device.Port, 0, 0, 0);
 
         return block;
     }
 
     /// <summary>
     ///     The files of a file item as one string: path, size and directory flag, with unit and
-    ///     record separators, which a path cannot contain.
+    ///     record separators, which a path cannot contain. Only the complete entries that fit are
+    ///     sent, so the interface never reads a half-written one.
     /// </summary>
-    private static string Files(ClipboardFileEntry[]? files) =>
-        files is { Length: > 0 }
-            ? string.Join('\u001e', files.Select(file => $"{file.Path}\u001f{file.Size}\u001f{(file.Directory ? 1 : 0)}"))
-            : "";
+    private static string Files(ClipboardFileEntry[]? files)
+    {
+        if (files is not { Length: > 0 })
+            return "";
+
+        var builder = new StringBuilder();
+        var used = 0;
+
+        foreach (var file in files)
+        {
+            var entry = $"{file.Path}\u001f{file.Size}\u001f{(file.Directory ? 1 : 0)}";
+            var length = Encoding.UTF8.GetByteCount(entry) + (builder.Length > 0 ? 1 : 0);
+
+            if (used + length > MaxCellBytes)
+                break;
+
+            if (builder.Length > 0)
+                builder.Append('\u001e');
+
+            builder.Append(entry);
+            used += length;
+        }
+
+        return builder.ToString();
+    }
+
+    private static string Cell(string value) =>
+        Encoding.UTF8.GetByteCount(value) <= MaxCellBytes ? value : Clip(value);
+
+    /// <summary>Keeps the start of a value, stopping on a character boundary.</summary>
+    private static string Clip(string value)
+    {
+        var bytes = Encoding.UTF8.GetBytes(value);
+        var length = MaxCellBytes;
+
+        while (length > 0 && (bytes[length] & 0xC0) == 0x80)
+            length--;
+
+        return Encoding.UTF8.GetString(bytes, 0, length);
+    }
 }

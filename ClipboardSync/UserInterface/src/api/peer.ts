@@ -121,6 +121,15 @@ export async function copyFiles(itemId: string): Promise<void> {
     await Native.request("file.copy", {itemId});
 }
 
+/**
+ * Puts the stored text back on this device's clipboard. A very long text arrives on the board as a
+ * clipped cell, so the host is asked for the record rather than the text the page already holds.
+ */
+export async function copyText(itemId: string): Promise<void> {
+    if (!Native.available) return;
+    await Native.request("text.copy", {itemId});
+}
+
 export async function startDiscovery(): Promise<void> {
     if (!Native.available) return;
     await Native.request("discovery.start");

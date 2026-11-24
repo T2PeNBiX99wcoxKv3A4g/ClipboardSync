@@ -974,6 +974,7 @@ internal partial class SyncService
     {
         "image.get" => await GetImageAsync(context),
         "image.copy" => await CopyImageAsync(context),
+        "text.copy" => await CopyTextAsync(context),
         "file.copy" => await CopyFilesAsync(context),
         "device.remove" => await RemoveDeviceAsync(context),
         "history.clear" => await ClearHistoryAsync(context),
@@ -1019,16 +1020,33 @@ internal partial class SyncService
 
     private async Task<ClipboardRecord?> FindImageAsync(NativeContext context)
     {
-        var id = context.Payload<ImageRequest>()?.ItemId;
+        var id = context.Payload<ItemRequest>()?.ItemId;
         if (id is not { Length: > 0 })
             return null;
 
         return await _store.FindAsync(id) is { Kind: "image" } record ? record : null;
     }
 
+    /// <summary>
+    ///     Puts the stored text back on the clipboard. The board holds a shortened cell for a very
+    ///     long text, so the copy reads the record rather than what the interface received.
+    /// </summary>
+    private async Task<NativeResponse?> CopyTextAsync(NativeContext context)
+    {
+        var id = context.Payload<ItemRequest>()?.ItemId;
+        var record = id is { Length: > 0 } ? await _store.FindAsync(id) : null;
+
+        if (record is not { Kind: "text" or "link" } || record.Content.Length == 0)
+            return context.Fail("text.copy.result", "The text is not available.");
+
+        return _clipboard.WriteText(record.Content)
+            ? context.Reply("text.copy.result", new OkPayload())
+            : context.Fail("text.copy.result", "The clipboard is busy.");
+    }
+
     private async Task<NativeResponse?> CopyFilesAsync(NativeContext context)
     {
-        var id = context.Payload<FileItemRequest>()?.ItemId;
+        var id = context.Payload<ItemRequest>()?.ItemId;
         var record = id is { Length: > 0 } ? await _store.FindAsync(id) : null;
 
         if (record is not { Kind: "file", Roots: { Count: > 0 } roots, Files: { Count: > 0 } })

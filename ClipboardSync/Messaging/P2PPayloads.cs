@@ -46,11 +46,8 @@ internal sealed record PairRequestPayload(string RequestId, string DeviceId, str
 /// <summary>Body of the <c>pair.result</c> event.</summary>
 internal sealed record PairResultPayload(bool Ok, string? DeviceId, string? DeviceName, string? Error);
 
-/// <summary>Payload for <c>image.get</c> and <c>image.copy</c>.</summary>
-internal sealed record ImageRequest(string ItemId);
-
-/// <summary>Payload for <c>file.copy</c>.</summary>
-internal sealed record FileItemRequest(string ItemId);
+/// <summary>Payload for <c>image.get</c>, <c>image.copy</c>, <c>text.copy</c> and <c>file.copy</c>.</summary>
+internal sealed record ItemRequest(string ItemId);
 
 /// <summary>Body for <c>image.get</c>: a data URL the interface can render directly.</summary>
 internal sealed record ImagePayload(string? DataUrl);

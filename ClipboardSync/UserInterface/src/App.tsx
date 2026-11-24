@@ -3,7 +3,7 @@ import styled, {keyframes} from "styled-components";
 import {Native, ResizeHandles, type LocalizationKey, type ThemeMode, useTheme, useTranslation, useWindowCorners} from "@photino-net-utils/bridge";
 import {type AppInfo, cancelUpdateDownload, getAppInfo, getUpdateStatus, installUpdate, type UpdateCheck, onUpdateChangelog, onUpdateProgress, type UpdateProgress, startUpdateDownload} from "./api/system";
 import {getSettings, onSettingsChanged} from "./api/settings";
-import {type ClipboardItem, copyFiles, copyImage} from "./api/peer";
+import {type ClipboardItem, copyFiles, copyImage, copyText} from "./api/peer";
 import {Sidebar} from "./components/Sidebar";
 import {TitleBar} from "./components/TitleBar";
 import {UpdateDialog} from "./components/UpdateDialog";
@@ -137,7 +137,7 @@ export default function App() {
         else if (item.kind === "file")
             void copyFiles(item.id).catch(() => undefined);
         else
-            void navigator.clipboard?.writeText(item.content).catch(() => undefined);
+            void copyText(item.id).catch(() => undefined);
 
         setCopiedId(item.id);
         window.setTimeout(() => setCopiedId((current) => current === item.id ? null : current), 1600);
