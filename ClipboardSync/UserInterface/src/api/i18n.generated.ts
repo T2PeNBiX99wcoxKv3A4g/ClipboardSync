@@ -51,12 +51,14 @@ declare module "@photino-net-utils/bridge"
         "enter_an_address": true;
         "error.blob_directory": true;
         "error.changelog_failed": true;
+        "error.invalidjson": true;
+        "error.invalidsettings": true;
         "error.invalid_device_name": true;
-        "error.invalid_settings": true;
         "error.open_logs_failed": true;
         "error.open_release_failed": true;
         "error.open_url_failed": true;
-        "error.update_check_failed": true;
+        "error.unsupported": true;
+        "error.updatecheckfailed": true;
         "error.update_download_failed": true;
         "error.update_in_progress": true;
         "error.update_windows_only": true;
