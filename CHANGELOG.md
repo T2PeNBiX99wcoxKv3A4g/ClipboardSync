@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.15.8](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.15.7..v0.15.8) - 2026-11-28
+
+### 🚜 Refactor
+
+- Maximize through PhotinoWindow - ([368289c](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/368289c41d77a43d9f6f5254966b2f97a38c56e8))
+
+### ⚙️ Miscellaneous Tasks
+
+- *(site)* Drop the mdast-util-gfm-autolink-literal override - ([f09e8bf](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/f09e8bf3eb8e51d74c3b62d057af9a2c9924c1fa))
+- Build and deploy the site through the shared Pages workflow - ([1cce5d6](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/1cce5d6506f0380b307da344bd693264036b9d96))
+
+### Action
+
+- Update version and update `CHANGELOG.md` - ([c9c5ab8](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/commit/c9c5ab819a3ec5fa5917c087f29d433d766cb230))
+
+
 ## [0.15.7](https://github.com/T2PeNBiX99wcoxKv3A4g/ClipboardSync/compare/v0.15.6..v0.15.7) - 2026-11-24
 
 ### 🐛 Bug Fixes
