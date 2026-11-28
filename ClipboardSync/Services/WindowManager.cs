@@ -265,14 +265,6 @@ internal partial class WindowManager
         if (_mainWindow is not { } window)
             return;
 
-        if (OperatingSystem.IsWindows())
-        {
-            if (window.WindowHandle != IntPtr.Zero)
-                NotifyWindowState(WindowZoom.Toggle(window.WindowHandle));
-
-            return;
-        }
-
         if (OperatingSystem.IsLinux())
         {
             NotifyWindowState(LinuxWindow.ToggleMaximize(window.Title));
